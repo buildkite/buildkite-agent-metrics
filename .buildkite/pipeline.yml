@@ -7,6 +7,8 @@ steps:
       - ssh://git@github.com/buildkite/plugins/docker-compose:
           container: "build"
 
+  - wait
+
   -
     name: "Release to :s3:"
     command: ".buildkite/upload.sh"
