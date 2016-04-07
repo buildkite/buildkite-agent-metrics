@@ -59,7 +59,7 @@ func main() {
 	flag.Parse()
 
 	if *version {
-		fmt.Printf("buildkite-cloudwatch-metrics %s", Version)
+		fmt.Printf("buildkite-metrics %s", Version)
 		os.Exit(0)
 	}
 
