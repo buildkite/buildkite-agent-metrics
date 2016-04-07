@@ -1,0 +1,37 @@
+hash: e7808a719f59f390f0b52f728a0d0ddfbea2455dfce86305080527eba473e4f7
+updated: 2016-04-01T10:26:07.052839937+11:00
+imports:
+- name: github.com/aws/aws-sdk-go
+  version: f0748927a5d7568334ff0858de06c2812da89d6a
+  subpackages:
+  - aws
+  - aws/session
+  - service/cloudwatch
+  - aws/awserr
+  - aws/credentials
+  - aws/client
+  - aws/corehandlers
+  - aws/defaults
+  - aws/request
+  - private/endpoints
+  - aws/awsutil
+  - aws/client/metadata
+  - private/protocol
+  - private/protocol/query
+  - private/signer/v4
+  - aws/credentials/ec2rolecreds
+  - aws/ec2metadata
+  - private/protocol/query/queryutil
+  - private/protocol/xml/xmlutil
+  - private/protocol/rest
+- name: github.com/go-ini/ini
+  version: 12f418cc7edc5a618a51407b7ac1f1f512139df3
+- name: github.com/jmespath/go-jmespath
+  version: 0b12d6b521d83fc7f755e7cfc1b1fbdd35a01a74
+- name: github.com/tent/http-link-go
+  version: ac974c61c2f990f4115b119354b5e0b47550e888
+- name: gopkg.in/buildkite/go-buildkite.v2
+  version: 2a542e6524708fe428e62b65a0a5fc969a82b2e0
+  subpackages:
+  - buildkite
+devImports: []
