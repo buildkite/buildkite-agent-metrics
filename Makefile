@@ -13,3 +13,6 @@ $(BIN): main.go
 	-mkdir -p build/
 	go build -o $(BIN) -ldflags="$(FLAGS)" .
 	cp -a $(BIN) $(LATEST)
+
+upload: build
+	aws s3 sync --acl public-read build s3://buildkite-metrics/

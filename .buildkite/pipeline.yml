@@ -6,3 +6,10 @@ steps:
     plugins:
       - ssh://git@github.com/buildkite/plugins/docker-compose:
           container: "build"
+
+  -
+    name: "Release to :s3:"
+    command: ".buildkite/upload.sh"
+    branches: "master"
+    agents:
+      queue: "deploy"
