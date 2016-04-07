@@ -24,29 +24,6 @@ func init() {
 	queuePattern = regexp.MustCompile(`(?i)^queue=(.+?)$`)
 }
 
-// Generates:
-
-// Buildkite > RunningBuildsCount
-// Buildkite > RunningJobsCount
-// Buildkite > ScheduledBuildsCount
-// Buildkite > ScheduledJobsCount
-// Buildkite > IdleAgentsCount
-// Buildkite > BusyAgentsCount
-// Buildkite > TotalAgentsCount
-
-// Buildkite > (Queue) > RunningBuildsCount
-// Buildkite > (Queue) > RunningJobsCount
-// Buildkite > (Queue) > ScheduledBuildsCount
-// Buildkite > (Queue) > ScheduledJobsCount
-// Buildkite > (Queue) > IdleAgentsCount
-// Buildkite > (Queue) > BusyAgentsCount
-// Buildkite > (Queue) > TotalAgentsCount
-
-// Buildkite > (Pipeline) > RunningBuildsCount
-// Buildkite > (Pipeline) > RunningJobsCount
-// Buildkite > (Pipeline) > ScheduledBuildsCount
-// Buildkite > (Pipeline) > ScheduledJobsCount
-
 func main() {
 	var (
 		accessToken = flag.String("token", "", "A Buildkite API Access Token")
@@ -59,7 +36,7 @@ func main() {
 	flag.Parse()
 
 	if *version {
-		fmt.Printf("buildkite-metrics %s", Version)
+		fmt.Printf("buildkite-metrics %s\n", Version)
 		os.Exit(0)
 	}
 
