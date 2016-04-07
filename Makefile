@@ -8,8 +8,6 @@ build: $(BIN)
 clean:
 	-rm build/*
 
-build/buildkite-cloudwatch-metrics:
+$(BIN):
 	-mkdir -p build/
-	which glide || go get github.com/Masterminds/glide
-	glide install
 	go build -o $(BIN) -ldflags="$(FLAGS)" .
