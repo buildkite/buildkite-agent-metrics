@@ -4,6 +4,16 @@ A command-line tool for collecting [Buildkite](https://buildkite.com/) build/job
 
 [![Build status](https://badge.buildkite.com/80d04fcde3a306bef44e77aadb1f1ffdc20ebb3c8f1f585a60.svg)](https://buildkite.com/buildkite/buildkite-metrics)
 
+## Installing
+
+Either download the latest binary from [buildkite-metrics/buildkite-metrics-Linux-x86_64](https://s3.amazonaws.com/buildkite-metrics/buildkite-metrics-Linux-x86_64) or install with:
+
+```bash
+go get github.com/buildkite/buildkite-metrics
+```
+
+## Development
+
 You can build and run the binary tool locally with golang installed:
 
 ```
