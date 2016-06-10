@@ -31,6 +31,7 @@ Buildkite > RunningBuildsCount
 Buildkite > RunningJobsCount
 Buildkite > ScheduledBuildsCount
 Buildkite > ScheduledJobsCount
+Buildkite > UnfinishedJobsCount
 Buildkite > IdleAgentsCount
 Buildkite > BusyAgentsCount
 Buildkite > TotalAgentsCount
@@ -39,6 +40,7 @@ Buildkite > (Queue) > RunningBuildsCount
 Buildkite > (Queue) > RunningJobsCount
 Buildkite > (Queue) > ScheduledBuildsCount
 Buildkite > (Queue) > ScheduledJobsCount
+Buildkite > (Queue) > UnfinishedJobsCount
 Buildkite > (Queue) > IdleAgentsCount
 Buildkite > (Queue) > BusyAgentsCount
 Buildkite > (Queue) > TotalAgentsCount
@@ -47,6 +49,7 @@ Buildkite > (Pipeline) > RunningBuildsCount
 Buildkite > (Pipeline) > RunningJobsCount
 Buildkite > (Pipeline) > ScheduledBuildsCount
 Buildkite > (Pipeline) > ScheduledJobsCount
+Buildkite > (Pipeline) > UnfinishedJobsCount
 ```
 
 ## License

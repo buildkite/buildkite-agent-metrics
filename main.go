@@ -159,6 +159,7 @@ const (
 	runningJobsCount     = "RunningJobsCount"
 	scheduledBuildsCount = "ScheduledBuildsCount"
 	scheduledJobsCount   = "ScheduledJobsCount"
+	unfinishedJobsCount  = "UnfinishedJobsCount"
 	totalAgentCount      = "TotalAgentCount"
 	busyAgentCount       = "BusyAgentCount"
 	idleAgentCount       = "IdleAgentCount"
@@ -172,6 +173,7 @@ func newCounts() counts {
 		scheduledBuildsCount: 0,
 		runningJobsCount:     0,
 		scheduledJobsCount:   0,
+		unfinishedJobsCount:  0,
 	}
 }
 
@@ -266,14 +268,19 @@ func (r *result) addBuildAndJobMetrics(client *buildkite.Client, opts collectOpt
 					r.queues[queue(job)] = newCounts()
 				}
 
-				switch state {
-				case "running":
-					r.totals[runningJobsCount]++
-					r.queues[queue(job)][runningJobsCount]++
+				if state == "running" || state == "scheduled" {
+					switch state {
+					case "running":
+						r.totals[runningJobsCount]++
+						r.queues[queue(job)][runningJobsCount]++
 
-				case "scheduled":
-					r.totals[scheduledJobsCount]++
-					r.queues[queue(job)][scheduledJobsCount]++
+					case "scheduled":
+						r.totals[scheduledJobsCount]++
+						r.queues[queue(job)][scheduledJobsCount]++
+					}
+
+					r.totals[unfinishedJobsCount]++
+					r.queues[queue(job)][unfinishedJobsCount]++
 				}
 
 				buildQueues[queue(job)]++
