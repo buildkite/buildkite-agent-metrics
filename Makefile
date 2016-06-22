@@ -1,5 +1,5 @@
 
-VERSION=$(shell git describe --tags --candidates=1 --dirty --always)
+VERSION=$(shell git fetch --tags && git describe --tags --candidates=1 --dirty --always)
 FLAGS=-X main.Version=$(VERSION)
 BIN=build/buildkite-metrics-$(shell uname -s)-$(shell uname -m)-$(VERSION)
 LATEST=build/buildkite-metrics-$(shell uname -s)-$(shell uname -m)
