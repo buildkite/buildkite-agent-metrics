@@ -4,8 +4,8 @@ steps:
     command: "make build"
     artifact_paths: "build/*"
     plugins:
-      - ssh://git@github.com/buildkite/plugins/docker-compose:
-          container: "build"
+      docker-compose:
+          run: build
 
   - wait
 
