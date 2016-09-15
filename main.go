@@ -399,6 +399,9 @@ func listBuildsByOrg(builds *buildkite.BuildsService, orgSlug string, opts build
 				Page: page,
 			}
 			builds, resp, err := builds.ListByOrg(orgSlug, &opts)
+			if err != nil {
+				return nil, 0, err
+			}
 			log.Printf("Builds page %d has %d builds, next page is %d", page, len(builds), resp.NextPage)
 			return builds, resp.NextPage, err
 		},
