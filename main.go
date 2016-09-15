@@ -212,7 +212,7 @@ func (r *result) addHistoricalMetrics(client *buildkite.Client, opts collectOpts
 		FinishedFrom: time.Now().UTC().Add(opts.Historical * -1),
 	})
 
-	return finishedBuilds.Pages(func(v interface{}, lastPage bool) bool {
+	return finishedBuilds.Pages(func(v interface{}) bool {
 		for _, queue := range uniqueQueues(v.([]buildkite.Build)) {
 			if _, ok := r.queues[queue]; !ok {
 				r.queues[queue] = newCounts()
@@ -230,7 +230,7 @@ func (r *result) addBuildAndJobMetrics(client *buildkite.Client, opts collectOpt
 		State: []string{"scheduled", "running"},
 	})
 
-	return currentBuilds.Pages(func(v interface{}, lastPage bool) bool {
+	return currentBuilds.Pages(func(v interface{}) bool {
 		for _, build := range v.([]buildkite.Build) {
 			// log.Printf("Adding build to stats (id=%q, pipeline=%q, branch=%q, state=%q)",
 			// 	*build.ID, *build.Pipeline.Name, *build.Branch, *build.State)
@@ -329,7 +329,7 @@ func (r *result) addAgentMetrics(client *buildkite.Client, opts collectOpts) err
 		r.queues[queue][totalAgentCount] = 0
 	}
 
-	err := p.Pages(func(v interface{}, lastPage bool) bool {
+	err := p.Pages(func(v interface{}) bool {
 		agents := v.([]buildkite.Agent)
 
 		for _, agent := range agents {
@@ -376,14 +376,14 @@ type pager struct {
 	lister func(page int) (v interface{}, nextPage int, err error)
 }
 
-func (p *pager) Pages(f func(v interface{}, lastPage bool) bool) error {
+func (p *pager) Pages(f func(v interface{}) bool) error {
 	page := 1
 	for {
 		val, nextPage, err := p.lister(page)
 		if err != nil {
 			return err
 		}
-		if !f(val, nextPage == 0) || nextPage == 0 {
+		if !f(val) || nextPage == 0 {
 			break
 		}
 		page = nextPage
