@@ -311,11 +311,10 @@ func (r *result) addAgentMetrics(client *buildkite.Client, opts collectOpts) err
 					Page: page,
 				},
 			})
-			log.Printf("Agents page %d has %d agents, next page is %d",
-				page,
-				len(agents),
-				resp.NextPage,
-			)
+			if err != nil {
+				return nil, 0, err
+			}
+			log.Printf("Agents page %d has %d agents, next page is %d", page, len(agents), resp.NextPage)
 			return agents, resp.NextPage, err
 		},
 	}
