@@ -226,8 +226,9 @@ func (r *result) addHistoricalMetrics(client *buildkite.Client, opts collectOpts
 }
 
 func (r *result) addBuildAndJobMetrics(client *buildkite.Client, opts collectOpts) error {
-	currentBuilds := listBuildsByOrg(client.Builds, opts.OrgSlug, buildkite.BuildsListOptions{
-		State: []string{"scheduled", "running"},
+	currentBuilds := listBuildsByOrg(client.Builds, opts.orgSlug, buildkite.BuildsListOptions{
+		State:   []string{"scheduled", "running"},
+		PerPage: recordsPerPage,
 	})
 
 	return currentBuilds.Pages(func(v interface{}) bool {
