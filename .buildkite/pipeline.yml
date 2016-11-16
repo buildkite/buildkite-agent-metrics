@@ -4,8 +4,8 @@ steps:
     command: "make build"
     artifact_paths: "build/*"
     plugins:
-      docker-compose#e8ce6c1:
-        run: build
+      - docker-compose:
+          run: "build"
 
   - wait
 
