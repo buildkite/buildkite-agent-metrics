@@ -210,6 +210,9 @@ type result struct {
 func (r *result) addHistoricalMetrics(client *buildkite.Client, opts collectOpts) error {
 	finishedBuilds := listBuildsByOrg(client.Builds, opts.OrgSlug, buildkite.BuildsListOptions{
 		FinishedFrom: time.Now().UTC().Add(opts.Historical * -1),
+		ListOptions: buildkite.ListOptions{
+			PerPage: recordsPerPage,
+		},
 	})
 
 	return finishedBuilds.Pages(func(v interface{}) bool {
@@ -226,9 +229,11 @@ func (r *result) addHistoricalMetrics(client *buildkite.Client, opts collectOpts
 }
 
 func (r *result) addBuildAndJobMetrics(client *buildkite.Client, opts collectOpts) error {
-	currentBuilds := listBuildsByOrg(client.Builds, opts.orgSlug, buildkite.BuildsListOptions{
-		State:   []string{"scheduled", "running"},
-		PerPage: recordsPerPage,
+	currentBuilds := listBuildsByOrg(client.Builds, opts.OrgSlug, buildkite.BuildsListOptions{
+		State: []string{"scheduled", "running"},
+		ListOptions: buildkite.ListOptions{
+			PerPage: recordsPerPage,
+		},
 	})
 
 	return currentBuilds.Pages(func(v interface{}) bool {
