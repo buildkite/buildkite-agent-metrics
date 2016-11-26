@@ -11,6 +11,8 @@ import (
 	"gopkg.in/buildkite/go-buildkite.v2/buildkite"
 )
 
+const recordsPerPage = 100
+
 // Version is passed in via ldflags
 var Version string
 
