@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"regexp"
-	"strings"
 	"time"
 
 	"gopkg.in/buildkite/go-buildkite.v2/buildkite"
@@ -33,7 +32,7 @@ func main() {
 		version     = flag.Bool("version", false, "Show the version")
 
 		// filters
-		queues = flag.String("queue", "", "Filter by list of queues, comma delimited")
+		queue = flag.String("queue", "", "Only include a specific queue")
 	)
 
 	flag.Parse()
@@ -65,7 +64,7 @@ func main() {
 		res, err := collectResults(client, collectOpts{
 			OrgSlug:    *orgSlug,
 			Historical: *history,
-			Queues:     strings.Split(*queues, ","),
+			Queue:      *queue,
 		})
 		if err != nil {
 			return err
@@ -98,7 +97,7 @@ func main() {
 type collectOpts struct {
 	OrgSlug    string
 	Historical time.Duration
-	Queues     []string
+	Queue      string
 }
 
 func collectResults(client *buildkite.Client, opts collectOpts) (*result, error) {
@@ -108,7 +107,7 @@ func collectResults(client *buildkite.Client, opts collectOpts) (*result, error)
 		pipelines: map[string]counts{},
 	}
 
-	if len(opts.Queues) == 0 {
+	if opts.Queue == "" {
 		log.Println("Collecting historical metrics")
 		if err := res.addHistoricalMetrics(client, opts); err != nil {
 			return nil, err
@@ -125,19 +124,18 @@ func collectResults(client *buildkite.Client, opts collectOpts) (*result, error)
 		return nil, err
 	}
 
-	if len(opts.Queues) == 0 {
-		return res, nil
+	if opts.Queue != "" {
+		if c, ok := res.queues[opts.Queue]; ok {
+			return &result{
+				queues: map[string]counts{
+					opts.Queue: c,
+				},
+			}, nil
+		}
+		return &result{}, nil
 	}
 
-	filteredRes := &result{
-		queues: map[string]counts{},
-	}
-
-	for _, queue := range opts.Queues {
-		filteredRes.queues[queue] = res.queues[queue]
-	}
-
-	return filteredRes, nil
+	return res, nil
 }
 
 func dumpResults(res *result) {
