@@ -2,7 +2,7 @@
 VERSION=$(shell git fetch --tags && git describe --tags --candidates=1 --dirty --always)
 FLAGS=-X main.Version=$(VERSION)
 BIN=build/buildkite-metrics-$(shell uname -s)-$(shell uname -m)-$(VERSION)
-LAMBDA_ZIP=$(BIN)-lambda.zip
+LAMBDA_ZIP=build/buildkite-metrics-$(VERSION)-lambda.zip
 SRC=$(shell find . -name '*.go')
 
 build: $(BIN)
