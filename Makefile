@@ -16,8 +16,10 @@ $(BIN): $(SRC)
 	-mkdir -p build/
 	go build -o $(BIN) -ldflags="$(FLAGS)" .
 
+GODIR=/go/src/github.com/buildkite/buildkite-metrics
+
 $(LAMBDA_ZIP): $(SRC)
-	docker run --rm -v $(GOPATH):/go -v $(PWD):/tmp eawsy/aws-lambda-go
+	docker run --rm -v $(PWD):$(GODIR) -w $(GODIR) eawsy/aws-lambda-go
 	mv handler.zip $(LAMBDA_ZIP)
 
 upload:
