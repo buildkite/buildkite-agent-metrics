@@ -1,16 +1,18 @@
 steps:
-  -
-    name: "📦"
+  - name: ":golang:"
     command: "make build"
     artifact_paths: "build/*"
     plugins:
       - docker-compose:
           run: "build"
 
+  - name: ":lambda:"
+    command: "make build-lambda"
+    artifact_paths: "build/*"
+
   - wait
 
-  -
-    name: "Release to :s3:"
+  - name: "Release to :s3:"
     command: ".buildkite/upload.sh"
     branches: "master"
     agents:
