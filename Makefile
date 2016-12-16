@@ -20,6 +20,7 @@ GODIR=/go/src/github.com/buildkite/buildkite-metrics
 
 $(LAMBDA_ZIP): $(SRC)
 	docker run --rm -v $(PWD):$(GODIR) -w $(GODIR) eawsy/aws-lambda-go
+	-mkdir -p build/
 	mv handler.zip $(LAMBDA_ZIP)
 
 upload:
