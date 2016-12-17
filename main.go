@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"os"
 	"regexp"
@@ -30,6 +31,7 @@ func main() {
 		history     = flag.Duration("history", time.Hour*24, "Historical data to use for finished builds")
 		debug       = flag.Bool("debug", false, "Show API debugging output")
 		version     = flag.Bool("version", false, "Show the version")
+		quiet       = flag.Bool("quiet", false, "Only print errors")
 
 		// filters
 		queue = flag.String("queue", "", "Only include a specific queue")
@@ -43,16 +45,23 @@ func main() {
 	}
 
 	if *accessToken == "" {
-		log.Fatal("Must provide a value for -token")
+		fmt.Println("Must provide a value for -token")
+		os.Exit(1)
 	}
 
 	if *orgSlug == "" {
-		log.Fatal("Must provide a value for -org")
+		fmt.Println("Must provide a value for -org")
+		os.Exit(1)
+	}
+
+	if *quiet {
+		log.SetOutput(ioutil.Discard)
 	}
 
 	config, err := buildkite.NewTokenConfig(*accessToken, false)
 	if err != nil {
-		log.Fatalf("client config failed: %s", err)
+		fmt.Printf("client config failed: %s\n", err)
+		os.Exit(1)
 	}
 
 	client := buildkite.NewClient(config.Client())
@@ -70,7 +79,9 @@ func main() {
 			return err
 		}
 
-		dumpResults(res)
+		if !*quiet {
+			dumpResults(res)
+		}
 
 		err = cloudwatchSend(res)
 		if err != nil {
@@ -82,13 +93,15 @@ func main() {
 	}
 
 	if err := f(); err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		os.Exit(1)
 	}
 
 	if *interval > 0 {
 		for _ = range time.NewTicker(*interval).C {
 			if err := f(); err != nil {
-				log.Println(err)
+				fmt.Println(err)
+				os.Exit(1)
 			}
 		}
 	}
