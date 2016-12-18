@@ -39,7 +39,7 @@ type Collector struct {
 	}
 }
 
-func NewCollector(c *bk.Client, opts Opts) *Collector {
+func New(c *bk.Client, opts Opts) *Collector {
 	return &Collector{
 		Opts:         opts,
 		buildService: c.Builds,
