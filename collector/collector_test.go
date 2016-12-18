@@ -51,8 +51,6 @@ func TestCollectorWithRunningBuilds(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	res.Dump()
-
 	testCases := []struct {
 		Group    string
 		Counts   map[string]int
