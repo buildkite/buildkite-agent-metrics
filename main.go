@@ -265,18 +265,20 @@ func (r *result) addBuildAndJobMetrics(client *buildkite.Client, opts collectOpt
 					*build.ID, *build.Pipeline.Name, *build.Branch, *build.State)
 			}
 
-			if _, ok := r.pipelines[*build.Pipeline.Name]; !ok {
-				r.pipelines[*build.Pipeline.Name] = newCounts()
+			pipeline := *build.Pipeline.Name
+
+			if _, ok := r.pipelines[pipeline]; !ok {
+				r.pipelines[pipeline] = newCounts()
 			}
 
 			switch *build.State {
 			case "running":
 				r.totals[runningBuildsCount]++
-				r.pipelines[*build.Pipeline.Name][runningBuildsCount]++
+				r.pipelines[pipeline][runningBuildsCount]++
 
 			case "scheduled":
 				r.totals[scheduledBuildsCount]++
-				r.pipelines[*build.Pipeline.Name][scheduledBuildsCount]++
+				r.pipelines[pipeline][scheduledBuildsCount]++
 			}
 
 			var buildQueues = map[string]int{}
@@ -305,14 +307,17 @@ func (r *result) addBuildAndJobMetrics(client *buildkite.Client, opts collectOpt
 					case "running":
 						r.totals[runningJobsCount]++
 						r.queues[queue(job)][runningJobsCount]++
+						r.pipelines[pipeline][runningJobsCount]++
 
 					case "scheduled":
 						r.totals[scheduledJobsCount]++
 						r.queues[queue(job)][scheduledJobsCount]++
+						r.pipelines[pipeline][scheduledJobsCount]++
 					}
 
 					r.totals[unfinishedJobsCount]++
 					r.queues[queue(job)][unfinishedJobsCount]++
+					r.pipelines[pipeline][unfinishedJobsCount]++
 				}
 
 				buildQueues[queue(job)]++
