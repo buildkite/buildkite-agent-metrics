@@ -29,9 +29,10 @@ func main() {
 		orgSlug     = flag.String("org", "", "A Buildkite Organization Slug")
 		interval    = flag.Duration("interval", 0, "Update metrics every interval, rather than once")
 		history     = flag.Duration("history", time.Hour*24, "Historical data to use for finished builds")
-		debug       = flag.Bool("debug", false, "Show API debugging output")
+		debug       = flag.Bool("debug", false, "Show debug output")
 		version     = flag.Bool("version", false, "Show the version")
 		quiet       = flag.Bool("quiet", false, "Only print errors")
+		dryRun      = flag.Bool("dry-run", false, "Whether to only print metrics")
 
 		// filters
 		queue = flag.String("queue", "", "Only include a specific queue")
@@ -65,7 +66,9 @@ func main() {
 	}
 
 	client := buildkite.NewClient(config.Client())
-	buildkite.SetHttpDebug(*debug)
+	if *debug && os.Getenv("TRACE_HTTP") != "" {
+		buildkite.SetHttpDebug(*debug)
+	}
 
 	f := func() error {
 		t := time.Now()
@@ -74,6 +77,7 @@ func main() {
 			OrgSlug:    *orgSlug,
 			Historical: *history,
 			Queue:      *queue,
+			Debug:      *debug,
 		})
 		if err != nil {
 			return err
@@ -83,9 +87,11 @@ func main() {
 			dumpResults(res)
 		}
 
-		err = cloudwatchSend(res)
-		if err != nil {
-			return err
+		if !*dryRun {
+			err = cloudwatchSend(res)
+			if err != nil {
+				return err
+			}
 		}
 
 		log.Printf("Finished in %s", time.Now().Sub(t))
@@ -111,6 +117,7 @@ type collectOpts struct {
 	OrgSlug    string
 	Historical time.Duration
 	Queue      string
+	Debug      bool
 }
 
 func collectResults(client *buildkite.Client, opts collectOpts) (*result, error) {
@@ -253,8 +260,10 @@ func (r *result) addBuildAndJobMetrics(client *buildkite.Client, opts collectOpt
 
 	return currentBuilds.Pages(func(v interface{}) bool {
 		for _, build := range v.([]buildkite.Build) {
-			// log.Printf("Adding build to stats (id=%q, pipeline=%q, branch=%q, state=%q)",
-			// 	*build.ID, *build.Pipeline.Name, *build.Branch, *build.State)
+			if opts.Debug {
+				log.Printf("Adding build to stats (id=%q, pipeline=%q, branch=%q, state=%q)",
+					*build.ID, *build.Pipeline.Name, *build.Branch, *build.State)
+			}
 
 			if _, ok := r.pipelines[*build.Pipeline.Name]; !ok {
 				r.pipelines[*build.Pipeline.Name] = newCounts()
@@ -282,8 +291,10 @@ func (r *result) addBuildAndJobMetrics(client *buildkite.Client, opts collectOpt
 					state = *job.State
 				}
 
-				// log.Printf("Adding job to stats (id=%q, pipeline=%q, queue=%q, type=%q, state=%q)",
-				// 	*job.ID, *build.Pipeline.Name, queue(job), *job.Type, state)
+				if opts.Debug {
+					log.Printf("Adding job to stats (id=%q, pipeline=%q, queue=%q, type=%q, state=%q)",
+						*job.ID, *build.Pipeline.Name, queue(job), *job.Type, state)
+				}
 
 				if _, ok := r.queues[queue(job)]; !ok {
 					r.queues[queue(job)] = newCounts()
@@ -335,7 +346,6 @@ func (r *result) addAgentMetrics(client *buildkite.Client, opts collectOpts) err
 			if err != nil {
 				return nil, 0, err
 			}
-			log.Printf("Agents page %d has %d agents, next page is %d", page, len(agents), resp.NextPage)
 			return agents, resp.NextPage, err
 		},
 	}
@@ -369,8 +379,10 @@ func (r *result) addAgentMetrics(client *buildkite.Client, opts collectOpts) err
 				r.queues[queue][totalAgentCount] = 0
 			}
 
-			// log.Printf("Adding agent to stats (name=%q, queue=%q, job=%#v)",
-			// 	*agent.Name, queue, agent.Job != nil)
+			if opts.Debug {
+				log.Printf("Adding agent to stats (name=%q, queue=%q, job=%#v)",
+					*agent.Name, queue, agent.Job != nil)
+			}
 
 			if agent.Job != nil {
 				r.totals[busyAgentCount]++
@@ -422,7 +434,6 @@ func listBuildsByOrg(builds *buildkite.BuildsService, orgSlug string, opts build
 			if err != nil {
 				return nil, 0, err
 			}
-			log.Printf("Builds page %d has %d builds, next page is %d", page, len(builds), resp.NextPage)
 			return builds, resp.NextPage, err
 		},
 	}
