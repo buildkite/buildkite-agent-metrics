@@ -13,31 +13,18 @@ func newTestCollector() *Collector {
 		buildService: &testBuildService{
 			[]bk.Build{
 				{
-					Pipeline: &bk.Pipeline{
-						Name: bk.String("llamas"),
-					},
-					State: bk.String("running"),
+					Pipeline: &bk.Pipeline{Name: bk.String("llamas")},
+					State:    bk.String("running"),
 					Jobs: []*bk.Job{
-						{
-							State:           bk.String("running"),
-							AgentQueryRules: []string{"queue=default"},
-						},
-						{
-							State:           bk.String("scheduled"),
-							AgentQueryRules: []string{"queue=deploy"},
-						},
+						{State: bk.String("running"), AgentQueryRules: []string{"queue=default"}},
+						{State: bk.String("scheduled"), AgentQueryRules: []string{"queue=deploy"}},
 					},
 				},
 				{
-					Pipeline: &bk.Pipeline{
-						Name: bk.String("alpacas"),
-					},
-					State: bk.String("scheduled"),
+					Pipeline: &bk.Pipeline{Name: bk.String("alpacas")},
+					State:    bk.String("scheduled"),
 					Jobs: []*bk.Job{
-						{
-							State:           bk.String("scheduled"),
-							AgentQueryRules: []string{"queue=default"},
-						},
+						{State: bk.String("scheduled"), AgentQueryRules: []string{"queue=default"}},
 					},
 				},
 			},
