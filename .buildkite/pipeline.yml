@@ -1,10 +1,16 @@
 steps:
+  - name: ":hammer_and_wrench:"
+    command: "make test"
+    plugins:
+      - docker-compose:
+          run: "golang"
+
   - name: ":golang:"
     command: "make build"
     artifact_paths: "build/*"
     plugins:
       - docker-compose:
-          run: "build"
+          run: "golang"
 
   - name: ":lambda:"
     command: "make build-lambda"
