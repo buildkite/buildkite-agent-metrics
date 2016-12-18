@@ -5,6 +5,8 @@ steps:
       - docker-compose:
           run: "golang"
 
+  - wait
+
   - name: ":golang:"
     command: "make build"
     artifact_paths: "build/*"
