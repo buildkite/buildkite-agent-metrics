@@ -5,24 +5,24 @@ import (
 	"github.com/buildkite/buildkite-metrics/collector"
 )
 
-// Statsd sends metrics to Statsd (Datadog spec)
-type Statsd struct {
+// StatsD sends metrics to StatsD (Datadog spec)
+type StatsD struct {
 	client *statsd.Client
 }
 
-func NewStatsdClient(host string) (*Statsd, error) {
+func NewStatsDClient(host string) (*StatsD, error) {
 	c, err := statsd.NewBuffered(host, 100)
 	if err != nil {
 		return nil, err
 	}
 	// prefix every metric with the app name
 	c.Namespace = "buildkite."
-	return &Statsd{
+	return &StatsD{
 		client: c,
 	}, nil
 }
 
-func (cb *Statsd) Collect(r *collector.Result) error {
+func (cb *StatsD) Collect(r *collector.Result) error {
 	for name, value := range r.Totals {
 		if err := cb.client.Gauge(name, float64(value), []string{}, 1.0); err != nil {
 			return err

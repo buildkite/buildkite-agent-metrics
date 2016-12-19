@@ -35,7 +35,7 @@ func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 
 	var backend Backend
 	if backendOpt == "statsd" {
-		backend, err = NewStatsdClient(os.Getenv("STATSD_HOST"))
+		backend, err = NewStatsDClient(os.Getenv("STATSD_HOST"))
 		if err != nil {
 			return nil, err
 		}

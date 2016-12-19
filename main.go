@@ -30,8 +30,8 @@ func main() {
 		dryRun      = flag.Bool("dry-run", false, "Whether to only print metrics")
 
 		// backend config
-		backendOpt = flag.String("backend", "cloudwatch", "Specify the backend to send metrics to. cloudwatch, statsd")
-		statsdHost = flag.String("statsd-host", "127.0.0.1:8125", "Specify the Statsd server")
+		backendOpt = flag.String("backend", "cloudwatch", "Specify the backend to send metrics to: cloudwatch, statsd")
+		statsdHost = flag.String("statsd-host", "127.0.0.1:8125", "Specify the StatsD server")
 
 		// filters
 		queue = flag.String("queue", "", "Only include a specific queue")
@@ -59,9 +59,9 @@ func main() {
 		backend = &CloudWatchBackend{}
 	} else if lowerBackendOpt == "statsd" {
 		var err error
-		backend, err = NewStatsdClient(*statsdHost)
+		backend, err = NewStatsDClient(*statsdHost)
 		if err != nil {
-			fmt.Printf("Error starting Statsd, err: %v\n", err)
+			fmt.Printf("Error starting StatsD, err: %v\n", err)
 			os.Exit(1)
 		}
 	} else {
