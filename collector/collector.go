@@ -43,6 +43,7 @@ func New(c *bk.Client, opts Opts) *Collector {
 	return &Collector{
 		Opts:         opts,
 		buildService: c.Builds,
+		agentService: c.Agents,
 	}
 }
 
@@ -68,17 +69,6 @@ func (c *Collector) Collect() (*Result, error) {
 	log.Println("Collecting agent metrics")
 	if err := c.addAgentMetrics(res); err != nil {
 		return nil, err
-	}
-
-	if c.Opts.Queue != "" {
-		if cnt, ok := res.Queues[c.Opts.Queue]; ok {
-			return &Result{
-				Queues: map[string]map[string]int{
-					c.Opts.Queue: cnt,
-				},
-			}, nil
-		}
-		return &Result{}, nil
 	}
 
 	return res, nil
@@ -128,7 +118,7 @@ func queue(j *bk.Job) string {
 	return "default"
 }
 
-func uniqueQueues(builds []bk.Build) []string {
+func getBuildQueues(builds ...bk.Build) []string {
 	queueMap := map[string]struct{}{}
 	for _, b := range builds {
 		for _, j := range b.Jobs {
@@ -153,16 +143,37 @@ func (c *Collector) addHistoricalMetrics(r *Result) error {
 	})
 
 	return finishedBuilds.Pages(func(v interface{}) bool {
-		for _, queue := range uniqueQueues(v.([]bk.Build)) {
-			if _, ok := r.Queues[queue]; !ok {
-				r.Queues[queue] = newCounts()
-			}
-		}
 		for _, build := range v.([]bk.Build) {
+			queues := c.filterQueues(getBuildQueues(v.([]bk.Build)...)...)
+
+			if len(queues) == 0 {
+				log.Printf("Skipping build, no jobs match queue filter %v", c.Queue)
+				continue
+			}
+
+			for _, queue := range queues {
+				if _, ok := r.Queues[queue]; !ok {
+					r.Queues[queue] = newCounts()
+				}
+			}
+
 			r.Pipelines[*build.Pipeline.Name] = newCounts()
 		}
 		return true
 	})
+}
+
+func (c *Collector) filterQueues(queues ...string) []string {
+	if c.Queue == "" {
+		return queues
+	}
+	var filtered = []string{}
+	for _, queue := range queues {
+		if queue == c.Queue {
+			filtered = append(filtered, queue)
+		}
+	}
+	return filtered
 }
 
 func (c *Collector) addBuildAndJobMetrics(r *Result) error {
@@ -176,8 +187,13 @@ func (c *Collector) addBuildAndJobMetrics(r *Result) error {
 	return currentBuilds.Pages(func(v interface{}) bool {
 		for _, build := range v.([]bk.Build) {
 			if c.Opts.Debug {
-				log.Printf("Adding build to stats (id=%q, pipeline=%q, branch=%q, state=%q)",
+				log.Printf("Processing build (id=%q, pipeline=%q, branch=%q, state=%q)",
 					*build.ID, *build.Pipeline.Name, *build.Branch, *build.State)
+			}
+
+			if filtered := c.filterQueues(getBuildQueues(build)...); len(filtered) == 0 {
+				log.Printf("Skipping build, no jobs match queue filter %v", c.Queue)
+				continue
 			}
 
 			pipeline := *build.Pipeline.Name
@@ -211,6 +227,11 @@ func (c *Collector) addBuildAndJobMetrics(r *Result) error {
 				if c.Opts.Debug {
 					log.Printf("Adding job to stats (id=%q, pipeline=%q, queue=%q, type=%q, state=%q)",
 						*job.ID, *build.Pipeline.Name, queue(job), *job.Type, state)
+				}
+
+				if filtered := c.filterQueues(queue(job)); len(filtered) == 0 {
+					log.Printf("Skipping job, doesn't match queue filter %v", c.Queue)
+					continue
 				}
 
 				if _, ok := r.Queues[queue(job)]; !ok {
@@ -275,9 +296,11 @@ func (c *Collector) addAgentMetrics(r *Result) error {
 	r.Totals[TotalAgentCount] = 0
 
 	for queue := range r.Queues {
-		r.Queues[queue][BusyAgentCount] = 0
-		r.Queues[queue][IdleAgentCount] = 0
-		r.Queues[queue][TotalAgentCount] = 0
+		if filtered := c.filterQueues(queue); len(filtered) > 0 {
+			r.Queues[queue][BusyAgentCount] = 0
+			r.Queues[queue][IdleAgentCount] = 0
+			r.Queues[queue][TotalAgentCount] = 0
+		}
 	}
 
 	err := p.Pages(func(v interface{}) bool {
@@ -290,6 +313,11 @@ func (c *Collector) addAgentMetrics(r *Result) error {
 					queue = match[1]
 					break
 				}
+			}
+
+			if filtered := c.filterQueues(queue); len(filtered) == 0 {
+				log.Printf("Skipping agent, doesn't match queue filter %v", c.Queue)
+				continue
 			}
 
 			if _, ok := r.Queues[queue]; !ok {

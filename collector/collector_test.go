@@ -43,7 +43,7 @@ func newTestCollector() *Collector {
 	}
 }
 
-func TestCollectorWithRunningBuilds(t *testing.T) {
+func TestCollectorWithRunningBuildsForAllQueues(t *testing.T) {
 	c := newTestCollector()
 
 	res, err := c.Collect()
@@ -101,6 +101,82 @@ func TestCollectorWithRunningBuilds(t *testing.T) {
 		{"Pipeline.alpacas", res.Pipelines["alpacas"], TotalAgentCount, 0},
 		{"Pipeline.alpacas", res.Pipelines["alpacas"], BusyAgentCount, 0},
 		{"Pipeline.alpacas", res.Pipelines["alpacas"], IdleAgentCount, 0},
+	}
+
+	for queue, _ := range res.Queues {
+		switch queue {
+		case "default", "deploy":
+			continue
+		default:
+			t.Fatalf("Unexpected queue %s", queue)
+		}
+	}
+
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%s/%s", tc.Group, tc.Key), func(t *testing.T) {
+			if tc.Counts[tc.Key] != tc.Expected {
+				t.Fatalf("%s was %d; want %d", tc.Key, tc.Counts[tc.Key], tc.Expected)
+			}
+		})
+	}
+}
+
+func TestCollectorWithRunningBuildsForASingleQueue(t *testing.T) {
+	c := newTestCollector()
+	c.Queue = "default"
+
+	res, err := c.Collect()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	testCases := []struct {
+		Group    string
+		Counts   map[string]int
+		Key      string
+		Expected int
+	}{
+		{"Totals", res.Totals, RunningBuildsCount, 1},
+		{"Totals", res.Totals, ScheduledBuildsCount, 1},
+		{"Totals", res.Totals, RunningJobsCount, 1},
+		{"Totals", res.Totals, ScheduledJobsCount, 1},
+		{"Totals", res.Totals, UnfinishedJobsCount, 2},
+		{"Totals", res.Totals, TotalAgentCount, 1},
+		{"Totals", res.Totals, BusyAgentCount, 1},
+		{"Totals", res.Totals, IdleAgentCount, 0},
+
+		{"Queue.default", res.Queues["default"], RunningBuildsCount, 1},
+		{"Queue.default", res.Queues["default"], ScheduledBuildsCount, 1},
+		{"Queue.default", res.Queues["default"], RunningJobsCount, 1},
+		{"Queue.default", res.Queues["default"], ScheduledJobsCount, 1},
+		{"Queue.default", res.Queues["default"], UnfinishedJobsCount, 2},
+		{"Queue.default", res.Queues["default"], TotalAgentCount, 1},
+		{"Queue.default", res.Queues["default"], BusyAgentCount, 1},
+		{"Queue.default", res.Queues["default"], IdleAgentCount, 0},
+
+		{"Pipeline.llamas", res.Pipelines["llamas"], RunningBuildsCount, 1},
+		{"Pipeline.llamas", res.Pipelines["llamas"], ScheduledBuildsCount, 0},
+		{"Pipeline.llamas", res.Pipelines["llamas"], RunningJobsCount, 1},
+		{"Pipeline.llamas", res.Pipelines["llamas"], ScheduledJobsCount, 0},
+		{"Pipeline.llamas", res.Pipelines["llamas"], UnfinishedJobsCount, 1},
+		{"Pipeline.llamas", res.Pipelines["llamas"], TotalAgentCount, 0},
+		{"Pipeline.llamas", res.Pipelines["llamas"], BusyAgentCount, 0},
+		{"Pipeline.llamas", res.Pipelines["llamas"], IdleAgentCount, 0},
+
+		{"Pipeline.alpacas", res.Pipelines["alpacas"], RunningBuildsCount, 0},
+		{"Pipeline.alpacas", res.Pipelines["alpacas"], ScheduledBuildsCount, 1},
+		{"Pipeline.alpacas", res.Pipelines["alpacas"], RunningJobsCount, 0},
+		{"Pipeline.alpacas", res.Pipelines["alpacas"], ScheduledJobsCount, 1},
+		{"Pipeline.alpacas", res.Pipelines["alpacas"], UnfinishedJobsCount, 1},
+		{"Pipeline.alpacas", res.Pipelines["alpacas"], TotalAgentCount, 0},
+		{"Pipeline.alpacas", res.Pipelines["alpacas"], BusyAgentCount, 0},
+		{"Pipeline.alpacas", res.Pipelines["alpacas"], IdleAgentCount, 0},
+	}
+
+	for queue, _ := range res.Queues {
+		if queue != "default" {
+			t.Fatalf("Unexpected queue %s", queue)
+		}
 	}
 
 	for _, tc := range testCases {
