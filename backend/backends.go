@@ -1,4 +1,4 @@
-package main
+package backend
 
 import "github.com/buildkite/buildkite-metrics/collector"
 

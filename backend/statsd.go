@@ -1,4 +1,4 @@
-package main
+package backend
 
 import (
 	"github.com/DataDog/datadog-go/statsd"
@@ -10,7 +10,7 @@ type StatsD struct {
 	client *statsd.Client
 }
 
-func NewStatsDClient(host string) (*StatsD, error) {
+func NewStatsDBackend(host string) (*StatsD, error) {
 	c, err := statsd.NewBuffered(host, 100)
 	if err != nil {
 		return nil, err

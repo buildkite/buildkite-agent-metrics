@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/buildkite/buildkite-metrics/backend"
 	"github.com/buildkite/buildkite-metrics/collector"
 	"github.com/eawsy/aws-lambda-go/service/lambda/runtime"
 	"gopkg.in/buildkite/go-buildkite.v2/buildkite"
@@ -33,14 +34,14 @@ func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 		Historical: time.Hour * 24,
 	})
 
-	var backend Backend
+	var bk backend.Backend
 	if backendOpt == "statsd" {
-		backend, err = NewStatsDClient(os.Getenv("STATSD_HOST"))
+		bk, err = backend.NewStatsDBackend(os.Getenv("STATSD_HOST"))
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		backend = &CloudWatchBackend{}
+		bk = &backend.CloudWatchBackend{}
 	}
 
 	res, err := col.Collect()
@@ -50,7 +51,7 @@ func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 
 	res.Dump()
 
-	err = backend.Collect(res)
+	err = bk.Collect(res)
 	if err != nil {
 		return nil, err
 	}

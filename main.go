@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/buildkite/buildkite-metrics/backend"
 	"github.com/buildkite/buildkite-metrics/collector"
 	"gopkg.in/buildkite/go-buildkite.v2/buildkite"
 )
@@ -16,7 +17,7 @@ import (
 // Version is passed in via ldflags
 var Version string
 
-var backend Backend
+var bk backend.Backend
 
 func main() {
 	var (
@@ -56,10 +57,10 @@ func main() {
 
 	lowerBackendOpt := strings.ToLower(*backendOpt)
 	if lowerBackendOpt == "cloudwatch" {
-		backend = &CloudWatchBackend{}
+		bk = backend.NewCloudWatchBackend()
 	} else if lowerBackendOpt == "statsd" {
 		var err error
-		backend, err = NewStatsDClient(*statsdHost)
+		bk, err = backend.NewStatsDBackend(*statsdHost)
 		if err != nil {
 			fmt.Printf("Error starting StatsD, err: %v\n", err)
 			os.Exit(1)
@@ -104,7 +105,7 @@ func main() {
 		}
 
 		if !*dryRun {
-			err = backend.Collect(res)
+			err = bk.Collect(res)
 			if err != nil {
 				return err
 			}

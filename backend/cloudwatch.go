@@ -1,4 +1,4 @@
-package main
+package backend
 
 import (
 	"log"
@@ -11,6 +11,10 @@ import (
 
 // CloudWatchBackend sends metrics to AWS CloudWatch
 type CloudWatchBackend struct {
+}
+
+func NewCloudWatchBackend() *CloudWatchBackend {
+	return &CloudWatchBackend{}
 }
 
 func (cb *CloudWatchBackend) Collect(r *collector.Result) error {

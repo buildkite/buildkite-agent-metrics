@@ -43,6 +43,7 @@ func New(c *bk.Client, opts Opts) *Collector {
 	return &Collector{
 		Opts:         opts,
 		buildService: c.Builds,
+		agentService: c.Agents,
 	}
 }
 
