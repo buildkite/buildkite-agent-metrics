@@ -1,6 +1,9 @@
 package main
 
-import "github.com/DataDog/datadog-go/statsd"
+import (
+	"github.com/DataDog/datadog-go/statsd"
+	"github.com/buildkite/buildkite-metrics/collector"
+)
 
 // Statsd sends metrics to Statsd (Datadog spec)
 type Statsd struct {
@@ -19,14 +22,14 @@ func NewStatsdClient(host string) (*Statsd, error) {
 	}, nil
 }
 
-func (cb *Statsd) Collect(r *result) error {
-	for name, value := range r.totals {
+func (cb *Statsd) Collect(r *collector.Result) error {
+	for name, value := range r.Totals {
 		if err := cb.client.Gauge(name, float64(value), []string{}, 1.0); err != nil {
 			return err
 		}
 	}
 
-	for queue, counts := range r.queues {
+	for queue, counts := range r.Queues {
 		for name, value := range counts {
 			if err := cb.client.Gauge("queues."+name, float64(value), []string{"queue:" + queue}, 1.0); err != nil {
 				return err
@@ -34,7 +37,7 @@ func (cb *Statsd) Collect(r *result) error {
 		}
 	}
 
-	for pipeline, counts := range r.pipelines {
+	for pipeline, counts := range r.Pipelines {
 		for name, value := range counts {
 			if err := cb.client.Gauge("pipelines."+name, float64(value), []string{"pipeline:" + pipeline}, 1.0); err != nil {
 				return err
