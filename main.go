@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/buildkite/buildkite-metrics/collector"
@@ -14,6 +15,8 @@ import (
 
 // Version is passed in via ldflags
 var Version string
+
+var backend Backend
 
 func main() {
 	var (
@@ -25,6 +28,10 @@ func main() {
 		version     = flag.Bool("version", false, "Show the version")
 		quiet       = flag.Bool("quiet", false, "Only print errors")
 		dryRun      = flag.Bool("dry-run", false, "Whether to only print metrics")
+
+		// backend config
+		backendOpt = flag.String("backend", "cloudwatch", "Specify the backend to send metrics to. cloudwatch, statsd")
+		statsdHost = flag.String("statsd-host", "127.0.0.1:8125", "Specify the Statsd server")
 
 		// filters
 		queue = flag.String("queue", "", "Only include a specific queue")
@@ -44,6 +51,21 @@ func main() {
 
 	if *orgSlug == "" {
 		fmt.Println("Must provide a value for -org")
+		os.Exit(1)
+	}
+
+	lowerBackendOpt := strings.ToLower(*backendOpt)
+	if lowerBackendOpt == "cloudwatch" {
+		backend = &CloudWatchBackend{}
+	} else if lowerBackendOpt == "statsd" {
+		var err error
+		backend, err = NewStatsdClient(*statsdHost)
+		if err != nil {
+			fmt.Printf("Error starting Statsd, err: %v\n", err)
+			os.Exit(1)
+		}
+	} else {
+		fmt.Println("Must provide a supported backend: cloudwatch, statsd")
 		os.Exit(1)
 	}
 
@@ -82,7 +104,7 @@ func main() {
 		}
 
 		if !*dryRun {
-			err = cloudwatchSend(res)
+			err = backend.Collect(res)
 			if err != nil {
 				return err
 			}

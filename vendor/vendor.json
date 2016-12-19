@@ -3,11 +3,23 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "f2M9re5MrJn/Mr7nadVlM/a0OP4=",
+			"path": "github.com/DataDog/datadog-go",
+			"revision": "6ea09a7540648568ce58b3d00eb1da133c2dcdd7",
+			"revisionTime": "2016-12-13T18:18:37Z"
+		},
+		{
+			"checksumSHA1": "ckEen3vhU+2+XyPlvdop+BLNzQk=",
+			"path": "github.com/DataDog/datadog-go/statsd",
+			"revision": "6ea09a7540648568ce58b3d00eb1da133c2dcdd7",
+			"revisionTime": "2016-12-13T18:18:37Z"
+		},
+		{
 			"checksumSHA1": "/j5eaUxSjyT802BWlCZ8eWdxJZQ=",
 			"path": "github.com/eawsy/aws-lambda-go/service/lambda/runtime",
 			"revision": "39dc993a238c10d77d901357b39831d04468aa40",
 			"revisionTime": "2016-11-16T16:19:46Z"
 		}
 	],
-	"rootPath": "github.com/buildkite/buildkite-metrics"
+	"rootPath": "github.com/callumj/buildkite-metrics"
 }

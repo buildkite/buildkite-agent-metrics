@@ -18,6 +18,7 @@ func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 
 	org := os.Getenv("BUILDKITE_ORG")
 	token := os.Getenv("BUILDKITE_TOKEN")
+	backendOpt := os.Getenv("BUILDKITE_BACKEND")
 
 	config, err := buildkite.NewTokenConfig(token, false)
 	if err != nil {
@@ -32,6 +33,16 @@ func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 		Historical: time.Hour * 24,
 	})
 
+	var backend Backend
+	if backendOpt == "statsd" {
+		backend, err = NewStatsdClient(os.Getenv("STATSD_HOST"))
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		backend = &CloudWatchBackend{}
+	}
+
 	res, err := col.Collect()
 	if err != nil {
 		return nil, err
@@ -39,7 +50,7 @@ func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 
 	res.Dump()
 
-	err = cloudwatchSend(res)
+	err = backend.Collect(res)
 	if err != nil {
 		return nil, err
 	}

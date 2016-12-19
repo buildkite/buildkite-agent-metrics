@@ -9,7 +9,11 @@ import (
 	"github.com/buildkite/buildkite-metrics/collector"
 )
 
-func cloudwatchSend(r *collector.Result) error {
+// CloudWatchBackend sends metrics to AWS CloudWatch
+type CloudWatchBackend struct {
+}
+
+func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 	svc := cloudwatch.New(session.New())
 
 	metrics := []*cloudwatch.MetricDatum{}
