@@ -33,6 +33,7 @@ func main() {
 		// backend config
 		backendOpt = flag.String("backend", "cloudwatch", "Specify the backend to send metrics to: cloudwatch, statsd")
 		statsdHost = flag.String("statsd-host", "127.0.0.1:8125", "Specify the StatsD server")
+		statsdTags = flag.Bool("statsd-tags", false, "Whether your StatsD server supports tagging like Datadog")
 
 		// filters
 		queue = flag.String("queue", "", "Only include a specific queue")
@@ -60,7 +61,7 @@ func main() {
 		bk = backend.NewCloudWatchBackend()
 	} else if lowerBackendOpt == "statsd" {
 		var err error
-		bk, err = backend.NewStatsDBackend(*statsdHost)
+		bk, err = backend.NewStatsDBackend(*statsdHost, *statsdTags)
 		if err != nil {
 			fmt.Printf("Error starting StatsD, err: %v\n", err)
 			os.Exit(1)

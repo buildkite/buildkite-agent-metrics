@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/buildkite/buildkite-metrics/backend"
@@ -36,7 +37,7 @@ func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 
 	var bk backend.Backend
 	if backendOpt == "statsd" {
-		bk, err = backend.NewStatsDBackend(os.Getenv("STATSD_HOST"))
+		bk, err = backend.NewStatsDBackend(os.Getenv("STATSD_HOST"), strings.ToLower(os.Getenv("STATSD_TAGS")) == "true")
 		if err != nil {
 			return nil, err
 		}
