@@ -1,6 +1,6 @@
 # Buildkite Metrics
 
-A command-line tool for collecting [Buildkite](https://buildkite.com/) build/job statistics for external metrics systems. Currently [AWS Cloudwatch](http://aws.amazon.com/cloudwatch/) is supported.
+A command-line tool for collecting [Buildkite](https://buildkite.com/) build/job statistics for external metrics systems. Currently [AWS Cloudwatch](http://aws.amazon.com/cloudwatch/) and [StatsD](https://github.com/etsy/statsd) are supported.
 
 [![Build status](https://badge.buildkite.com/80d04fcde3a306bef44e77aadb1f1ffdc20ebb3c8f1f585a60.svg)](https://buildkite.com/buildkite/buildkite-metrics)
 
@@ -11,6 +11,13 @@ Either download the latest binary from [buildkite-metrics/buildkite-metrics-Linu
 ```bash
 go get github.com/buildkite/buildkite-metrics
 ```
+
+### Backends
+
+By default metrics will be submitted to CloudWatch but the backend can be switched to StatsD using the command-line argument `-backend statsd`. The StatsD backend supports the following arguments
+
+* `-statsd-host HOST`: The StatsD host and port (defaults to `127.0.0.1:8125`).
+* `-statsd-tags`: Some StatsD servers like the agent provided by DataDog support tags. If specified, metrics will be tagged by `queue` and `pipeline` otherwise metrics will include the queue/pipeline name in the metric. Only enable this option if you know your StatsD server supports tags.
 
 ## Development
 
