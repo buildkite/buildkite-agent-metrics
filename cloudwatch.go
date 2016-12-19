@@ -6,21 +6,22 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
+	"github.com/buildkite/buildkite-metrics/collector"
 )
 
-func cloudwatchSend(r *result) error {
+func cloudwatchSend(r *collector.Result) error {
 	svc := cloudwatch.New(session.New())
 
 	metrics := []*cloudwatch.MetricDatum{}
-	metrics = append(metrics, cloudwatchMetrics(r.totals, nil)...)
+	metrics = append(metrics, cloudwatchMetrics(r.Totals, nil)...)
 
-	for name, c := range r.queues {
+	for name, c := range r.Queues {
 		metrics = append(metrics, cloudwatchMetrics(c, []*cloudwatch.Dimension{
 			{Name: aws.String("Queue"), Value: aws.String(name)},
 		})...)
 	}
 
-	for name, c := range r.pipelines {
+	for name, c := range r.Pipelines {
 		metrics = append(metrics, cloudwatchMetrics(c, []*cloudwatch.Dimension{
 			{Name: aws.String("Pipeline"), Value: aws.String(name)},
 		})...)
@@ -42,10 +43,10 @@ func cloudwatchSend(r *result) error {
 	return nil
 }
 
-func cloudwatchMetrics(c counts, dimensions []*cloudwatch.Dimension) []*cloudwatch.MetricDatum {
+func cloudwatchMetrics(counts map[string]int, dimensions []*cloudwatch.Dimension) []*cloudwatch.MetricDatum {
 	m := []*cloudwatch.MetricDatum{}
 
-	for k, v := range c {
+	for k, v := range counts {
 		m = append(m, &cloudwatch.MetricDatum{
 			MetricName: aws.String(k),
 			Dimensions: dimensions,

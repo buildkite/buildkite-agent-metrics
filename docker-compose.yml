@@ -1,5 +1,5 @@
-build:
-  image: golang:1.6
+golang:
+  image: golang:1.8
   command: "make clean build"
   volumes:
     - .:/go/src/github.com/buildkite/buildkite-metrics

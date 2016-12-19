@@ -5,6 +5,9 @@ BIN=build/buildkite-metrics-$(shell uname -s)-$(shell uname -m)-$(VERSION)
 LAMBDA_ZIP=build/buildkite-metrics-$(VERSION)-lambda.zip
 SRC=$(shell find . -name '*.go')
 
+test:
+	go test -v ./collector
+
 build: $(BIN)
 
 build-lambda: $(LAMBDA_ZIP)

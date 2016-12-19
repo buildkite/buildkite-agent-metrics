@@ -7,6 +7,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/buildkite/buildkite-metrics/collector"
 	"github.com/eawsy/aws-lambda-go/service/lambda/runtime"
 	"gopkg.in/buildkite/go-buildkite.v2/buildkite"
 )
@@ -26,15 +27,17 @@ func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 	client := buildkite.NewClient(config.Client())
 	t := time.Now()
 
-	res, err := collectResults(client, collectOpts{
+	col := collector.New(client, collector.Opts{
 		OrgSlug:    org,
 		Historical: time.Hour * 24,
 	})
+
+	res, err := col.Collect()
 	if err != nil {
 		return nil, err
 	}
 
-	dumpResults(res)
+	res.Dump()
 
 	err = cloudwatchSend(res)
 	if err != nil {
