@@ -21,6 +21,7 @@ func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 	org := os.Getenv("BUILDKITE_ORG")
 	token := os.Getenv("BUILDKITE_TOKEN")
 	backendOpt := os.Getenv("BUILDKITE_BACKEND")
+	queue := os.Getenv("BUILDKITE_QUEUE")
 
 	config, err := buildkite.NewTokenConfig(token, false)
 	if err != nil {
