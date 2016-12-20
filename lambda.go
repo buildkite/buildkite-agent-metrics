@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"log"
 	"os"
@@ -15,12 +14,10 @@ import (
 )
 
 func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
-	output := &bytes.Buffer{}
-	log.SetOutput(output)
-
 	org := os.Getenv("BUILDKITE_ORG")
 	token := os.Getenv("BUILDKITE_TOKEN")
 	backendOpt := os.Getenv("BUILDKITE_BACKEND")
+	queue := os.Getenv("BUILDKITE_QUEUE")
 
 	config, err := buildkite.NewTokenConfig(token, false)
 	if err != nil {
@@ -34,6 +31,10 @@ func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 		OrgSlug:    org,
 		Historical: time.Hour * 24,
 	})
+
+	if queue != "" {
+		col.Queue = queue
+	}
 
 	var bk backend.Backend
 	if backendOpt == "statsd" {
@@ -58,7 +59,7 @@ func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 	}
 
 	log.Printf("Finished in %s", time.Now().Sub(t))
-	return output.String(), nil
+	return "", nil
 }
 
 func init() {
