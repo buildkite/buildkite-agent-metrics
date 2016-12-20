@@ -1,7 +1,6 @@
 package main
 
 import (
-	"bytes"
 	"encoding/json"
 	"log"
 	"os"
@@ -15,9 +14,6 @@ import (
 )
 
 func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
-	output := &bytes.Buffer{}
-	log.SetOutput(output)
-
 	org := os.Getenv("BUILDKITE_ORG")
 	token := os.Getenv("BUILDKITE_TOKEN")
 	backendOpt := os.Getenv("BUILDKITE_BACKEND")
@@ -63,7 +59,7 @@ func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 	}
 
 	log.Printf("Finished in %s", time.Now().Sub(t))
-	return output.String(), nil
+	return "", nil
 }
 
 func init() {
