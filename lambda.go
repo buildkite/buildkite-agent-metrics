@@ -36,6 +36,10 @@ func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 		Historical: time.Hour * 24,
 	})
 
+	if queue != "" {
+		col.Queue = queue
+	}
+
 	var bk backend.Backend
 	if backendOpt == "statsd" {
 		bk, err = backend.NewStatsDBackend(os.Getenv("STATSD_HOST"), strings.ToLower(os.Getenv("STATSD_TAGS")) == "true")
