@@ -22,5 +22,9 @@ steps:
 
   - name: "Release to :s3:"
     command: ".buildkite/upload.sh"
+    branches: "master,publish-lambda-to-all-regions"
     agents:
       queue: "deploy"
+    concurrency: 1
+    concurrency_group: 'release_to_s3'
+
