@@ -40,7 +40,7 @@ for region in "${EXTRA_REGIONS[@]}" ; do
 		echo "Creating s3://${bucket}/"
 		aws s3 mb "s3://${bucket}/" --region "${region}"
 	fi
-	aws --region "${region}" s3 sync --include "*.zip" --acl public-read "s3://${BASE_BUCKET}/" "s3://${bucket}/"
+	aws --region "${region}" s3 sync --exclude "*" --include "*.zip" --acl public-read "s3://${BASE_BUCKET}/" "s3://${bucket}/"
 	for f in build/* ; do
 		echo "https://${bucket}.s3-${region}.amazonaws.com/$f"
 	done
