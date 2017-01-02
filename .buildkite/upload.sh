@@ -36,6 +36,10 @@ done
 for region in "${EXTRA_REGIONS[@]}" ; do
 	bucket="${BASE_BUCKET}-${region}"
 	echo "+++ :s3: Copying files to ${bucket}"
+	if ! aws s3api head-bucket --bucket "${bucket}" --region "${region}" &> /dev/null ; then
+		echo "Creating s3://${bucket}/"
+		aws s3 mb "s3://${bucket}/" --region "${region}"
+	fi
 	aws --region "${region}" s3 sync --acl public-read "s3://${BASE_BUCKET}/" "s3://${bucket}/"
 	for f in build/* ; do
 		echo "https://${bucket}.s3-${region}.amazonaws.com/$f"
