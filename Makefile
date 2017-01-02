@@ -25,6 +25,3 @@ $(LAMBDA_ZIP): $(SRC)
 	docker run --rm -v $(PWD):$(GODIR) -w $(GODIR) eawsy/aws-lambda-go
 	-mkdir -p build/
 	mv handler.zip $(LAMBDA_ZIP)
-
-upload:
-	aws s3 sync --acl public-read build s3://buildkite-metrics/
