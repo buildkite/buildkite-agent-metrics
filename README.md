@@ -69,6 +69,7 @@ It's entrypoint is `handler.handle`, it requires a `python2.7` environment and m
  - BUILDKITE_TOKEN
  - BUILDKITE_BACKEND
  - BUILDKITE_QUEUE
+ - BUILDKITE_QUIET
 
 Checkout https://github.com/buildkite/elastic-ci-stack-for-aws/blob/master/templates/metrics.yml for examples of usage.
 

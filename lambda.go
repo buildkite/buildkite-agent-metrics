@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"io/ioutil"
 	"log"
 	"os"
 	"strings"
@@ -18,6 +19,11 @@ func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 	token := os.Getenv("BUILDKITE_TOKEN")
 	backendOpt := os.Getenv("BUILDKITE_BACKEND")
 	queue := os.Getenv("BUILDKITE_QUEUE")
+	quiet := os.Getenv("BUILDKITE_QUIET")
+
+	if quiet == "1" || quiet == "false" {
+		log.SetOutput(ioutil.Discard)
+	}
 
 	config, err := buildkite.NewTokenConfig(token, false)
 	if err != nil {
