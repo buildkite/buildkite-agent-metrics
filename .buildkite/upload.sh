@@ -47,4 +47,5 @@ for region in "${EXTRA_REGIONS[@]}" ; do
 	done
 done
 
-
+echo "+++ :s3: Uploading binary to s3://${BASE_BUCKET}"
+aws s3 cp --acl public-read build/buildkite-metrics-Linux-x86_64* "s3://${BASE_BUCKET}//buildkite-metrics-Linux-x86_64"
