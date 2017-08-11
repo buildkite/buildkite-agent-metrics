@@ -1,6 +1,21 @@
 #!/bin/bash
 set -eu
 
+is_tag_build() {
+   [[ "$BUILDKITE_TAG" = "$BUILDKITE_BRANCH" ]]
+}
+
+is_latest_tag() {
+   [[ "$BUILDKITE_TAG" = $(git describe --abbrev=0 --tags --match 'v*') ]]
+}
+
+git fetch --tags
+
+if ! is_latest_tag || ! is_tag_build ; then
+  echo "Skipping publishing latest, '$BUILDKITE_TAG' doesn't match '$(git describe origin/master --tags --match='v*')'"
+  exit 0
+fi
+
 export AWS_DEFAULT_REGION=us-east-1
 export AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-$SANDBOX_AWS_ACCESS_KEY_ID}
 export AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-$SANDBOX_AWS_SECRET_ACCESS_KEY}
