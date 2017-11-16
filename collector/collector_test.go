@@ -27,6 +27,13 @@ func newTestCollector() *Collector {
 						{State: bk.String("scheduled"), AgentQueryRules: []string{"queue=default"}},
 					},
 				},
+				{
+					Pipeline: &bk.Pipeline{Name: bk.String("vicuñas")},
+					State:    bk.String("scheduled"),
+					Jobs: []*bk.Job{
+						{State: bk.String("scheduled"), AgentQueryRules: []string{"queue=default"}},
+					},
+				},
 			},
 		},
 		agentService: &testAgentService{
@@ -58,19 +65,19 @@ func TestCollectorWithRunningBuildsForAllQueues(t *testing.T) {
 		Expected int
 	}{
 		{"Totals", res.Totals, RunningBuildsCount, 1},
-		{"Totals", res.Totals, ScheduledBuildsCount, 1},
+		{"Totals", res.Totals, ScheduledBuildsCount, 2},
 		{"Totals", res.Totals, RunningJobsCount, 1},
-		{"Totals", res.Totals, ScheduledJobsCount, 2},
-		{"Totals", res.Totals, UnfinishedJobsCount, 3},
+		{"Totals", res.Totals, ScheduledJobsCount, 3},
+		{"Totals", res.Totals, UnfinishedJobsCount, 4},
 		{"Totals", res.Totals, TotalAgentCount, 1},
 		{"Totals", res.Totals, BusyAgentCount, 1},
 		{"Totals", res.Totals, IdleAgentCount, 0},
 
 		{"Queue.default", res.Queues["default"], RunningBuildsCount, 1},
-		{"Queue.default", res.Queues["default"], ScheduledBuildsCount, 1},
+		{"Queue.default", res.Queues["default"], ScheduledBuildsCount, 2},
 		{"Queue.default", res.Queues["default"], RunningJobsCount, 1},
-		{"Queue.default", res.Queues["default"], ScheduledJobsCount, 1},
-		{"Queue.default", res.Queues["default"], UnfinishedJobsCount, 2},
+		{"Queue.default", res.Queues["default"], ScheduledJobsCount, 2},
+		{"Queue.default", res.Queues["default"], UnfinishedJobsCount, 3},
 		{"Queue.default", res.Queues["default"], TotalAgentCount, 1},
 		{"Queue.default", res.Queues["default"], BusyAgentCount, 1},
 		{"Queue.default", res.Queues["default"], IdleAgentCount, 0},
@@ -101,6 +108,15 @@ func TestCollectorWithRunningBuildsForAllQueues(t *testing.T) {
 		{"Pipeline.alpacas", res.Pipelines["alpacas"], TotalAgentCount, 0},
 		{"Pipeline.alpacas", res.Pipelines["alpacas"], BusyAgentCount, 0},
 		{"Pipeline.alpacas", res.Pipelines["alpacas"], IdleAgentCount, 0},
+
+		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], RunningBuildsCount, 0},
+		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], ScheduledBuildsCount, 1},
+		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], RunningJobsCount, 0},
+		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], ScheduledJobsCount, 1},
+		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], UnfinishedJobsCount, 1},
+		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], TotalAgentCount, 0},
+		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], BusyAgentCount, 0},
+		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], IdleAgentCount, 0},
 	}
 
 	for queue, _ := range res.Queues {
@@ -137,19 +153,19 @@ func TestCollectorWithRunningBuildsForASingleQueue(t *testing.T) {
 		Expected int
 	}{
 		{"Totals", res.Totals, RunningBuildsCount, 1},
-		{"Totals", res.Totals, ScheduledBuildsCount, 1},
+		{"Totals", res.Totals, ScheduledBuildsCount, 2},
 		{"Totals", res.Totals, RunningJobsCount, 1},
-		{"Totals", res.Totals, ScheduledJobsCount, 1},
-		{"Totals", res.Totals, UnfinishedJobsCount, 2},
+		{"Totals", res.Totals, ScheduledJobsCount, 2},
+		{"Totals", res.Totals, UnfinishedJobsCount, 3},
 		{"Totals", res.Totals, TotalAgentCount, 1},
 		{"Totals", res.Totals, BusyAgentCount, 1},
 		{"Totals", res.Totals, IdleAgentCount, 0},
 
 		{"Queue.default", res.Queues["default"], RunningBuildsCount, 1},
-		{"Queue.default", res.Queues["default"], ScheduledBuildsCount, 1},
+		{"Queue.default", res.Queues["default"], ScheduledBuildsCount, 2},
 		{"Queue.default", res.Queues["default"], RunningJobsCount, 1},
-		{"Queue.default", res.Queues["default"], ScheduledJobsCount, 1},
-		{"Queue.default", res.Queues["default"], UnfinishedJobsCount, 2},
+		{"Queue.default", res.Queues["default"], ScheduledJobsCount, 2},
+		{"Queue.default", res.Queues["default"], UnfinishedJobsCount, 3},
 		{"Queue.default", res.Queues["default"], TotalAgentCount, 1},
 		{"Queue.default", res.Queues["default"], BusyAgentCount, 1},
 		{"Queue.default", res.Queues["default"], IdleAgentCount, 0},
@@ -171,6 +187,15 @@ func TestCollectorWithRunningBuildsForASingleQueue(t *testing.T) {
 		{"Pipeline.alpacas", res.Pipelines["alpacas"], TotalAgentCount, 0},
 		{"Pipeline.alpacas", res.Pipelines["alpacas"], BusyAgentCount, 0},
 		{"Pipeline.alpacas", res.Pipelines["alpacas"], IdleAgentCount, 0},
+
+		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], RunningBuildsCount, 0},
+		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], ScheduledBuildsCount, 1},
+		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], RunningJobsCount, 0},
+		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], ScheduledJobsCount, 1},
+		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], UnfinishedJobsCount, 1},
+		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], TotalAgentCount, 0},
+		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], BusyAgentCount, 0},
+		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], IdleAgentCount, 0},
 	}
 
 	for queue, _ := range res.Queues {

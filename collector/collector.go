@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"time"
 
+	"golang.org/x/net/idna"
 	bk "gopkg.in/buildkite/go-buildkite.v2/buildkite"
 )
 
@@ -196,7 +197,12 @@ func (c *Collector) addBuildAndJobMetrics(r *Result) error {
 				continue
 			}
 
-			pipeline := *build.Pipeline.Name
+			pipeline, ucErr := idna.ToASCII(*build.Pipeline.Name)
+
+			if ucErr != nil {
+				log.Printf("Error converting pipeline name '%s' to ASCII: %s", *build.Pipeline.Name, ucErr)
+				continue
+			}
 
 			if _, ok := r.Pipelines[pipeline]; !ok {
 				r.Pipelines[pipeline] = newCounts()
