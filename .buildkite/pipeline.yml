@@ -22,9 +22,10 @@ steps:
 
   - name: "Release to :s3:"
     command: ".buildkite/upload.sh"
-    branches: master
     agents:
       queue: "deploy"
     concurrency: 1
     concurrency_group: 'release_to_s3'
+
+
 
