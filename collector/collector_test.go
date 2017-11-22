@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	bk "gopkg.in/buildkite/go-buildkite.v2/buildkite"
+	bk "github.com/buildkite/go-buildkite/buildkite"
 )
 
 func newTestCollector() *Collector {
