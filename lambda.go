@@ -11,8 +11,8 @@ import (
 
 	"github.com/buildkite/buildkite-metrics/backend"
 	"github.com/buildkite/buildkite-metrics/collector"
+	"github.com/buildkite/go-buildkite/buildkite"
 	"github.com/eawsy/aws-lambda-go/service/lambda/runtime"
-	"gopkg.in/buildkite/go-buildkite.v2/buildkite"
 )
 
 func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
@@ -33,6 +33,8 @@ func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 
 	client := buildkite.NewClient(config.Client())
 	t := time.Now()
+
+	client.UserAgent = client.UserAgent + " buildkite-metrics/" + Version + " buildkite-metrics-lambda"
 
 	col := collector.New(client, collector.Opts{
 		OrgSlug:    org,

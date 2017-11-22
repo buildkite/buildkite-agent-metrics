@@ -14,12 +14,15 @@ import (
 // TokenAuthTransport manages injection of the API token for each request
 type TokenAuthTransport struct {
 	APIToken  string
+	APIHost   string
 	Transport http.RoundTripper
 }
 
 // RoundTrip invoked each time a request is made
 func (t TokenAuthTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", t.APIToken))
+	if req.URL.Host == t.APIHost || t.APIHost == "" {
+		req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", t.APIToken))
+	}
 	return t.transport().RoundTrip(req)
 }
 
@@ -48,15 +51,18 @@ func NewTokenConfig(apiToken string, debug bool) (*TokenAuthTransport, error) {
 
 // BasicAuthTransport manages injection of the authorization header
 type BasicAuthTransport struct {
+	APIHost  string
 	Username string
 	Password string
 }
 
 // RoundTrip invoked each time a request is made
 func (bat BasicAuthTransport) RoundTrip(req *http.Request) (*http.Response, error) {
-	req.Header.Set("Authorization", fmt.Sprintf("Basic %s",
-		base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s",
-			bat.Username, bat.Password)))))
+	if req.URL.Host == bat.APIHost || bat.APIHost == "" {
+		req.Header.Set("Authorization", fmt.Sprintf("Basic %s",
+			base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s",
+				bat.Username, bat.Password)))))
+	}
 	return http.DefaultTransport.RoundTrip(req)
 }
 
@@ -73,5 +79,5 @@ func NewBasicConfig(username string, password string) (*BasicAuthTransport, erro
 	if password == "" {
 		return nil, fmt.Errorf("Invalid password, empty string supplied")
 	}
-	return &BasicAuthTransport{username, password}, nil
+	return &BasicAuthTransport{"", username, password}, nil
 }

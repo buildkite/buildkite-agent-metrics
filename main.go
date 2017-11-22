@@ -5,13 +5,14 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
+	"net/url"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/buildkite/buildkite-metrics/backend"
 	"github.com/buildkite/buildkite-metrics/collector"
-	"gopkg.in/buildkite/go-buildkite.v2/buildkite"
+	"github.com/buildkite/go-buildkite/buildkite"
 )
 
 // Version is passed in via ldflags
@@ -29,6 +30,7 @@ func main() {
 		version     = flag.Bool("version", false, "Show the version")
 		quiet       = flag.Bool("quiet", false, "Only print errors")
 		dryRun      = flag.Bool("dry-run", false, "Whether to only print metrics")
+		apiEndpoint = flag.String("api-endpoint", "", "A custom buildkite api endpoint")
 
 		// backend config
 		backendOpt = flag.String("backend", "cloudwatch", "Specify the backend to send metrics to: cloudwatch, statsd")
@@ -84,6 +86,18 @@ func main() {
 	client := buildkite.NewClient(config.Client())
 	if *debug && os.Getenv("TRACE_HTTP") != "" {
 		buildkite.SetHttpDebug(*debug)
+	}
+
+	client.UserAgent = client.UserAgent + " buildkite-metrics/" + Version + " buildkite-metrics-cli"
+
+	if *apiEndpoint != "" {
+		apiEndpointURL, err := url.Parse(*apiEndpoint)
+		if err != nil {
+			fmt.Printf("%v", err)
+			os.Exit(1)
+		}
+		client.BaseURL = apiEndpointURL
+		config.APIHost = apiEndpointURL.Host
 	}
 
 	col := collector.New(client, collector.Opts{

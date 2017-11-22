@@ -44,6 +44,7 @@ type Client struct {
 
 	// Services used for talking to different parts of the buildkite API.
 	Agents        *AgentsService
+	Artifacts     *ArtifactsService
 	Builds        *BuildsService
 	Organizations *OrganizationsService
 	Pipelines     *PipelinesService
@@ -71,13 +72,22 @@ func NewClient(httpClient *http.Client) *Client {
 		BaseURL:   baseURL,
 		UserAgent: userAgent,
 	}
-
 	c.Agents = &AgentsService{c}
+	c.Artifacts = &ArtifactsService{c}
 	c.Builds = &BuildsService{c}
 	c.Organizations = &OrganizationsService{c}
 	c.Pipelines = &PipelinesService{c}
 	c.User = &UserService{c}
 
+	if c.client != nil {
+		if tokenAuth, ok := c.client.Transport.(*TokenAuthTransport); ok {
+			tokenAuth.APIHost = baseURL.Host
+		}
+
+		if basicAuth, ok := c.client.Transport.(*BasicAuthTransport); ok {
+			basicAuth.APIHost = baseURL.Host
+		}
+	}
 	return c
 }
 
@@ -232,7 +242,7 @@ func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
 
 	if v != nil {
 		if w, ok := v.(io.Writer); ok {
-			io.Copy(w, resp.Body)
+			_, err = io.Copy(w, resp.Body)
 		} else {
 			err = json.NewDecoder(resp.Body).Decode(v)
 		}
@@ -244,6 +254,7 @@ func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
 type ErrorResponse struct {
 	Response *http.Response // HTTP response that caused this error
 	Message  string         `json:"message"` // error message
+	RawBody  []byte         `json:"-"`       // Raw Response Body
 }
 
 func (r *ErrorResponse) Error() string {
@@ -256,8 +267,8 @@ func checkResponse(r *http.Response) error {
 	if c := r.StatusCode; 200 <= c && c <= 299 {
 		return nil
 	}
-	errorResponse := &ErrorResponse{Response: r}
 	data, err := ioutil.ReadAll(r.Body)
+	errorResponse := &ErrorResponse{Response: r, RawBody: data}
 	if err == nil && data != nil {
 		json.Unmarshal(data, errorResponse)
 	}
