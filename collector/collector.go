@@ -6,6 +6,7 @@ import (
 	"time"
 
 	bk "github.com/buildkite/go-buildkite/buildkite"
+	"golang.org/x/net/idna"
 )
 
 const (
@@ -196,7 +197,12 @@ func (c *Collector) addBuildAndJobMetrics(r *Result) error {
 				continue
 			}
 
-			pipeline := *build.Pipeline.Name
+			pipeline, ucErr := idna.ToASCII(*build.Pipeline.Name)
+
+			if ucErr != nil {
+				log.Printf("Error converting pipeline name '%s' to ASCII: %s", *build.Pipeline.Name, ucErr)
+				continue
+			}
 
 			if _, ok := r.Pipelines[pipeline]; !ok {
 				r.Pipelines[pipeline] = newCounts()
