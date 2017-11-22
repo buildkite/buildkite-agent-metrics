@@ -24,6 +24,7 @@ type Pipeline struct {
 	Slug       *string    `json:"slug,omitempty"`
 	Repository *string    `json:"repository,omitempty"`
 	BuildsURL  *string    `json:"builds_url,omitempty"`
+	BadgeURL   *string    `json:"badge_url,omitempty"`
 	CreatedAt  *Timestamp `json:"created_at,omitempty"`
 
 	ScheduledBuildsCount *int `json:"scheduled_builds_count,omitempty"`
@@ -34,9 +35,6 @@ type Pipeline struct {
 
 	// the provider of sources
 	Provider *Provider `json:"provider,omitempty"`
-
-	// build featured when you view the pipeline
-	FeaturedBuild *Build `json:"featured_build,omitempty"`
 
 	// build steps
 	Steps []*Step `json:"steps,omitempty"`

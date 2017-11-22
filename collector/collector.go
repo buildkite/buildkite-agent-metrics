@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"time"
 
+	bk "github.com/buildkite/go-buildkite/buildkite"
 	"golang.org/x/net/idna"
-	bk "gopkg.in/buildkite/go-buildkite.v2/buildkite"
 )
 
 const (

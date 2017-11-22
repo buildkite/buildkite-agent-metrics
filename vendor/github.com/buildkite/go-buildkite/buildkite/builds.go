@@ -18,6 +18,25 @@ type BuildsService struct {
 	client *Client
 }
 
+// Author of a commit (used in CreateBuild)
+type Author struct {
+	Name  string `json:"name,omitempty"`
+	Email string `json:"email,omitempty"`
+}
+
+// Create a build.
+type CreateBuild struct {
+	Commit  string `json:"commit"`
+	Branch  string `json:"branch"`
+	Message string `json:"message"`
+
+	// Optional fields
+	Author                      Author            `json:"author,omitempty"`
+	Env                         map[string]string `json:"env,omitempty"`
+	MetaData                    map[string]string `json:"meta_data,omitempty"`
+	IgnorePipelineBranchFilters bool              `json:"ignore_pipeline_branch_filters,omitempty"`
+}
+
 // Creator represents who created a build
 type Creator struct {
 	AvatarURL string     `json:"avatar_url"`
@@ -96,6 +115,23 @@ type BuildsListOptions struct {
 	Branch string `url:"branch,omitempty"`
 
 	ListOptions
+}
+
+func (as *BuildsService) Create(org string, pipeline string, b *CreateBuild) (*Build, *Response, error) {
+	u := fmt.Sprintf("v2/organizations/%s/pipelines/%s/builds", org, pipeline)
+
+	req, err := as.client.NewRequest("POST", u, b)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	build := new(Build)
+	resp, err := as.client.Do(req, build)
+	if err != nil {
+		return nil, resp, err
+	}
+
+	return build, resp, err
 }
 
 // Get fetches a build.

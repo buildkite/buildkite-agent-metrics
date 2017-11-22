@@ -15,6 +15,12 @@
 			"revisionTime": "2016-12-13T18:18:37Z"
 		},
 		{
+			"checksumSHA1": "EvOIWjbn9+054d7Lrqp51iFHH08=",
+			"path": "github.com/buildkite/go-buildkite/buildkite",
+			"revision": "793f50aba534e9a424b8312053dff5c62ad4ddb9",
+			"revisionTime": "2017-03-21T03:12:56Z"
+		},
+		{
 			"checksumSHA1": "/j5eaUxSjyT802BWlCZ8eWdxJZQ=",
 			"path": "github.com/eawsy/aws-lambda-go/service/lambda/runtime",
 			"revision": "39dc993a238c10d77d901357b39831d04468aa40",
