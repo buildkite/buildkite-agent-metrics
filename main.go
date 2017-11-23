@@ -25,8 +25,9 @@ func main() {
 		accessToken = flag.String("token", "", "A Buildkite API Access Token")
 		orgSlug     = flag.String("org", "", "A Buildkite Organization Slug")
 		interval    = flag.Duration("interval", 0, "Update metrics every interval, rather than once")
-		history     = flag.Duration("history", time.Hour*24, "Historical data to use for finished builds")
+		history     = flag.Duration("history", time.Hour*8, "Fetch historical data to use for finished builds")
 		debug       = flag.Bool("debug", false, "Show debug output")
+		debugHTTP   = flag.Bool("debug-http", false, "Show full http traces")
 		version     = flag.Bool("version", false, "Show the version")
 		quiet       = flag.Bool("quiet", false, "Only print errors")
 		dryRun      = flag.Bool("dry-run", false, "Whether to only print metrics")
@@ -84,11 +85,12 @@ func main() {
 	}
 
 	client := buildkite.NewClient(config.Client())
-	if *debug && os.Getenv("TRACE_HTTP") != "" {
+	if *debugHTTP {
 		buildkite.SetHttpDebug(*debug)
 	}
 
-	client.UserAgent = client.UserAgent + " buildkite-metrics/" + Version + " buildkite-metrics-cli"
+	client.UserAgent = fmt.Sprintf("%s buildkite-metrics/%s buildkite-metrics-cli queue=%q,interval=%v",
+		client.UserAgent, Version, *queue, *interval)
 
 	if *apiEndpoint != "" {
 		apiEndpointURL, err := url.Parse(*apiEndpoint)
@@ -101,10 +103,10 @@ func main() {
 	}
 
 	col := collector.New(client, collector.Opts{
-		OrgSlug:    *orgSlug,
-		Historical: *history,
-		Queue:      *queue,
-		Debug:      *debug,
+		OrgSlug: *orgSlug,
+		History: *history,
+		Queue:   *queue,
+		Debug:   *debug,
 	})
 
 	f := func() error {

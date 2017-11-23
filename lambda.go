@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
@@ -37,8 +36,7 @@ func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 	client.UserAgent = client.UserAgent + " buildkite-metrics/" + Version + " buildkite-metrics-lambda"
 
 	col := collector.New(client, collector.Opts{
-		OrgSlug:    org,
-		Historical: time.Hour * 24,
+		OrgSlug: org,
 	})
 
 	if queue != "" {
@@ -55,43 +53,20 @@ func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 		bk = &backend.CloudWatchBackend{}
 	}
 
-	return "", retry(time.Minute, func() error {
-		res, err := col.Collect()
-		if err != nil {
-			return err
-		}
-
-		res.Dump()
-
-		err = bk.Collect(res)
-		if err != nil {
-			return err
-		}
-
-		log.Printf("Finished in %s", time.Now().Sub(t))
-		return nil
-	})
-}
-
-func retry(timeout time.Duration, callback func() error) (err error) {
-	t0 := time.Now()
-	i := 0
-	for {
-		i++
-
-		err = callback()
-		if err == nil {
-			return
-		}
-
-		delta := time.Now().Sub(t0)
-		if delta > timeout {
-			return fmt.Errorf("after %d attempts (during %s), last error: %s", i, delta, err)
-		}
-
-		time.Sleep(time.Second * 2)
-		log.Println("retrying after error:", err)
+	res, err := col.Collect()
+	if err != nil {
+		return nil, err
 	}
+
+	res.Dump()
+
+	err = bk.Collect(res)
+	if err != nil {
+		return nil, err
+	}
+
+	log.Printf("Finished in %s", time.Now().Sub(t))
+	return "", nil
 }
 
 func init() {
