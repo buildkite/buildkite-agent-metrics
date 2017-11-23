@@ -22,30 +22,30 @@ EXTRA_REGIONS=(
 
 BASE_BUCKET=buildkite-metrics
 
-if [[ -n "${BUILDKITE:-}" ]] ; then
-	echo "~~~ :buildkite: Downloading artifacts"
-	mkdir -p build/
-	buildkite-agent artifact download "build/*" build/
-fi
+echo "~~~ :buildkite: Downloading artifacts"
+mkdir -p dist/
+buildkite-agent artifact download "dist/*" dist/
 
-echo "+++ :s3: Uploading files to ${BASE_BUCKET} in ${AWS_DEFAULT_REGION}"
-aws s3 sync --acl public-read ./build "s3://${BASE_BUCKET}/"
-for f in build/* ;
-	do echo "https://s3.amazonaws.com/bucket/$f"
-done
+ls -al dist/
 
-for region in "${EXTRA_REGIONS[@]}" ; do
-	bucket="${BASE_BUCKET}-${region}"
-	echo "+++ :s3: Copying files to ${bucket}"
-	if ! aws s3api head-bucket --bucket "${bucket}" --region "${region}" &> /dev/null ; then
-		echo "Creating s3://${bucket}/"
-		aws s3 mb "s3://${bucket}/" --region "${region}"
-	fi
-	aws --region "${region}" s3 sync --exclude "*" --include "*.zip" --delete --acl public-read "s3://${BASE_BUCKET}/" "s3://${bucket}/"
-	for f in build/* ; do
-		echo "https://${bucket}.s3-${region}.amazonaws.com/$f"
-	done
-done
+# echo "+++ :s3: Uploading files to ${BASE_BUCKET} in ${AWS_DEFAULT_REGION}"
+# aws s3 sync --acl public-read ./dist "s3://${BASE_BUCKET}/"
+# for f in build/* ;
+# 	do echo "https://s3.amazonaws.com/bucket/$f"
+# done
 
-echo "+++ :s3: Uploading binary to s3://${BASE_BUCKET}"
-aws s3 cp --acl public-read build/buildkite-metrics-Linux-x86_64* "s3://${BASE_BUCKET}/buildkite-metrics-Linux-x86_64"
+# for region in "${EXTRA_REGIONS[@]}" ; do
+# 	bucket="${BASE_BUCKET}-${region}"
+# 	echo "+++ :s3: Copying files to ${bucket}"
+# 	if ! aws s3api head-bucket --bucket "${bucket}" --region "${region}" &> /dev/null ; then
+# 		echo "Creating s3://${bucket}/"
+# 		aws s3 mb "s3://${bucket}/" --region "${region}"
+# 	fi
+# 	aws --region "${region}" s3 sync --exclude "*" --include "*.zip" --delete --acl public-read "s3://${BASE_BUCKET}/" "s3://${bucket}/"
+# 	for f in build/* ; do
+# 		echo "https://${bucket}.s3-${region}.amazonaws.com/$f"
+# 	done
+# done
+
+# echo "+++ :s3: Uploading binary to s3://${BASE_BUCKET}"
+# aws s3 cp --acl public-read build/buildkite-metrics-Linux-x86_64* "s3://${BASE_BUCKET}/buildkite-metrics-Linux-x86_64"
