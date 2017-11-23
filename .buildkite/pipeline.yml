@@ -1,9 +1,6 @@
 steps:
   - name: ":hammer_and_wrench:"
-    command: "make test"
-    plugins:
-      - docker-compose:
-          run: "golang"
+    command: ".buildkite/steps/test.sh"
 
   - wait
 
