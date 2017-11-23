@@ -43,7 +43,7 @@ func main() {
 	flag.Parse()
 
 	if *showVersion {
-		fmt.Printf("buildkite-metrics %s\n", version.VersionString())
+		fmt.Printf("buildkite-metrics %s\n", version.Version)
 		os.Exit(0)
 	}
 
