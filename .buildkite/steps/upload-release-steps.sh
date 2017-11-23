@@ -30,7 +30,7 @@ output_steps_yaml() {
   echo "steps:"
 
   block_step "release?"
-  command_step ":s3: $version" ".buildkite/scripts/upload-to-s3.sh"
+  release_step ":s3: $version" ".buildkite/scripts/upload-to-s3.sh"
 }
 
 version=$(awk -F\" '/const Version/ {print $2}' version/version.go)
