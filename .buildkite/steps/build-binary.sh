@@ -5,7 +5,7 @@ export GOOS=$1
 export GOARCH=$2
 
 version=$(awk -F\" '/const Version/ {print $2}' version/version.go)-${BUILDKITE_BUILD_NUMBER}
-dist_file="dist/buildkite-metrics-${GOOS}-${GOARCH}-${version}"
+dist_file="dist/buildkite-metrics-${version}-${GOOS}-${GOARCH}"
 
 go_version="1.9.2"
 go_pkg="github.com/buildkite/buildkite-metrics"
