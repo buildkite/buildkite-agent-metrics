@@ -3,7 +3,9 @@ set -eu
 
 export GOOS=$1
 export GOARCH=$2
-export DISTFILE="dist/buildkite-metrics-${GOOS}-${GOARCH}"
+
+version=$(awk -F\" '/const Version/ {print $2}' version/version.go)-${BUILDKITE_BUILD_NUMBER}
+dist_file="dist/buildkite-metrics-${GOOS}-${GOARCH}-${version}"
 
 go_version="1.9.2"
 go_pkg="github.com/buildkite/buildkite-metrics"
@@ -22,10 +24,10 @@ go_build_in_docker() {
 
 echo "+++ Building ${go_pkg} for $GOOS/$GOARCH with golang:${go_version} :golang:"
 
-go_build_in_docker -a -tags netgo -ldflags="-X version.BuildNumber=${BUILDKITE_BUILD_NUMBER} -w" -o "${DISTFILE}" main.go
-file "${DISTFILE}"
+go_build_in_docker -a -tags netgo -ldflags="-X version.BuildNumber=${BUILDKITE_BUILD_NUMBER} -w" -o "${dist_file}" main.go
+file "${dist_file}"
 
-chmod +x "${DISTFILE}"
-echo "👍 ${DISTFILE}"
+chmod +x "${dist_file}"
+echo "👍 ${dist_file}"
 
-buildkite-agent artifact upload "${DISTFILE}"
+buildkite-agent artifact upload "${dist_file}"
