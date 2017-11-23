@@ -22,7 +22,7 @@ go_build_in_docker() {
 
 echo "+++ Building ${go_pkg} for $GOOS/$GOARCH with golang:${go_version} :golang:"
 
-go_build_in_docker -a -tags netgo -ldflags -ldflags="-X version.BuildNumber=${BUILDKITE_BUILD_NUMBER} -w" -o "${DISTFILE}" main.go
+go_build_in_docker -a -tags netgo -ldflags="-X version.BuildNumber=${BUILDKITE_BUILD_NUMBER} -w" -o "${DISTFILE}" main.go
 file "${DISTFILE}"
 
 chmod +x "${DISTFILE}"
