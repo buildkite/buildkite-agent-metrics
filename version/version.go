@@ -1,4 +1,4 @@
 package version
 
 // Version the library version number
-const Version = "1.6.0"
+const Version = "2.0.0"
