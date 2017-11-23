@@ -15,13 +15,12 @@ steps:
 
   - wait
 
-  - name: "Release to :s3:"
-    command: ".buildkite/upload.sh"
+  - block
+  - name: ":s3: :rocket:"
+    command: ".buildkite/steps/upload.sh"
     branches: master
     agents:
       queue: "deploy"
     concurrency: 1
     concurrency_group: 'release_to_s3'
-
-
 
