@@ -12,7 +12,7 @@ import (
 
 	"github.com/buildkite/buildkite-metrics/backend"
 	"github.com/buildkite/buildkite-metrics/collector"
-	"github.com/buildkite/buildkite-metrics/metrics"
+	"github.com/buildkite/buildkite-metrics/version"
 	"github.com/buildkite/go-buildkite/buildkite"
 )
 
@@ -26,7 +26,7 @@ func main() {
 		history     = flag.Duration("history", time.Hour*8, "Fetch historical data to use for finished builds")
 		debug       = flag.Bool("debug", false, "Show debug output")
 		debugHTTP   = flag.Bool("debug-http", false, "Show full http traces")
-		version     = flag.Bool("version", false, "Show the version")
+		showVersion = flag.Bool("version", false, "Show the version")
 		quiet       = flag.Bool("quiet", false, "Only print errors")
 		dryRun      = flag.Bool("dry-run", false, "Whether to only print metrics")
 		apiEndpoint = flag.String("api-endpoint", "", "A custom buildkite api endpoint")
@@ -42,8 +42,8 @@ func main() {
 
 	flag.Parse()
 
-	if *version {
-		fmt.Printf("buildkite-metrics %s\n", metrics.Version)
+	if *showVersion {
+		fmt.Printf("buildkite-metrics %s\n", version.VersionString())
 		os.Exit(0)
 	}
 
@@ -89,7 +89,7 @@ func main() {
 
 	client.UserAgent = fmt.Sprintf(
 		"%s buildkite-metrics/%s buildkite-metrics-cli queue=%q,interval=%v",
-		client.UserAgent, metrics.Version, *queue, *interval,
+		client.UserAgent, version.Version, *queue, *interval,
 	)
 
 	if *apiEndpoint != "" {
