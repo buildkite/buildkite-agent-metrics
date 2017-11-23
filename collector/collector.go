@@ -23,10 +23,10 @@ const (
 const recordsPerPage = 100
 
 type Opts struct {
-	OrgSlug    string
-	Historical time.Duration
-	Queue      string
-	Debug      bool
+	OrgSlug string
+	History time.Duration
+	Queue   string
+	Debug   bool
 }
 
 type Collector struct {
@@ -38,6 +38,8 @@ type Collector struct {
 	agentService interface {
 		List(org string, opt *bk.AgentListOptions) ([]bk.Agent, *bk.Response, error)
 	}
+
+	historyCollected bool
 }
 
 func New(c *bk.Client, opts Opts) *Collector {
@@ -55,11 +57,12 @@ func (c *Collector) Collect() (*Result, error) {
 		Pipelines: map[string]map[string]int{},
 	}
 
-	if c.Opts.Queue == "" {
-		log.Println("Collecting historical metrics")
+	if c.History > 0 && !c.historyCollected {
+		log.Printf("Collecting historical metrics for the past %v", c.History)
 		if err := c.addHistoricalMetrics(res); err != nil {
 			return nil, err
 		}
+		c.historyCollected = true
 	}
 
 	log.Println("Collecting running and scheduled build and job metrics")
@@ -137,7 +140,7 @@ func getBuildQueues(builds ...bk.Build) []string {
 
 func (c *Collector) addHistoricalMetrics(r *Result) error {
 	finishedBuilds := c.listBuildsByOrg(c.Opts.OrgSlug, bk.BuildsListOptions{
-		FinishedFrom: time.Now().UTC().Add(c.Opts.Historical * -1),
+		FinishedFrom: time.Now().UTC().Add(c.Opts.History * -1),
 		ListOptions: bk.ListOptions{
 			PerPage: recordsPerPage,
 		},
