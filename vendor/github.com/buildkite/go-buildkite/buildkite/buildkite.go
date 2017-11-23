@@ -8,6 +8,7 @@ package buildkite
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -17,7 +18,9 @@ import (
 	"reflect"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/cenkalti/backoff"
 	"github.com/google/go-querystring/query"
 )
 
@@ -64,7 +67,6 @@ type ListOptions struct {
 // NewClient returns a new buildkite API client. As API calls require authentication
 // you MUST supply a client which provides the required API key.
 func NewClient(httpClient *http.Client) *Client {
-
 	baseURL, _ := url.Parse(defaultBaseURL)
 
 	c := &Client{
@@ -203,42 +205,63 @@ func (r *Response) populatePageValues() {
 // interface, the raw response body will be written to v, without attempting to
 // first decode it.
 func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
-	resp, err := c.client.Do(req)
-	if err != nil {
+	respCh := make(chan *http.Response, 1)
+
+	op := func() error {
+		if httpDebug {
+			if dump, err := httputil.DumpRequest(req, true); err == nil {
+				fmt.Printf("DEBUG request uri=%s\n%s\n", req.URL, dump)
+			}
+		}
+
+		resp, err := c.client.Do(req)
+		if err != nil {
+			return backoff.Permanent(err)
+		}
+
+		if httpDebug {
+			if dump, err := httputil.DumpResponse(resp, true); err == nil {
+				fmt.Printf("DEBUG response uri=%s\n%s\n", req.URL, dump)
+			}
+		}
+
+		// Check for rate limiting response on idempotent requests
+		if req.Method == http.MethodGet && resp.StatusCode == http.StatusTooManyRequests {
+			errMsg := resp.Header.Get("Rate-Limit-Warning")
+			if errMsg == "" {
+				errMsg = "Too many requests, retry"
+			}
+			return errors.New(errMsg)
+		}
+
+		respCh <- resp
+		return nil
+	}
+
+	notify := func(err error, delay time.Duration) {
+		if httpDebug {
+			fmt.Printf("DEBUG error %v, retry in %v\n", err, delay)
+		}
+	}
+
+	if err := backoff.RetryNotify(op, backoff.NewExponentialBackOff(), notify); err != nil {
 		return nil, err
 	}
+
+	resp := <-respCh
 
 	defer resp.Body.Close()
 	defer io.Copy(ioutil.Discard, resp.Body)
 
-	// dump requests
-	if httpDebug {
-		var (
-			dump []byte
-			err  error
-		)
-
-		dump, err = httputil.DumpRequest(req, true)
-
-		if err == nil {
-			fmt.Printf("DEBUG request uri=%s\n%s\n", req.URL, dump)
-		}
-
-		dump, err = httputil.DumpResponse(resp, true)
-
-		if err == nil {
-			fmt.Printf("DEBUG response uri=%s\n%s\n", req.URL, dump)
-		}
-	}
-
 	response := newResponse(resp)
 
-	err = checkResponse(resp)
-	if err != nil {
+	if err := checkResponse(resp); err != nil {
 		// even though there was an error, we still return the response
 		// in case the caller wants to inspect it further
 		return response, err
 	}
+
+	var err error
 
 	if v != nil {
 		if w, ok := v.(io.Writer); ok {
@@ -247,6 +270,7 @@ func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
 			err = json.NewDecoder(resp.Body).Decode(v)
 		}
 	}
+
 	return response, err
 }
 

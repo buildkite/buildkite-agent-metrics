@@ -15,16 +15,28 @@
 			"revisionTime": "2016-12-13T18:18:37Z"
 		},
 		{
-			"checksumSHA1": "EvOIWjbn9+054d7Lrqp51iFHH08=",
+			"checksumSHA1": "KjaJcx9B5+Y2izHogGveHePNBk0=",
 			"path": "github.com/buildkite/go-buildkite/buildkite",
-			"revision": "793f50aba534e9a424b8312053dff5c62ad4ddb9",
-			"revisionTime": "2017-03-21T03:12:56Z"
+			"revision": "c7069c38be580d980e520c35be0e9fecd8935a0d",
+			"revisionTime": "2017-11-23T03:29:50Z"
+		},
+		{
+			"checksumSHA1": "hTThB1Cw2ue02RD5Oig4eu1Dkzk=",
+			"path": "github.com/cenkalti/backoff",
+			"revision": "309aa717adbf351e92864cbedf9cca0b769a4b5a",
+			"revisionTime": "2017-10-07T11:45:50Z"
 		},
 		{
 			"checksumSHA1": "/j5eaUxSjyT802BWlCZ8eWdxJZQ=",
 			"path": "github.com/eawsy/aws-lambda-go/service/lambda/runtime",
 			"revision": "39dc993a238c10d77d901357b39831d04468aa40",
 			"revisionTime": "2016-11-16T16:19:46Z"
+		},
+		{
+			"checksumSHA1": "GtamqiJoL7PGHsN454AoffBFMa8=",
+			"path": "golang.org/x/net/context",
+			"revision": "fb018015d54fd2e3bfd5362a041991d350fde9d7",
+			"revisionTime": "2017-11-22T21:13:02Z"
 		},
 		{
 			"checksumSHA1": "RcrB7tgYS/GMW4QrwVdMOTNqIU8=",
