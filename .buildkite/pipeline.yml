@@ -14,13 +14,7 @@ steps:
     command: .buildkite/steps/build-lambda.sh
 
   - wait
+  - name: ":pipeline:"
+    command: .buildkite/steps/upload-release-steps.sh
 
-  - block
-  - name: ":s3: :rocket:"
-    command: ".buildkite/steps/upload.sh"
-    branches: master
-    agents:
-      queue: "deploy"
-    concurrency: 1
-    concurrency_group: 'release_to_s3'
 
