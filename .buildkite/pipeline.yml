@@ -7,21 +7,20 @@ steps:
 
   - wait
 
-  - name: ":golang:"
-    command: "make build"
-    artifact_paths: "build/*"
-    plugins:
-      - docker-compose:
-          run: "golang"
+  - name: ":mac: amd64"
+    command: .buildkite/steps/build-binary.sh darwin amd64
+
+  - name: ":linux: amd64"
+    command: .buildkite/steps/build-binary.sh linux amd64
 
   - name: ":lambda:"
-    command: "make build-lambda"
-    artifact_paths: "build/*"
+    command: .buildkite/steps/build-lambda.sh
 
   - wait
 
   - name: "Release to :s3:"
     command: ".buildkite/upload.sh"
+    branches: master
     agents:
       queue: "deploy"
     concurrency: 1

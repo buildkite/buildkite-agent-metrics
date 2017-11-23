@@ -12,11 +12,9 @@ import (
 
 	"github.com/buildkite/buildkite-metrics/backend"
 	"github.com/buildkite/buildkite-metrics/collector"
+	"github.com/buildkite/buildkite-metrics/metrics"
 	"github.com/buildkite/go-buildkite/buildkite"
 )
-
-// Version is passed in via ldflags
-var Version string
 
 var bk backend.Backend
 
@@ -89,8 +87,10 @@ func main() {
 		buildkite.SetHttpDebug(*debug)
 	}
 
-	client.UserAgent = fmt.Sprintf("%s buildkite-metrics/%s buildkite-metrics-cli queue=%q,interval=%v",
-		client.UserAgent, Version, *queue, *interval)
+	client.UserAgent = fmt.Sprintf(
+		"%s buildkite-metrics/%s buildkite-metrics-cli queue=%q,interval=%v",
+		client.UserAgent, metrics.Version, *queue, *interval,
+	)
 
 	if *apiEndpoint != "" {
 		apiEndpointURL, err := url.Parse(*apiEndpoint)
