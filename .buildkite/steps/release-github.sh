@@ -14,7 +14,7 @@ rm -rf pkg
 mkdir -p pkg
 buildkite-agent artifact download "dist/*" .
 
-docker run -e GITHUB_RELEASE_ACCESS_TOKEN --rm "buildkite/github-release" "${version}" dist/*
+docker run -e GITHUB_RELEASE_ACCESS_TOKEN --rm "buildkite/github-release" "${version}" dist/* \
   --commit "${BUILDKITE_COMMIT}" \
   --tag "${version}" \
   --github-repository "buildkite/buildkite-metrics"
