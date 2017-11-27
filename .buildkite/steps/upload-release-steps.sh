@@ -3,7 +3,7 @@ set -euo pipefail
 
 export VERSION=$(awk -F\" '/const Version/ {print $2}' version/version.go)
 
-git fetch --tags
+git fetch --prune origin "+refs/tags/*:refs/tags/*"
 
 echo "Checking if $VERSION is a tag..."
 
