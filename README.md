@@ -6,7 +6,7 @@ A command-line tool for collecting [Buildkite](https://buildkite.com/) build/job
 
 ## Installing
 
-Either download the latest binary from [buildkite-metrics/buildkite-metrics-Linux-x86_64](https://s3.amazonaws.com/buildkite-metrics/buildkite-metrics-Linux-x86_64) or install with:
+Either download the latest binary from [Github Releases](https://github.com/buildkite/buildkite-metrics/releases) or install with:
 
 ```bash
 go get github.com/buildkite/buildkite-metrics
