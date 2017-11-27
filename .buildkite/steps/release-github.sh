@@ -10,11 +10,11 @@ version=$(awk -F\" '/const Version/ {print $2}' version/version.go)
 
 echo '--- Downloading binaries'
 
-rm -rf pkg
-mkdir -p pkg
+rm -rf dist
+mkdir -p dist
 buildkite-agent artifact download "dist/*" .
 
-docker run -e GITHUB_RELEASE_ACCESS_TOKEN --rm "buildkite/github-release" "${version}" dist/* \
+docker run -v "${PWD}/dist:/dist" -e GITHUB_RELEASE_ACCESS_TOKEN --rm "buildkite/github-release" "v${version}" /dist/* \
   --commit "${BUILDKITE_COMMIT}" \
-  --tag "${version}" \
+  --tag "v${version}" \
   --github-repository "buildkite/buildkite-metrics"
