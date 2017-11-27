@@ -7,6 +7,15 @@ steps:
     agents:
       queue: "deploy"
     concurrency: 1
-    concurrency_group: 'release_buildkite_metrics_to_s3'
+    concurrency_group: 'release_buildkite_metrics'
 
+  - wait
+
+  - label: ":s3:"
+    command: ".buildkite/steps/release-github.sh"
+    branches: master
+    agents:
+      queue: "deploy"
+    concurrency: 1
+    concurrency_group: 'release_buildkite_metrics'
 
