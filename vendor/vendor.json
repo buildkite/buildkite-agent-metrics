@@ -15,10 +15,10 @@
 			"revisionTime": "2016-12-13T18:18:37Z"
 		},
 		{
-			"checksumSHA1": "KjaJcx9B5+Y2izHogGveHePNBk0=",
+			"checksumSHA1": "LROZXEZ7u7fxu6kXs9zrrbTTAq4=",
 			"path": "github.com/buildkite/go-buildkite/buildkite",
-			"revision": "c7069c38be580d980e520c35be0e9fecd8935a0d",
-			"revisionTime": "2017-11-23T03:29:50Z"
+			"revision": "96c446f66ad31123d5da38782f8d888a7666e898",
+			"revisionTime": "2018-01-07T01:45:58Z"
 		},
 		{
 			"checksumSHA1": "hTThB1Cw2ue02RD5Oig4eu1Dkzk=",
