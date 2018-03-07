@@ -32,9 +32,11 @@ func main() {
 		apiEndpoint = flag.String("api-endpoint", "", "A custom buildkite api endpoint")
 
 		// backend config
-		backendOpt = flag.String("backend", "cloudwatch", "Specify the backend to send metrics to: cloudwatch, statsd")
-		statsdHost = flag.String("statsd-host", "127.0.0.1:8125", "Specify the StatsD server")
-		statsdTags = flag.Bool("statsd-tags", false, "Whether your StatsD server supports tagging like Datadog")
+		backendOpt     = flag.String("backend", "cloudwatch", "Specify the backend to use: cloudwatch, statsd, prometheus")
+		statsdHost     = flag.String("statsd-host", "127.0.0.1:8125", "Specify the StatsD server")
+		statsdTags     = flag.Bool("statsd-tags", false, "Whether your StatsD server supports tagging like Datadog")
+		prometheusAddr = flag.String("prometheus-addr", ":8080", "Prometheus metrics transport bind address")
+		prometheusPath = flag.String("prometheus-path", "/metrics", "Prometheus metrics transport path")
 
 		// filters
 		queue = flag.String("queue", "", "Only include a specific queue")
@@ -57,18 +59,20 @@ func main() {
 		os.Exit(1)
 	}
 
-	lowerBackendOpt := strings.ToLower(*backendOpt)
-	if lowerBackendOpt == "cloudwatch" {
+	switch strings.ToLower(*backendOpt) {
+	case "cloudwatch":
 		bk = backend.NewCloudWatchBackend()
-	} else if lowerBackendOpt == "statsd" {
+	case "statsd":
 		var err error
 		bk, err = backend.NewStatsDBackend(*statsdHost, *statsdTags)
 		if err != nil {
 			fmt.Printf("Error starting StatsD, err: %v\n", err)
 			os.Exit(1)
 		}
-	} else {
-		fmt.Println("Must provide a supported backend: cloudwatch, statsd")
+	case "prometheus":
+		bk = backend.NewPrometheusBackend(*prometheusPath, *prometheusAddr)
+	default:
+		fmt.Println("Must provide a supported backend: cloudwatch, statsd, prometheus")
 		os.Exit(1)
 	}
 
