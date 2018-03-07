@@ -63,5 +63,9 @@ func (cb *StatsD) Collect(r *collector.Result) error {
 		}
 	}
 
+	if err := cb.client.Flush(); err != nil {
+		return err
+	}
+
 	return nil
 }

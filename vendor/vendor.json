@@ -9,10 +9,10 @@
 			"revisionTime": "2016-12-13T18:18:37Z"
 		},
 		{
-			"checksumSHA1": "ckEen3vhU+2+XyPlvdop+BLNzQk=",
+			"checksumSHA1": "0Wny2oC77TqXIrxuqERTQYaOfDM=",
 			"path": "github.com/DataDog/datadog-go/statsd",
-			"revision": "6ea09a7540648568ce58b3d00eb1da133c2dcdd7",
-			"revisionTime": "2016-12-13T18:18:37Z"
+			"revision": "9487d3a9d3be5bf3cf60b86ae810b97926964515",
+			"revisionTime": "2018-01-29T10:51:49Z"
 		},
 		{
 			"checksumSHA1": "LROZXEZ7u7fxu6kXs9zrrbTTAq4=",
