@@ -27,7 +27,7 @@ You can build and run the binary tool locally with golang installed:
 go run *.go -org [myorg] -token [buildkite api access token]
 ```
 
-Currently this will publish metrics to Cloudwatch under the custom metric prefic of `Buildkite`, using AWS credentials from your environment. The machine will require the [`cloudwatch:PutMetricData`](https://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/publishingMetrics.html) IAM permission, and the Buildkite API Access token requires the scopes `read_pipelines`, `read_builds` and `read_agents`.
+Currently this will publish metrics to Cloudwatch under the custom metric prefix of `Buildkite`, using AWS credentials from your environment. The machine will require the [`cloudwatch:PutMetricData`](https://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/publishingMetrics.html) IAM permission, and the Buildkite API Access token requires the scopes `read_pipelines`, `read_builds` and `read_agents`.
 
 ## Metrics
 
