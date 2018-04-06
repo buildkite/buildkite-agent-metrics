@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"log"
-	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -13,23 +12,20 @@ import (
 	"github.com/buildkite/buildkite-metrics/backend"
 	"github.com/buildkite/buildkite-metrics/collector"
 	"github.com/buildkite/buildkite-metrics/version"
-	"github.com/buildkite/go-buildkite/buildkite"
 )
 
 var bk backend.Backend
 
 func main() {
 	var (
-		accessToken = flag.String("token", "", "A Buildkite API Access Token")
-		orgSlug     = flag.String("org", "", "A Buildkite Organization Slug")
+		token       = flag.String("token", "", "A Buildkite Agent Registration Token")
 		interval    = flag.Duration("interval", 0, "Update metrics every interval, rather than once")
-		history     = flag.Duration("history", time.Hour*8, "Fetch historical data to use for finished builds")
-		debug       = flag.Bool("debug", false, "Show debug output")
-		debugHTTP   = flag.Bool("debug-http", false, "Show full http traces")
 		showVersion = flag.Bool("version", false, "Show the version")
 		quiet       = flag.Bool("quiet", false, "Only print errors")
+		debug       = flag.Bool("debug", false, "Show debug output")
+		debugHttp   = flag.Bool("debug-http", false, "Show full http traces")
 		dryRun      = flag.Bool("dry-run", false, "Whether to only print metrics")
-		apiEndpoint = flag.String("api-endpoint", "", "A custom buildkite api endpoint")
+		endpoint    = flag.String("endpoint", "https://agent.buildkite.com/v3", "A custom Buildkite Agent API endpoint")
 
 		// backend config
 		backendOpt     = flag.String("backend", "cloudwatch", "Specify the backend to use: cloudwatch, statsd, prometheus")
@@ -49,13 +45,8 @@ func main() {
 		os.Exit(0)
 	}
 
-	if *accessToken == "" {
+	if *token == "" {
 		fmt.Println("Must provide a value for -token")
-		os.Exit(1)
-	}
-
-	if *orgSlug == "" {
-		fmt.Println("Must provide a value for -org")
 		os.Exit(1)
 	}
 
@@ -80,53 +71,31 @@ func main() {
 		log.SetOutput(ioutil.Discard)
 	}
 
-	config, err := buildkite.NewTokenConfig(*accessToken, false)
-	if err != nil {
-		fmt.Printf("client config failed: %s\n", err)
-		os.Exit(1)
+	userAgent := fmt.Sprintf("buildkite-metrics/%s buildkite-metrics-cli", version.Version)
+	if *interval > 0 {
+		userAgent += fmt.Sprintf(" interval=%s", *interval)
 	}
 
-	client := buildkite.NewClient(config.Client())
-	if *debugHTTP {
-		buildkite.SetHttpDebug(*debug)
+	c := collector.Collector{
+		UserAgent: userAgent,
+		Endpoint: *endpoint,
+		Token: *token,
+		Queue: *queue,
+		Quiet: *quiet,
+		Debug: *debug,
+		DebugHttp: *debugHttp,
 	}
-
-	client.UserAgent = fmt.Sprintf(
-		"%s buildkite-metrics/%s buildkite-metrics-cli queue=%q,interval=%v",
-		client.UserAgent, version.Version, *queue, *interval,
-	)
-
-	if *apiEndpoint != "" {
-		apiEndpointURL, err := url.Parse(*apiEndpoint)
-		if err != nil {
-			fmt.Printf("%v", err)
-			os.Exit(1)
-		}
-		client.BaseURL = apiEndpointURL
-		config.APIHost = apiEndpointURL.Host
-	}
-
-	col := collector.New(client, collector.Opts{
-		OrgSlug: *orgSlug,
-		History: *history,
-		Queue:   *queue,
-		Debug:   *debug,
-	})
 
 	f := func() error {
 		t := time.Now()
 
-		res, err := col.Collect()
+		result, err := c.Collect()
 		if err != nil {
 			return err
 		}
 
-		if !*quiet {
-			res.Dump()
-		}
-
 		if !*dryRun {
-			err = bk.Collect(res)
+			err = bk.Collect(result)
 			if err != nil {
 				return err
 			}

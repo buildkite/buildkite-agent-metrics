@@ -47,22 +47,6 @@ func (cb *StatsD) Collect(r *collector.Result) error {
 		}
 	}
 
-	for pipeline, counts := range r.Pipelines {
-		for name, value := range counts {
-			var finalName string
-			tags := []string{}
-			if cb.tagsSupported {
-				finalName = "pipeline." + name
-				tags = []string{"pipeline:" + pipeline}
-			} else {
-				finalName = "pipeline." + pipeline + "." + name
-			}
-			if err := cb.client.Gauge(finalName, float64(value), tags, 1.0); err != nil {
-				return err
-			}
-		}
-	}
-
 	if err := cb.client.Flush(); err != nil {
 		return err
 	}

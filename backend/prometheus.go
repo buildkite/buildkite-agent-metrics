@@ -69,21 +69,6 @@ func (p *Prometheus) Collect(r *collector.Result) error {
 		}
 	}
 
-	for pipeline, counts := range r.Pipelines {
-		for name, value := range counts {
-			gauge, ok := p.pipelines[name]
-			if !ok {
-				gauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-					Name: fmt.Sprintf("buildkite_pipelines_%s", camelToUnderscore(name)),
-					Help: fmt.Sprintf("Buildkite Pipelines: %s", name),
-				}, []string{"pipeline"})
-				prometheus.MustRegister(gauge)
-				p.pipelines[name] = gauge
-			}
-			gauge.WithLabelValues(pipeline).Set(float64(value))
-		}
-	}
-
 	return nil
 }
 
