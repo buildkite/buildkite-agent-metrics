@@ -40,7 +40,8 @@ func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 		DebugHttp: false,
 	}
 
-	var b backend.Backend, err error
+	var b backend.Backend
+	var err error
 	if backendOpt == "statsd" {
 		statsdHost := os.Getenv("STATSD_HOST")
 		statsdTags := strings.ToLower(os.Getenv("STATSD_TAGS")) == "true"
