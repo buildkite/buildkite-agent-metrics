@@ -2,70 +2,126 @@ package collector
 
 import (
 	"fmt"
+	"io"
+	"net/http"
+	"net/http/httptest"
 	"testing"
-
-	bk "github.com/buildkite/go-buildkite/buildkite"
 )
 
-func newTestCollector() *Collector {
-	return &Collector{
-		Opts: Opts{},
-		buildService: &testBuildService{
-			[]bk.Build{
-				{
-					Pipeline: &bk.Pipeline{Name: bk.String("llamas")},
-					State:    bk.String("running"),
-					Jobs: []*bk.Job{
-						{State: bk.String("running"), AgentQueryRules: []string{"queue=default"}},
-						{State: bk.String("scheduled"), AgentQueryRules: []string{"queue=deploy"}},
-					},
-				},
-				{
-					Pipeline: &bk.Pipeline{Name: bk.String("alpacas")},
-					State:    bk.String("scheduled"),
-					Jobs: []*bk.Job{
-						{State: bk.String("scheduled"), AgentQueryRules: []string{"queue=default"}},
-					},
-				},
-				{
-					Pipeline: &bk.Pipeline{Name: bk.String("vicuñas")},
-					State:    bk.String("scheduled"),
-					Jobs: []*bk.Job{
-						{State: bk.String("scheduled"), AgentQueryRules: []string{"queue=default"}},
-					},
-				},
-			},
-		},
-		agentService: &testAgentService{
-			[]bk.Agent{
-				{
-					Metadata: []string{"queue=default"},
-					Job: &bk.Job{
-						State:           bk.String("running"),
-						AgentQueryRules: []string{"queue=default"},
-					},
-				},
-			},
-		},
+func TestCollectorWithEmptyResponseForAllQueues(t *testing.T) {
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/metrics" {
+			w.WriteHeader(http.StatusOK)
+			io.WriteString(w, `{}`)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	c := &Collector{
+		Endpoint: s.URL,
+		Token: "abc123",
+		UserAgent: "some-client/1.2.3",
 	}
-}
-
-func TestCollectorWithRunningBuildsForAllQueues(t *testing.T) {
-	c := newTestCollector()
-
 	res, err := c.Collect()
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	testCases := []struct {
 		Group    string
 		Counts   map[string]int
 		Key      string
 		Expected int
 	}{
-		{"Totals", res.Totals, RunningBuildsCount, 1},
-		{"Totals", res.Totals, ScheduledBuildsCount, 2},
+		{"Totals", res.Totals, RunningJobsCount, 0},
+		{"Totals", res.Totals, ScheduledJobsCount, 0},
+		{"Totals", res.Totals, UnfinishedJobsCount, 0},
+		{"Totals", res.Totals, TotalAgentCount, 0},
+		{"Totals", res.Totals, BusyAgentCount, 0},
+		{"Totals", res.Totals, IdleAgentCount, 0},
+	}
+
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%s/%s", tc.Group, tc.Key), func(t *testing.T) {
+			if tc.Counts[tc.Key] != tc.Expected {
+				t.Fatalf("%s was %d; want %d", tc.Key, tc.Counts[tc.Key], tc.Expected)
+			}
+		})
+	}
+
+	if len(res.Queues) > 0 {
+		t.Fatalf("Unexpected queues in response: %v", res.Queues)
+	}
+}
+
+func TestCollectorWithNoJobsForAllQueues(t *testing.T) {
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/metrics" {
+			w.WriteHeader(http.StatusOK)
+			io.WriteString(w, `{"jobs":{"scheduled":0,"running":0,"all":0,"queues":{}},"agents":{"idle":0,"busy":0,"all":0,"queues":{}}}`)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	c := &Collector{
+		Endpoint: s.URL,
+		Token: "abc123",
+		UserAgent: "some-client/1.2.3",
+	}
+	res, err := c.Collect()
+	if err != nil {
+		t.Fatal(err)
+	}
+	testCases := []struct {
+		Group    string
+		Counts   map[string]int
+		Key      string
+		Expected int
+	}{
+		{"Totals", res.Totals, RunningJobsCount, 0},
+		{"Totals", res.Totals, ScheduledJobsCount, 0},
+		{"Totals", res.Totals, UnfinishedJobsCount, 0},
+		{"Totals", res.Totals, TotalAgentCount, 0},
+		{"Totals", res.Totals, BusyAgentCount, 0},
+		{"Totals", res.Totals, IdleAgentCount, 0},
+	}
+
+	for _, tc := range testCases {
+		t.Run(fmt.Sprintf("%s/%s", tc.Group, tc.Key), func(t *testing.T) {
+			if tc.Counts[tc.Key] != tc.Expected {
+				t.Fatalf("%s was %d; want %d", tc.Key, tc.Counts[tc.Key], tc.Expected)
+			}
+		})
+	}
+
+	if len(res.Queues) > 0 {
+		t.Fatalf("Unexpected queues in response: %v", res.Queues)
+	}
+}
+
+func TestCollectorWithSomeJobsAndAgentsForAllQueues(t *testing.T) {
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/metrics" {
+			w.WriteHeader(http.StatusOK)
+			io.WriteString(w, `{"jobs":{"scheduled":3,"running":1,"total":4,"queues":{"default":{"scheduled":2,"running":1,"total":3},"deploy":{"scheduled":1,"running":0,"total":1}}},"agents":{"idle":0,"busy":1,"total":1,"queues":{"default":{"idle":0,"busy":1,"total":1}}}}`)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	c := &Collector{
+		Endpoint: s.URL,
+		Token: "abc123",
+		UserAgent: "some-client/1.2.3",
+	}
+	res, err := c.Collect()
+	if err != nil {
+		t.Fatal(err)
+	}
+	testCases := []struct {
+		Group    string
+		Counts   map[string]int
+		Key      string
+		Expected int
+	}{
 		{"Totals", res.Totals, RunningJobsCount, 1},
 		{"Totals", res.Totals, ScheduledJobsCount, 3},
 		{"Totals", res.Totals, UnfinishedJobsCount, 4},
@@ -73,8 +129,6 @@ func TestCollectorWithRunningBuildsForAllQueues(t *testing.T) {
 		{"Totals", res.Totals, BusyAgentCount, 1},
 		{"Totals", res.Totals, IdleAgentCount, 0},
 
-		{"Queue.default", res.Queues["default"], RunningBuildsCount, 1},
-		{"Queue.default", res.Queues["default"], ScheduledBuildsCount, 2},
 		{"Queue.default", res.Queues["default"], RunningJobsCount, 1},
 		{"Queue.default", res.Queues["default"], ScheduledJobsCount, 2},
 		{"Queue.default", res.Queues["default"], UnfinishedJobsCount, 3},
@@ -82,41 +136,12 @@ func TestCollectorWithRunningBuildsForAllQueues(t *testing.T) {
 		{"Queue.default", res.Queues["default"], BusyAgentCount, 1},
 		{"Queue.default", res.Queues["default"], IdleAgentCount, 0},
 
-		{"Queue.deploy", res.Queues["deploy"], RunningBuildsCount, 1},
-		{"Queue.deploy", res.Queues["deploy"], ScheduledBuildsCount, 0},
 		{"Queue.deploy", res.Queues["deploy"], RunningJobsCount, 0},
 		{"Queue.deploy", res.Queues["deploy"], ScheduledJobsCount, 1},
 		{"Queue.deploy", res.Queues["deploy"], UnfinishedJobsCount, 1},
 		{"Queue.deploy", res.Queues["deploy"], TotalAgentCount, 0},
 		{"Queue.deploy", res.Queues["deploy"], BusyAgentCount, 0},
 		{"Queue.deploy", res.Queues["deploy"], IdleAgentCount, 0},
-
-		{"Pipeline.llamas", res.Pipelines["llamas"], RunningBuildsCount, 1},
-		{"Pipeline.llamas", res.Pipelines["llamas"], ScheduledBuildsCount, 0},
-		{"Pipeline.llamas", res.Pipelines["llamas"], RunningJobsCount, 1},
-		{"Pipeline.llamas", res.Pipelines["llamas"], ScheduledJobsCount, 1},
-		{"Pipeline.llamas", res.Pipelines["llamas"], UnfinishedJobsCount, 2},
-		{"Pipeline.llamas", res.Pipelines["llamas"], TotalAgentCount, 0},
-		{"Pipeline.llamas", res.Pipelines["llamas"], BusyAgentCount, 0},
-		{"Pipeline.llamas", res.Pipelines["llamas"], IdleAgentCount, 0},
-
-		{"Pipeline.alpacas", res.Pipelines["alpacas"], RunningBuildsCount, 0},
-		{"Pipeline.alpacas", res.Pipelines["alpacas"], ScheduledBuildsCount, 1},
-		{"Pipeline.alpacas", res.Pipelines["alpacas"], RunningJobsCount, 0},
-		{"Pipeline.alpacas", res.Pipelines["alpacas"], ScheduledJobsCount, 1},
-		{"Pipeline.alpacas", res.Pipelines["alpacas"], UnfinishedJobsCount, 1},
-		{"Pipeline.alpacas", res.Pipelines["alpacas"], TotalAgentCount, 0},
-		{"Pipeline.alpacas", res.Pipelines["alpacas"], BusyAgentCount, 0},
-		{"Pipeline.alpacas", res.Pipelines["alpacas"], IdleAgentCount, 0},
-
-		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], RunningBuildsCount, 0},
-		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], ScheduledBuildsCount, 1},
-		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], RunningJobsCount, 0},
-		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], ScheduledJobsCount, 1},
-		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], UnfinishedJobsCount, 1},
-		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], TotalAgentCount, 0},
-		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], BusyAgentCount, 0},
-		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], IdleAgentCount, 0},
 	}
 
 	for queue, _ := range res.Queues {
@@ -137,71 +162,40 @@ func TestCollectorWithRunningBuildsForAllQueues(t *testing.T) {
 	}
 }
 
-func TestCollectorWithRunningBuildsForASingleQueue(t *testing.T) {
-	c := newTestCollector()
-	c.Queue = "default"
-
+func TestCollectorWithSomeJobsAndAgentsForAQueue(t *testing.T) {
+	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path == "/metrics/queue" && r.URL.Query().Get("name") == "deploy" {
+			w.WriteHeader(http.StatusOK)
+			io.WriteString(w, `{"jobs":{"scheduled":3,"running":1,"total":4},"agents":{"idle":0,"busy":1,"total":1}}`)
+		} else {
+			w.WriteHeader(http.StatusNotFound)
+		}
+	}))
+	c := &Collector{
+		Endpoint: s.URL,
+		Token: "abc123",
+		UserAgent: "some-client/1.2.3",
+		Queue: "deploy",
+	}
 	res, err := c.Collect()
 	if err != nil {
 		t.Fatal(err)
 	}
-
+	if len(res.Totals) > 0 {
+		t.Fatalf("Expected no Totals but found: %v", res.Totals)
+	}
 	testCases := []struct {
 		Group    string
 		Counts   map[string]int
 		Key      string
 		Expected int
 	}{
-		{"Totals", res.Totals, RunningBuildsCount, 1},
-		{"Totals", res.Totals, ScheduledBuildsCount, 2},
-		{"Totals", res.Totals, RunningJobsCount, 1},
-		{"Totals", res.Totals, ScheduledJobsCount, 2},
-		{"Totals", res.Totals, UnfinishedJobsCount, 3},
-		{"Totals", res.Totals, TotalAgentCount, 1},
-		{"Totals", res.Totals, BusyAgentCount, 1},
-		{"Totals", res.Totals, IdleAgentCount, 0},
-
-		{"Queue.default", res.Queues["default"], RunningBuildsCount, 1},
-		{"Queue.default", res.Queues["default"], ScheduledBuildsCount, 2},
-		{"Queue.default", res.Queues["default"], RunningJobsCount, 1},
-		{"Queue.default", res.Queues["default"], ScheduledJobsCount, 2},
-		{"Queue.default", res.Queues["default"], UnfinishedJobsCount, 3},
-		{"Queue.default", res.Queues["default"], TotalAgentCount, 1},
-		{"Queue.default", res.Queues["default"], BusyAgentCount, 1},
-		{"Queue.default", res.Queues["default"], IdleAgentCount, 0},
-
-		{"Pipeline.llamas", res.Pipelines["llamas"], RunningBuildsCount, 1},
-		{"Pipeline.llamas", res.Pipelines["llamas"], ScheduledBuildsCount, 0},
-		{"Pipeline.llamas", res.Pipelines["llamas"], RunningJobsCount, 1},
-		{"Pipeline.llamas", res.Pipelines["llamas"], ScheduledJobsCount, 0},
-		{"Pipeline.llamas", res.Pipelines["llamas"], UnfinishedJobsCount, 1},
-		{"Pipeline.llamas", res.Pipelines["llamas"], TotalAgentCount, 0},
-		{"Pipeline.llamas", res.Pipelines["llamas"], BusyAgentCount, 0},
-		{"Pipeline.llamas", res.Pipelines["llamas"], IdleAgentCount, 0},
-
-		{"Pipeline.alpacas", res.Pipelines["alpacas"], RunningBuildsCount, 0},
-		{"Pipeline.alpacas", res.Pipelines["alpacas"], ScheduledBuildsCount, 1},
-		{"Pipeline.alpacas", res.Pipelines["alpacas"], RunningJobsCount, 0},
-		{"Pipeline.alpacas", res.Pipelines["alpacas"], ScheduledJobsCount, 1},
-		{"Pipeline.alpacas", res.Pipelines["alpacas"], UnfinishedJobsCount, 1},
-		{"Pipeline.alpacas", res.Pipelines["alpacas"], TotalAgentCount, 0},
-		{"Pipeline.alpacas", res.Pipelines["alpacas"], BusyAgentCount, 0},
-		{"Pipeline.alpacas", res.Pipelines["alpacas"], IdleAgentCount, 0},
-
-		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], RunningBuildsCount, 0},
-		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], ScheduledBuildsCount, 1},
-		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], RunningJobsCount, 0},
-		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], ScheduledJobsCount, 1},
-		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], UnfinishedJobsCount, 1},
-		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], TotalAgentCount, 0},
-		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], BusyAgentCount, 0},
-		{"Pipeline.vicuñas", res.Pipelines["xn--vicuas-zwa"], IdleAgentCount, 0},
-	}
-
-	for queue, _ := range res.Queues {
-		if queue != "default" {
-			t.Fatalf("Unexpected queue %s", queue)
-		}
+		{"Queue.deploy", res.Queues["deploy"], RunningJobsCount, 1},
+		{"Queue.deploy", res.Queues["deploy"], ScheduledJobsCount, 3},
+		{"Queue.deploy", res.Queues["deploy"], UnfinishedJobsCount, 4},
+		{"Queue.deploy", res.Queues["deploy"], TotalAgentCount, 1},
+		{"Queue.deploy", res.Queues["deploy"], BusyAgentCount, 1},
+		{"Queue.deploy", res.Queues["deploy"], IdleAgentCount, 0},
 	}
 
 	for _, tc := range testCases {
@@ -211,24 +205,4 @@ func TestCollectorWithRunningBuildsForASingleQueue(t *testing.T) {
 			}
 		})
 	}
-}
-
-type testBuildService struct {
-	Builds []bk.Build
-}
-
-func (bs *testBuildService) ListByOrg(org string, opt *bk.BuildsListOptions) ([]bk.Build, *bk.Response, error) {
-	nextPage := opt.Page + 1
-	if nextPage > len(bs.Builds) {
-		nextPage = 0
-	}
-	return []bk.Build{bs.Builds[opt.Page-1]}, &bk.Response{NextPage: nextPage}, nil
-}
-
-type testAgentService struct {
-	Agents []bk.Agent
-}
-
-func (as *testAgentService) List(org string, opt *bk.AgentListOptions) ([]bk.Agent, *bk.Response, error) {
-	return as.Agents, &bk.Response{NextPage: 0}, nil
 }
