@@ -1,6 +1,6 @@
 # Buildkite Metrics
 
-A command-line tool for collecting [Buildkite](https://buildkite.com/) agent and job statistics for external metrics systems, focusing on enabling auto—scaling. Currently [AWS Cloudwatch](http://aws.amazon.com/cloudwatch/), [StatsD](https://github.com/etsy/statsd) and [Prometheus](https://prometheus.io) are supported.
+A command-line tool for collecting [Buildkite](https://buildkite.com/) agent and job statistics for external metrics systems, focusing on enabling auto-scaling. Currently [AWS Cloudwatch](http://aws.amazon.com/cloudwatch/), [StatsD](https://github.com/etsy/statsd) and [Prometheus](https://prometheus.io) are supported.
 
 [![Build status](https://badge.buildkite.com/80d04fcde3a306bef44e77aadb1f1ffdc20ebb3c8f1f585a60.svg)](https://buildkite.com/buildkite/buildkite-metrics)
 
