@@ -29,12 +29,6 @@ func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 		})...)
 	}
 
-	for name, c := range r.Pipelines {
-		metrics = append(metrics, cloudwatchMetrics(c, []*cloudwatch.Dimension{
-			{Name: aws.String("Pipeline"), Value: aws.String(name)},
-		})...)
-	}
-
 	log.Printf("Extracted %d cloudwatch metrics from results", len(metrics))
 
 	for _, chunk := range chunkCloudwatchMetrics(10, metrics) {

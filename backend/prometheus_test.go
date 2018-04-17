@@ -23,31 +23,22 @@ const (
 
 func newTestResult(t *testing.T) *collector.Result {
 	t.Helper()
-	pipelines := map[string]int{
+	totals := map[string]int{
 		"RunningBuildsCount":   runningBuildsCount,
 		"ScheduledBuildsCount": scheduledBuildsCount,
 		"RunningJobsCount":     runningJobsCount,
 		"ScheduledJobsCount":   scheduledJobsCount,
 		"UnfinishedJobsCount":  unfinishedJobsCount,
+		"IdleAgentCount":       idleAgentCount,
+		"BusyAgentCount":       busyAgentCount,
+		"TotalAgentCount":      totalAgentCount,
 	}
-
-	totals := make(map[string]int)
-	for k, v := range pipelines {
-		totals[k] = v
-	}
-	totals["IdleAgentCount"] = idleAgentCount
-	totals["BusyAgentCount"] = busyAgentCount
-	totals["TotalAgentCount"] = totalAgentCount
 
 	res := &collector.Result{
 		Totals: totals,
 		Queues: map[string]map[string]int{
 			"default": totals,
 			"deploy":  totals,
-		},
-		Pipelines: map[string]map[string]int{
-			"pipeline1": pipelines,
-			"pipeline2": pipelines,
 		},
 	}
 	return res
@@ -81,7 +72,7 @@ func gatherMetrics(t *testing.T) map[string]*dto.MetricFamily {
 func TestCollect(t *testing.T) {
 	mfs := gatherMetrics(t)
 
-	if want, have := 21, len(mfs); want != have {
+	if want, have := 16, len(mfs); want != have {
 		t.Errorf("wanted %d Prometheus metrics, have: %d", want, have)
 	}
 
@@ -123,22 +114,6 @@ func TestCollect(t *testing.T) {
 			"Buildkite Queues: IdleAgentCount",
 			[]string{"default", "deploy"},
 			idleAgentCount,
-			dto.MetricType_GAUGE,
-		},
-		{
-			"Pipelines",
-			"buildkite_pipelines_running_builds_count",
-			"Buildkite Pipelines: RunningBuildsCount",
-			[]string{"pipeline1", "pipeline2"},
-			runningBuildsCount,
-			dto.MetricType_GAUGE,
-		},
-		{
-			"Pipelines",
-			"buildkite_pipelines_unfinished_jobs_count",
-			"Buildkite Pipelines: UnfinishedJobsCount",
-			[]string{"pipeline1", "pipeline2"},
-			unfinishedJobsCount,
 			dto.MetricType_GAUGE,
 		},
 	}

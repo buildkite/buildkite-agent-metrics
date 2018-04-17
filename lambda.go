@@ -12,60 +12,55 @@ import (
 	"github.com/buildkite/buildkite-metrics/backend"
 	"github.com/buildkite/buildkite-metrics/collector"
 	"github.com/buildkite/buildkite-metrics/version"
-	"github.com/buildkite/go-buildkite/buildkite"
 	"github.com/eawsy/aws-lambda-go/service/lambda/runtime"
 )
 
 func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
-	org := os.Getenv("BUILDKITE_ORG")
-	token := os.Getenv("BUILDKITE_TOKEN")
+	token := os.Getenv("BUILDKITE_AGENT_TOKEN")
 	backendOpt := os.Getenv("BUILDKITE_BACKEND")
 	queue := os.Getenv("BUILDKITE_QUEUE")
-	quiet := os.Getenv("BUILDKITE_QUIET")
+	quietString := os.Getenv("BUILDKITE_QUIET")
+	quiet := quietString == "1" || quietString == "true"
 
-	if quiet == "1" || quiet == "false" {
+	if quiet {
 		log.SetOutput(ioutil.Discard)
 	}
 
-	config, err := buildkite.NewTokenConfig(token, false)
-	if err != nil {
-		return nil, err
-	}
-
-	client := buildkite.NewClient(config.Client())
 	t := time.Now()
 
-	client.UserAgent = fmt.Sprintf(
-		"%s buildkite-metrics/%s buildkite-metrics-lambda queue=%q",
-		client.UserAgent, version.Version, queue,
-	)
+	userAgent := fmt.Sprintf("buildkite-metrics/%s buildkite-metrics-lambda", version.Version)
 
-	col := collector.New(client, collector.Opts{
-		OrgSlug: org,
-	})
-
-	if queue != "" {
-		col.Queue = queue
+	c := collector.Collector{
+		UserAgent: userAgent,
+		Endpoint: "https://agent.buildkite.com/v3",
+		Token: token,
+		Queue: queue,
+		Quiet: quiet,
+		Debug: false,
+		DebugHttp: false,
 	}
 
-	var bk backend.Backend
+	var b backend.Backend
+	var err error
 	if backendOpt == "statsd" {
-		bk, err = backend.NewStatsDBackend(os.Getenv("STATSD_HOST"), strings.ToLower(os.Getenv("STATSD_TAGS")) == "true")
+		statsdHost := os.Getenv("STATSD_HOST")
+		statsdTags := strings.ToLower(os.Getenv("STATSD_TAGS")) == "true"
+		b, err = backend.NewStatsDBackend(statsdHost, statsdTags)
 		if err != nil {
 			return nil, err
 		}
 	} else {
-		bk = &backend.CloudWatchBackend{}
+		b = &backend.CloudWatchBackend{}
 	}
 
-	res, err := col.Collect()
+	res, err := c.Collect()
 	if err != nil {
 		return nil, err
 	}
 
 	res.Dump()
 
-	err = bk.Collect(res)
+	err = b.Collect(res)
 	if err != nil {
 		return nil, err
 	}
