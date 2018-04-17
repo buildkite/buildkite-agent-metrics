@@ -85,7 +85,6 @@ An AWS Lambda bundle is created and published as part of the build process.
 
 It's entrypoint is `handler.handle`, it requires a `python2.7` environment and makes use of the following env vars:
 
- - BUILDKITE_ORG
  - BUILDKITE_TOKEN
  - BUILDKITE_BACKEND
  - BUILDKITE_QUEUE
