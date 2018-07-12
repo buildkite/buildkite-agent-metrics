@@ -41,6 +41,12 @@ func newPrometheus() *Prometheus {
 }
 
 func (p *Prometheus) Collect(r *collector.Result) error {
+
+	// Clear the gauges to prevent stale values from persisting forever.
+	for _, gauge := range p.queues {
+		gauge.Reset()
+	}
+
 	for name, value := range r.Totals {
 		gauge, ok := p.totals[name]
 		if !ok {
