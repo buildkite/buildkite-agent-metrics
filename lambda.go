@@ -19,6 +19,7 @@ func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 	token := os.Getenv("BUILDKITE_AGENT_TOKEN")
 	backendOpt := os.Getenv("BUILDKITE_BACKEND")
 	queue := os.Getenv("BUILDKITE_QUEUE")
+	clwDimension := os.Getenv("BUILDKITE_CLOUDWATCH_DIMENSION")
 	quietString := os.Getenv("BUILDKITE_QUIET")
 	quiet := quietString == "1" || quietString == "true"
 
@@ -32,11 +33,11 @@ func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 
 	c := collector.Collector{
 		UserAgent: userAgent,
-		Endpoint: "https://agent.buildkite.com/v3",
-		Token: token,
-		Queue: queue,
-		Quiet: quiet,
-		Debug: false,
+		Endpoint:  "https://agent.buildkite.com/v3",
+		Token:     token,
+		Queue:     queue,
+		Quiet:     quiet,
+		Debug:     false,
 		DebugHttp: false,
 	}
 
@@ -50,7 +51,7 @@ func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 			return nil, err
 		}
 	} else {
-		b = &backend.CloudWatchBackend{}
+		b = backend.NewCloudWatchBackend(clwDimension)
 	}
 
 	res, err := c.Collect()
