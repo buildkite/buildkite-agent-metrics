@@ -16,6 +16,8 @@ type CloudWatchBackend struct {
 	dimension string
 }
 
+// NewCloudWatchBackend returns a new CloudWatchBackend with an
+// optional Dimension in the form of Key=Value
 func NewCloudWatchBackend(dimension string) *CloudWatchBackend {
 	return &CloudWatchBackend{dimension: dimension}
 }
@@ -25,6 +27,7 @@ func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 
 	var dimensionKey, dimensionValue string
 
+	// Support a custom dimension, needs to be parsed from Key=Value
 	if cb.dimension != "" {
 		dimensionParts := strings.SplitN(cb.dimension, "=", 2)
 		if len(dimensionParts) != 2 {
@@ -42,7 +45,7 @@ func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 	for name, c := range r.Queues {
 		dimensions := []*cloudwatch.Dimension{}
 
-		// Add a custom dimension if one is provided
+		// Add custom dimension if provided
 		if dimensionKey != "" {
 			dimensions = append(dimensions, &cloudwatch.Dimension{
 				Name: aws.String(dimensionKey), Value: aws.String(dimensionValue),
