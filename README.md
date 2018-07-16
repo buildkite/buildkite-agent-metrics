@@ -30,7 +30,11 @@ buildkite-metrics -token abc123... -queue my-queue
 
 By default metrics will be submitted to CloudWatch but the backend can be switched to StatsD or Prometheus using the command-line argument `-backend statsd` or `-backend prometheus` respectively.
 
-The StatsD backend supports the following arguments
+The Cloudwatch backend supports the following arguments:
+
+* `-cloudwatch-dimension`: A optional custom dimension in the form of `Key=Value`
+
+The StatsD backend supports the following arguments:
 
 * `-statsd-host HOST`: The StatsD host and port (defaults to `127.0.0.1:8125`).
 * `-statsd-tags`: Some StatsD servers like the agent provided by DataDog support tags. If specified, metrics will be tagged by `queue` otherwise metrics will include the queue name in the metric. Only enable this option if you know your StatsD server supports tags.
