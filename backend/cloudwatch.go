@@ -1,7 +1,9 @@
 package backend
 
 import (
+	"fmt"
 	"log"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -11,22 +13,47 @@ import (
 
 // CloudWatchBackend sends metrics to AWS CloudWatch
 type CloudWatchBackend struct {
+	dimension string
 }
 
-func NewCloudWatchBackend() *CloudWatchBackend {
-	return &CloudWatchBackend{}
+func NewCloudWatchBackend(dimension string) *CloudWatchBackend {
+	return &CloudWatchBackend{dimension: dimension}
 }
 
 func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 	svc := cloudwatch.New(session.New())
 
+	var dimensionKey, dimensionValue string
+
+	if cb.dimension != "" {
+		dimensionParts := strings.SplitN(cb.dimension, "=", 2)
+		if len(dimensionParts) != 2 {
+			return fmt.Errorf("Failed to parse dimension of %q", cb.dimension)
+		}
+		dimensionKey = dimensionParts[0]
+		dimensionValue = dimensionParts[1]
+
+		log.Printf("Using custom Cloudwatch dimension of [ %s = %s ]", dimensionKey, dimensionValue)
+	}
+
 	metrics := []*cloudwatch.MetricDatum{}
 	metrics = append(metrics, cloudwatchMetrics(r.Totals, nil)...)
 
 	for name, c := range r.Queues {
-		metrics = append(metrics, cloudwatchMetrics(c, []*cloudwatch.Dimension{
-			{Name: aws.String("Queue"), Value: aws.String(name)},
-		})...)
+		dimensions := []*cloudwatch.Dimension{}
+
+		// Add a custom dimension if one is provided
+		if dimensionKey != "" {
+			dimensions = append(dimensions, &cloudwatch.Dimension{
+				Name: aws.String(dimensionKey), Value: aws.String(dimensionValue),
+			})
+		}
+
+		dimensions = append(dimensions, &cloudwatch.Dimension{
+			Name: aws.String("Queue"), Value: aws.String(name),
+		})
+
+		metrics = append(metrics, cloudwatchMetrics(c, dimensions)...)
 	}
 
 	log.Printf("Extracted %d cloudwatch metrics from results", len(metrics))
