@@ -11,32 +11,48 @@ import (
 	"github.com/buildkite/buildkite-metrics/collector"
 )
 
-// CloudWatchBackend sends metrics to AWS CloudWatch
-type CloudWatchBackend struct {
-	dimension string
+// CloudWatchDimension is a dimension to add to metrics
+type CloudWatchDimension struct {
+	Key   string
+	Value string
 }
 
-// NewCloudWatchBackend returns a new CloudWatchBackend with an
-// optional Dimension in the form of Key=Value
-func NewCloudWatchBackend(dimension string) *CloudWatchBackend {
-	return &CloudWatchBackend{dimension: dimension}
+func ParseCloudWatchDimensions(ds string) ([]CloudWatchDimension, error) {
+	dimensions := []CloudWatchDimension{}
+
+	if strings.TrimSpace(ds) == "" {
+		return dimensions, nil
+	}
+
+	for _, dimension := range strings.Split(strings.TrimSpace(ds), ",") {
+		parts := strings.SplitN(strings.TrimSpace(dimension), "=", 2)
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("Failed to parse dimension of %q", dimension)
+		}
+		dimensions = append(dimensions, CloudWatchDimension{
+			Key:   parts[0],
+			Value: parts[1],
+		})
+	}
+
+	return dimensions, nil
+}
+
+// CloudWatchBackend sends metrics to AWS CloudWatch
+type CloudWatchBackend struct {
+	dimensions []CloudWatchDimension
+}
+
+// NewCloudWatchBackend returns a new CloudWatchBackend with optional dimensions
+func NewCloudWatchBackend(dimensions []CloudWatchDimension) *CloudWatchBackend {
+	return &CloudWatchBackend{dimensions: dimensions}
 }
 
 func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 	svc := cloudwatch.New(session.New())
 
-	var dimensionKey, dimensionValue string
-
-	// Support a custom dimension, needs to be parsed from Key=Value
-	if cb.dimension != "" {
-		dimensionParts := strings.SplitN(cb.dimension, "=", 2)
-		if len(dimensionParts) != 2 {
-			return fmt.Errorf("Failed to parse dimension of %q", cb.dimension)
-		}
-		dimensionKey = dimensionParts[0]
-		dimensionValue = dimensionParts[1]
-
-		log.Printf("Using custom Cloudwatch dimension of [ %s = %s ]", dimensionKey, dimensionValue)
+	for _, d := range cb.dimensions {
+		log.Printf("Using custom Cloudwatch dimension of [ %s = %s ]", d.Key, d.Value)
 	}
 
 	metrics := []*cloudwatch.MetricDatum{}
@@ -46,9 +62,9 @@ func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 		dimensions := []*cloudwatch.Dimension{}
 
 		// Add custom dimension if provided
-		if dimensionKey != "" {
+		for _, d := range cb.dimensions {
 			dimensions = append(dimensions, &cloudwatch.Dimension{
-				Name: aws.String(dimensionKey), Value: aws.String(dimensionValue),
+				Name: aws.String(d.Key), Value: aws.String(d.Value),
 			})
 		}
 

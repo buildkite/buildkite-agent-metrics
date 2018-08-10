@@ -19,7 +19,7 @@ func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 	token := os.Getenv("BUILDKITE_AGENT_TOKEN")
 	backendOpt := os.Getenv("BUILDKITE_BACKEND")
 	queue := os.Getenv("BUILDKITE_QUEUE")
-	clwDimension := os.Getenv("BUILDKITE_CLOUDWATCH_DIMENSION")
+	clwDimensions := os.Getenv("BUILDKITE_CLOUDWATCH_DIMENSIONS")
 	quietString := os.Getenv("BUILDKITE_QUIET")
 	quiet := quietString == "1" || quietString == "true"
 
@@ -51,7 +51,11 @@ func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 			return nil, err
 		}
 	} else {
-		b = backend.NewCloudWatchBackend(clwDimension)
+		dimensions, err := backend.ParseCloudWatchDimensions(clwDimensions)
+		if err != nil {
+			return nil, err
+		}
+		b = backend.NewCloudWatchBackend(dimensions)
 	}
 
 	res, err := c.Collect()

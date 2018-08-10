@@ -32,7 +32,7 @@ By default metrics will be submitted to CloudWatch but the backend can be switch
 
 The Cloudwatch backend supports the following arguments:
 
-* `-cloudwatch-dimension`: A optional custom dimension in the form of `Key=Value`
+* `-cloudwatch-dimensions`: A optional custom dimension in the form of `Key=Value, Key=Value`
 
 The StatsD backend supports the following arguments:
 
@@ -93,7 +93,7 @@ It's entrypoint is `handler.handle`, it requires a `python2.7` environment and r
  - BUILDKITE_BACKEND
  - BUILDKITE_QUEUE
  - BUILDKITE_QUIET
- - BUILDKITE_CLOUDWATCH_DIMENSION
+ - BUILDKITE_CLOUDWATCH_DIMENSIONS
 
 Take a look at https://github.com/buildkite/elastic-ci-stack-for-aws/blob/master/templates/metrics.yml for examples of usage.
 
