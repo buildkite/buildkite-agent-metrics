@@ -33,6 +33,7 @@ func main() {
 		statsdTags     = flag.Bool("statsd-tags", false, "Whether your StatsD server supports tagging like Datadog")
 		prometheusAddr = flag.String("prometheus-addr", ":8080", "Prometheus metrics transport bind address")
 		prometheusPath = flag.String("prometheus-path", "/metrics", "Prometheus metrics transport path")
+		clwDimensions  = flag.String("cloudwatch-dimensions", "", "Cloudwatch dimensions to index metrics under, in the form of Key=Value, Other=Value")
 
 		// filters
 		queue = flag.String("queue", "", "Only include a specific queue")
@@ -52,7 +53,12 @@ func main() {
 
 	switch strings.ToLower(*backendOpt) {
 	case "cloudwatch":
-		bk = backend.NewCloudWatchBackend()
+		dimensions, err := backend.ParseCloudWatchDimensions(*clwDimensions)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		bk = backend.NewCloudWatchBackend(dimensions)
 	case "statsd":
 		var err error
 		bk, err = backend.NewStatsDBackend(*statsdHost, *statsdTags)
@@ -78,11 +84,11 @@ func main() {
 
 	c := collector.Collector{
 		UserAgent: userAgent,
-		Endpoint: *endpoint,
-		Token: *token,
-		Queue: *queue,
-		Quiet: *quiet,
-		Debug: *debug,
+		Endpoint:  *endpoint,
+		Token:     *token,
+		Queue:     *queue,
+		Quiet:     *quiet,
+		Debug:     *debug,
 		DebugHttp: *debugHttp,
 	}
 

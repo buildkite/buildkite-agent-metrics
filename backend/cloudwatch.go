@@ -1,7 +1,9 @@
 package backend
 
 import (
+	"fmt"
 	"log"
+	"strings"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
@@ -9,24 +11,68 @@ import (
 	"github.com/buildkite/buildkite-metrics/collector"
 )
 
-// CloudWatchBackend sends metrics to AWS CloudWatch
-type CloudWatchBackend struct {
+// CloudWatchDimension is a dimension to add to metrics
+type CloudWatchDimension struct {
+	Key   string
+	Value string
 }
 
-func NewCloudWatchBackend() *CloudWatchBackend {
-	return &CloudWatchBackend{}
+func ParseCloudWatchDimensions(ds string) ([]CloudWatchDimension, error) {
+	dimensions := []CloudWatchDimension{}
+
+	if strings.TrimSpace(ds) == "" {
+		return dimensions, nil
+	}
+
+	for _, dimension := range strings.Split(strings.TrimSpace(ds), ",") {
+		parts := strings.SplitN(strings.TrimSpace(dimension), "=", 2)
+		if len(parts) != 2 {
+			return nil, fmt.Errorf("Failed to parse dimension of %q", dimension)
+		}
+		dimensions = append(dimensions, CloudWatchDimension{
+			Key:   parts[0],
+			Value: parts[1],
+		})
+	}
+
+	return dimensions, nil
+}
+
+// CloudWatchBackend sends metrics to AWS CloudWatch
+type CloudWatchBackend struct {
+	dimensions []CloudWatchDimension
+}
+
+// NewCloudWatchBackend returns a new CloudWatchBackend with optional dimensions
+func NewCloudWatchBackend(dimensions []CloudWatchDimension) *CloudWatchBackend {
+	return &CloudWatchBackend{dimensions: dimensions}
 }
 
 func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 	svc := cloudwatch.New(session.New())
 
+	for _, d := range cb.dimensions {
+		log.Printf("Using custom Cloudwatch dimension of [ %s = %s ]", d.Key, d.Value)
+	}
+
 	metrics := []*cloudwatch.MetricDatum{}
 	metrics = append(metrics, cloudwatchMetrics(r.Totals, nil)...)
 
 	for name, c := range r.Queues {
-		metrics = append(metrics, cloudwatchMetrics(c, []*cloudwatch.Dimension{
-			{Name: aws.String("Queue"), Value: aws.String(name)},
-		})...)
+		dimensions := []*cloudwatch.Dimension{}
+
+		// Add custom dimension if provided
+		for _, d := range cb.dimensions {
+			dimensions = append(dimensions, &cloudwatch.Dimension{
+				Name: aws.String(d.Key), Value: aws.String(d.Value),
+			})
+		}
+
+		dimensions = append(dimensions, &cloudwatch.Dimension{
+			Name: aws.String("Queue"), Value: aws.String(name),
+		})
+
+		metrics = append(metrics, cloudwatchMetrics(c, dimensions)...)
 	}
 
 	log.Printf("Extracted %d cloudwatch metrics from results", len(metrics))
