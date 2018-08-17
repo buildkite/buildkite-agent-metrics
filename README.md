@@ -1,6 +1,6 @@
-# Buildkite Metrics
+# Buildkite Agent Metrics
 
-A command-line tool for collecting [Buildkite](https://buildkite.com/) agent and job statistics for external metrics systems, focusing on enabling auto-scaling. Currently [AWS Cloudwatch](http://aws.amazon.com/cloudwatch/), [StatsD](https://github.com/etsy/statsd) and [Prometheus](https://prometheus.io) are supported.
+A command-line tool for collecting [Buildkite](https://buildkite.com/) agent metrics, focusing on enabling auto-scaling. Currently [AWS Cloudwatch](http://aws.amazon.com/cloudwatch/), [StatsD](https://github.com/etsy/statsd) and [Prometheus](https://prometheus.io) are supported.
 
 [![Build status](https://badge.buildkite.com/80d04fcde3a306bef44e77aadb1f1ffdc20ebb3c8f1f585a60.svg)](https://buildkite.com/buildkite/buildkite-metrics)
 
@@ -14,17 +14,35 @@ go get github.com/buildkite/buildkite-metrics
 
 ## Running
 
-Run the metrics agent using an Agent Registration Token, found on the [Buildkite Agents page](https://buildkite.com/organizations/-/agents):
+Several running modes are supported. All of them require an Agent Registration Token, found on the [Buildkite Agents page](https://buildkite.com/organizations/-/agents).
+
+### Running as a Daemon
+
+The simplest deployment is to run as a long-running daemon that collects metrics across all queues in an organization.
 
 ```
-buildkite-metrics -token abc123...
+buildkite-metrics -token abc123 -interval 30s
 ```
 
-By default this will publish metrics for every queue with connected agents and unfinished jobs, and a total of all metrics. Restrict it to a single queue with `-queue` if you're scaling a single cluster of agents:
+Restrict it to a single queue with `-queue` if you're scaling a single cluster of agents:
 
 ```
-buildkite-metrics -token abc123... -queue my-queue
+buildkite-metrics -token abc123 -interval 30s -queue my-queue
 ```
+
+### Running as an AWS Lambda
+
+An AWS Lambda bundle is created and published as part of the build process.
+
+It's entrypoint is `handler.handle`, it requires a `python2.7` environment and respects the following env vars:
+
+ - BUILDKITE_TOKEN
+ - BUILDKITE_BACKEND
+ - BUILDKITE_QUEUE
+ - BUILDKITE_QUIET
+ - BUILDKITE_CLOUDWATCH_DIMENSIONS
+
+Take a look at https://github.com/buildkite/elastic-ci-stack-for-aws/blob/master/templates/metrics.yml for examples of usage.
 
 ### Backends
 
@@ -44,7 +62,7 @@ The Prometheus backend supports the following arguments
 * `-prometheus-addr`: The local address to listen on (defaults to `:8080`).
 * `-prometheus-path`: The path under `prometheus-addr` to expose metrics on (defaults to `/metrics`).
 
-### Upgrading from v2
+### Upgrading from v2 to v3
 
 1. The `-org` argument is no longer needed
 2. The `-token` argument is now an _Agent Registration Token_ — the same used in the Buildkite Agent configuration file, and found on the [Buildkite Agents page](https://buildkite.com/organizations/-/agents).
@@ -82,20 +100,6 @@ Buildkite > (Queue) > TotalAgentsCount
 ```
 
 When a queue is specified, only that queue's metrics are published.
-
-## AWS Lambda
-
-An AWS Lambda bundle is created and published as part of the build process.
-
-It's entrypoint is `handler.handle`, it requires a `python2.7` environment and respects the following env vars:
-
- - BUILDKITE_TOKEN
- - BUILDKITE_BACKEND
- - BUILDKITE_QUEUE
- - BUILDKITE_QUIET
- - BUILDKITE_CLOUDWATCH_DIMENSIONS
-
-Take a look at https://github.com/buildkite/elastic-ci-stack-for-aws/blob/master/templates/metrics.yml for examples of usage.
 
 ## License
 
