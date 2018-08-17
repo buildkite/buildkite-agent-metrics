@@ -3,19 +3,20 @@ package collector
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"log"
+	"time"
 )
 
 const (
-	ScheduledJobsCount   = "ScheduledJobsCount"
-	RunningJobsCount     = "RunningJobsCount"
-	UnfinishedJobsCount  = "UnfinishedJobsCount"
-	IdleAgentCount       = "IdleAgentCount"
-	BusyAgentCount       = "BusyAgentCount"
-	TotalAgentCount      = "TotalAgentCount"
+	ScheduledJobsCount  = "ScheduledJobsCount"
+	RunningJobsCount    = "RunningJobsCount"
+	UnfinishedJobsCount = "UnfinishedJobsCount"
+	IdleAgentCount      = "IdleAgentCount"
+	BusyAgentCount      = "BusyAgentCount"
+	TotalAgentCount     = "TotalAgentCount"
 )
 
 type Collector struct {
@@ -34,20 +35,20 @@ type Result struct {
 }
 
 type metricsAgentsResponse struct {
-	Idle int `json:"idle"`
-	Busy int `json:"busy"`
+	Idle  int `json:"idle"`
+	Busy  int `json:"busy"`
 	Total int `json:"total"`
 }
 
 type metricsJobsResponse struct {
 	Scheduled int `json:"scheduled"`
-	Running int `json:"running"`
-	Total int `json:"total"`
+	Running   int `json:"running"`
+	Total     int `json:"total"`
 }
 
 type queueMetricsResponse struct {
 	Agents metricsAgentsResponse `json:"agents"`
-	Jobs metricsJobsResponse `json:"jobs"`
+	Jobs   metricsJobsResponse   `json:"jobs"`
 }
 
 type allMetricsAgentsResponse struct {
@@ -62,7 +63,7 @@ type allMetricsJobsResponse struct {
 
 type allMetricsResponse struct {
 	Agents allMetricsAgentsResponse `json:"agents"`
-	Jobs allMetricsJobsResponse `json:"jobs"`
+	Jobs   allMetricsJobsResponse   `json:"jobs"`
 }
 
 func (c *Collector) Collect() (*Result, error) {
@@ -73,7 +74,7 @@ func (c *Collector) Collect() (*Result, error) {
 
 	if c.Queue == "" {
 		log.Println("Collecting agent metrics for all queues")
-		
+
 		endpoint, err := url.Parse(c.Endpoint)
 		if err != nil {
 			return nil, err
@@ -95,7 +96,11 @@ func (c *Collector) Collect() (*Result, error) {
 			}
 		}
 
-		res, err := http.DefaultClient.Do(req)
+		httpClient := &http.Client{
+			Timeout: 5 * time.Second,
+		}
+
+		res, err := httpClient.Do(req)
 		if err != nil {
 			return nil, err
 		}
@@ -120,7 +125,7 @@ func (c *Collector) Collect() (*Result, error) {
 		result.Totals[BusyAgentCount] = allMetrics.Agents.Busy
 		result.Totals[TotalAgentCount] = allMetrics.Agents.Total
 
-		for queueName, queueJobMetrics := range(allMetrics.Jobs.Queues) {
+		for queueName, queueJobMetrics := range allMetrics.Jobs.Queues {
 			if _, ok := result.Queues[queueName]; !ok {
 				result.Queues[queueName] = map[string]int{}
 			}
@@ -129,7 +134,7 @@ func (c *Collector) Collect() (*Result, error) {
 			result.Queues[queueName][UnfinishedJobsCount] = queueJobMetrics.Total
 		}
 
-		for queueName, queueAgentMetrics := range(allMetrics.Agents.Queues) {
+		for queueName, queueAgentMetrics := range allMetrics.Agents.Queues {
 			if _, ok := result.Queues[queueName]; !ok {
 				result.Queues[queueName] = map[string]int{}
 			}
@@ -139,7 +144,7 @@ func (c *Collector) Collect() (*Result, error) {
 		}
 	} else {
 		log.Printf("Collecting agent metrics for queue '%s'", c.Queue)
-		
+
 		endpoint, err := url.Parse(c.Endpoint)
 		if err != nil {
 			return nil, err
@@ -181,12 +186,12 @@ func (c *Collector) Collect() (*Result, error) {
 		}
 
 		result.Queues[c.Queue] = map[string]int{
-			ScheduledJobsCount: queueMetrics.Jobs.Scheduled,
-			RunningJobsCount: queueMetrics.Jobs.Running,
+			ScheduledJobsCount:  queueMetrics.Jobs.Scheduled,
+			RunningJobsCount:    queueMetrics.Jobs.Running,
 			UnfinishedJobsCount: queueMetrics.Jobs.Total,
-			IdleAgentCount: queueMetrics.Agents.Idle,
-			BusyAgentCount: queueMetrics.Agents.Busy,
-			TotalAgentCount: queueMetrics.Agents.Total,
+			IdleAgentCount:      queueMetrics.Agents.Idle,
+			BusyAgentCount:      queueMetrics.Agents.Busy,
+			TotalAgentCount:     queueMetrics.Agents.Total,
 		}
 	}
 
