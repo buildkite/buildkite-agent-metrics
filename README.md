@@ -2,14 +2,16 @@
 
 A command-line tool for collecting [Buildkite](https://buildkite.com/) agent metrics, focusing on enabling auto-scaling. Currently [AWS Cloudwatch](http://aws.amazon.com/cloudwatch/), [StatsD](https://github.com/etsy/statsd) and [Prometheus](https://prometheus.io) are supported.
 
-[![Build status](https://badge.buildkite.com/80d04fcde3a306bef44e77aadb1f1ffdc20ebb3c8f1f585a60.svg)](https://buildkite.com/buildkite/buildkite-metrics)
+[![Build status](https://badge.buildkite.com/80d04fcde3a306bef44e77aadb1f1ffdc20ebb3c8f1f585a60.svg)](https://buildkite.com/buildkite/buildkite-agent-metrics)
+
+**Note: Formerly known as `buildkite-metrics`, but now `buildkite-agent-metrics` to reflect the focus of the tool.**
 
 ## Installing
 
-Either download the latest binary from [Github Releases](https://github.com/buildkite/buildkite-metrics/releases) or install with:
+Either download the latest binary from [Github Releases](https://github.com/buildkite/buildkite-agent-metrics/releases) or install with:
 
 ```bash
-go get github.com/buildkite/buildkite-metrics
+go get github.com/buildkite/buildkite-agent-metrics
 ```
 
 ## Running
@@ -21,13 +23,13 @@ Several running modes are supported. All of them require an Agent Registration T
 The simplest deployment is to run as a long-running daemon that collects metrics across all queues in an organization.
 
 ```
-buildkite-metrics -token abc123 -interval 30s
+buildkite-agent-metrics -token abc123 -interval 30s
 ```
 
 Restrict it to a single queue with `-queue` if you're scaling a single cluster of agents:
 
 ```
-buildkite-metrics -token abc123 -interval 30s -queue my-queue
+buildkite-agent-metrics -token abc123 -interval 30s -queue my-queue
 ```
 
 ### Running as an AWS Lambda
@@ -67,7 +69,7 @@ The Prometheus backend supports the following arguments
 1. The `-org` argument is no longer needed
 2. The `-token` argument is now an _Agent Registration Token_ — the same used in the Buildkite Agent configuration file, and found on the [Buildkite Agents page](https://buildkite.com/organizations/-/agents).
 3. Build and pipeline metrics have been removed, focusing on agents and jobs by queue for auto–scaling.
-   If you have a compelling reason to gather build or pipeline metrics please continue to use the [previous version](https://github.com/buildkite/buildkite-metrics/releases/tag/v2.1.0) or [open an issue](https://github.com/buildkite/buildkite-metrics/issues) with details.
+   If you have a compelling reason to gather build or pipeline metrics please continue to use the [previous version](https://github.com/buildkite/buildkite-agent-metrics/releases/tag/v2.1.0) or [open an issue](https://github.com/buildkite/buildkite-agent-metrics/issues) with details.
 
 ## Development
 
