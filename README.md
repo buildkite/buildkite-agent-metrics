@@ -57,7 +57,7 @@ The Cloudwatch backend supports the following arguments:
 The StatsD backend supports the following arguments:
 
 * `-statsd-host HOST`: The StatsD host and port (defaults to `127.0.0.1:8125`).
-* `-statsd-tags`: Some StatsD servers like the agent provided by DataDog support tags. If specified, metrics will be tagged by `queue` otherwise metrics will include the queue name in the metric. Only enable this option if you know your StatsD server supports tags.
+* `-statsd-tags`: Some StatsD servers like the agent provided by Datadog support tags. If specified, metrics will be tagged by `queue` otherwise metrics will include the queue name in the metric. Only enable this option if you know your StatsD server supports tags.
 
 The Prometheus backend supports the following arguments
 
