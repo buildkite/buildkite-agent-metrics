@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
-	"github.com/buildkite/buildkite-metrics/collector"
+	"github.com/buildkite/buildkite-agent-metrics/collector"
 )
 
 // CloudWatchDimension is a dimension to add to metrics

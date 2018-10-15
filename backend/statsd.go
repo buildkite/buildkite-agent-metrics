@@ -2,7 +2,7 @@ package backend
 
 import (
 	"github.com/DataDog/datadog-go/statsd"
-	"github.com/buildkite/buildkite-metrics/collector"
+	"github.com/buildkite/buildkite-agent-metrics/collector"
 )
 
 // StatsD sends metrics to StatsD (Datadog spec)

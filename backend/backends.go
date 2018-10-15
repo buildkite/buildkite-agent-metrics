@@ -1,6 +1,6 @@
 package backend
 
-import "github.com/buildkite/buildkite-metrics/collector"
+import "github.com/buildkite/buildkite-agent-metrics/collector"
 
 // Backend is a receiver of metrics
 type Backend interface {
