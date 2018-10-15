@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -9,25 +8,33 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/buildkite/buildkite-agent-metrics/backend"
 	"github.com/buildkite/buildkite-agent-metrics/collector"
 	"github.com/buildkite/buildkite-agent-metrics/version"
-	"github.com/eawsy/aws-lambda-go/service/lambda/runtime"
 )
 
-func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
+
+func handle() (error) {
 	token := os.Getenv("BUILDKITE_AGENT_TOKEN")
+	useSsnString := os.Getenv("BUILDKITE_TOKEN_IN_SSM")
 	backendOpt := os.Getenv("BUILDKITE_BACKEND")
 	queue := os.Getenv("BUILDKITE_QUEUE")
 	clwDimensions := os.Getenv("BUILDKITE_CLOUDWATCH_DIMENSIONS")
 	quietString := os.Getenv("BUILDKITE_QUIET")
 	quiet := quietString == "1" || quietString == "true"
+	useSsn := useSsnString == "true"
 
 	if quiet {
 		log.SetOutput(ioutil.Discard)
 	}
 
 	t := time.Now()
+
+    if useSsn  {
+        ssmClient := backend.GetSsmClient()
+        token = backend.RetrieveFromParameterStore(ssmClient, "buildkite_agent_token")
+    }
 
 	userAgent := fmt.Sprintf("buildkite-metrics/%s buildkite-metrics-lambda", version.Version)
 
@@ -48,32 +55,34 @@ func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 		statsdTags := strings.ToLower(os.Getenv("STATSD_TAGS")) == "true"
 		b, err = backend.NewStatsDBackend(statsdHost, statsdTags)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	} else {
 		dimensions, err := backend.ParseCloudWatchDimensions(clwDimensions)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		b = backend.NewCloudWatchBackend(dimensions)
 	}
 
 	res, err := c.Collect()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	res.Dump()
 
 	err = b.Collect(res)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	log.Printf("Finished in %s", time.Now().Sub(t))
-	return "", nil
+	return nil
 }
 
-func init() {
-	runtime.HandleFunc(handle)
+
+func main() {
+	// Make the handler available for Remote Procedure Call by AWS Lambda
+	lambda.Start(handle)
 }
