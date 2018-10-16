@@ -19,8 +19,7 @@ var once sync.Once
 // Retrieve a single instance of an SSM Client
 func GetSsmClient() *ssm.SSM {
 	once.Do(func() {
-		sess := session.Must(session.NewSession())
-		ssmClient = ssm.New(sess)
+		ssmClient = ssm.New(session.Must(session.NewSession()))
 	})
 	return ssmClient
 }
