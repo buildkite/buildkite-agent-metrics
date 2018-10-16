@@ -44,7 +44,7 @@ It's entrypoint is `handler.handle`, it requires a `python2.7` environment and r
  - BUILDKITE_QUIET
  - BUILDKITE_CLOUDWATCH_DIMENSIONS
 
-Take a look at https://github.com/buildkite/elastic-ci-stack-for-aws/blob/master/templates/metrics.yml for examples of usage.
+Take a look at https://github.com/buildkite/elastic-ci-stack-for-aws/blob/v3.3.0/templates/metrics.yml for examples of usage.
 
 ### Backends
 
