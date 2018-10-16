@@ -15,6 +15,24 @@
 			"revisionTime": "2018-01-29T10:51:49Z"
 		},
 		{
+			"checksumSHA1": "Atnv24CtEnB8ZLGDqFevLMfzLtQ=",
+			"path": "github.com/aws/aws-lambda-go/lambda",
+			"revision": "80ab9159b3744c4bf69a0e0f1ed76d4bc7af9228",
+			"revisionTime": "2018-10-16T10:09:54Z"
+		},
+		{
+			"checksumSHA1": "d4ehJWLS4YsqFG825pgwdvKDB6A=",
+			"path": "github.com/aws/aws-lambda-go/lambda/messages",
+			"revision": "80ab9159b3744c4bf69a0e0f1ed76d4bc7af9228",
+			"revisionTime": "2018-10-16T10:09:54Z"
+		},
+		{
+			"checksumSHA1": "f9MhOwQHveaPVWO6trwfqHa+W0M=",
+			"path": "github.com/aws/aws-lambda-go/lambdacontext",
+			"revision": "80ab9159b3744c4bf69a0e0f1ed76d4bc7af9228",
+			"revisionTime": "2018-10-16T10:09:54Z"
+		},
+		{
 			"checksumSHA1": "spyv5/YFBjYyZLZa1U2LBfDR8PM=",
 			"path": "github.com/beorn7/perks/quantile",
 			"revision": "4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9",

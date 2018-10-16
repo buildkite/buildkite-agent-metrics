@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
@@ -12,10 +11,9 @@ import (
 	"github.com/buildkite/buildkite-agent-metrics/backend"
 	"github.com/buildkite/buildkite-agent-metrics/collector"
 	"github.com/buildkite/buildkite-agent-metrics/version"
-	"github.com/eawsy/aws-lambda-go/service/lambda/runtime"
 )
 
-func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
+func handle() (error) {
 	token := os.Getenv("BUILDKITE_AGENT_TOKEN")
 	backendOpt := os.Getenv("BUILDKITE_BACKEND")
 	queue := os.Getenv("BUILDKITE_QUEUE")
@@ -48,32 +46,29 @@ func handle(evt json.RawMessage, ctx *runtime.Context) (interface{}, error) {
 		statsdTags := strings.ToLower(os.Getenv("STATSD_TAGS")) == "true"
 		b, err = backend.NewStatsDBackend(statsdHost, statsdTags)
 		if err != nil {
-			return nil, err
+			return err
 		}
 	} else {
 		dimensions, err := backend.ParseCloudWatchDimensions(clwDimensions)
 		if err != nil {
-			return nil, err
+			return err
 		}
 		b = backend.NewCloudWatchBackend(dimensions)
 	}
 
 	res, err := c.Collect()
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	res.Dump()
 
 	err = b.Collect(res)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	log.Printf("Finished in %s", time.Now().Sub(t))
-	return "", nil
+	return nil
 }
 
-func init() {
-	runtime.HandleFunc(handle)
-}

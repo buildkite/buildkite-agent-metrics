@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-lambda-go/lambda"
 	"github.com/buildkite/buildkite-metrics/backend"
 	"github.com/buildkite/buildkite-metrics/collector"
 	"github.com/buildkite/buildkite-metrics/version"
@@ -16,7 +17,24 @@ import (
 
 var bk backend.Backend
 
+func runningInLambda() bool {
+	lambdaEnvVars := []string{"AWS_EXECUTION_ENV", "LAMBDA_RUNTIME_DIR", "LAMBDA_TASK_ROOT"}
+	for _, envVar := range lambdaEnvVars {
+		if os.Getenv(envVar) == "" {
+			return false
+		}
+	}
+	return true
+}
+
 func main() {
+    if runningInLambda() {
+    	// Make the handler available for Remote Procedure Call by AWS Lambda
+		fmt.Printf("Detected that this is running as a lambda function.")
+    	lambda.Start(handle)
+    	return
+    }
+
 	var (
 		token       = flag.String("token", "", "A Buildkite Agent Registration Token")
 		interval    = flag.Duration("interval", 0, "Update metrics every interval, rather than once")
