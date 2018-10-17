@@ -71,9 +71,9 @@ resource "aws_lambda_function" "buildkite-metrics-function" {
   function_name = "buildkite-stats-to-cloudwatch"
   description = "Captures Buildkite metrics and publishes them to CloudWatch"
   role = "${aws_iam_role.metrics_role.arn}"
-  filename = "release/buildkite-metrics-lambda-vlatest.zip"
-  handler = "buildkite-metrics"
-  source_code_hash = "${base64sha256(file("release/buildkite-metrics-lambda-vlatest.zip"))}"
+  filename = "release/buildkite-agent-metrics-lambda-vlatest.zip"
+  handler = "buildkite-agent-metrics"
+  source_code_hash = "${base64sha256(file("release/buildkite-agent-metrics-lambda-vlatest.zip"))}"
   runtime = "go1.x"
   memory_size = 128
   timeout = 120
