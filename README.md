@@ -81,7 +81,7 @@ go run *.go -token [buildkite agent registration token]
 
 Currently this will publish metrics to Cloudwatch under the custom metric prefix of `Buildkite`, using AWS credentials from your environment. The machine will require the [`cloudwatch:PutMetricData`](https://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/publishingMetrics.html) IAM permission.
 
-While running ```make release```  will generate binaries for darwin, linux and a zip for file running as an AWS Lambda.
+Note that build scripts can be found in ```.buildkite/steps```
 
 ## Metrics
 
