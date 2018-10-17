@@ -67,7 +67,7 @@ resource "aws_iam_role_policy" "metrics_lambda_policy" {
 POLICY
 }
 
-resource "aws_lambda_function" "buildkite-metrics-function" {
+resource "aws_lambda_function" "buildkite-agent-metrics-function" {
   function_name = "buildkite-stats-to-cloudwatch"
   description = "Captures Buildkite metrics and publishes them to CloudWatch"
   role = "${aws_iam_role.metrics_role.arn}"
@@ -95,7 +95,7 @@ resource "aws_cloudwatch_event_rule" "every_minute" {
 resource "aws_lambda_permission" "allow_cloudwatch_to_invoke_lambda" {
   statement_id = "AllowExecutionFromCloudWatch"
   action = "lambda:InvokeFunction"
-  function_name = "${aws_lambda_function.buildkite-metrics-function.function_name}"
+  function_name = "${aws_lambda_function.buildkite-agent-metrics-function.function_name}"
   principal = "events.amazonaws.com"
   source_arn = "${aws_cloudwatch_event_rule.every_minute.arn}"
 }
