@@ -35,10 +35,10 @@ do
     buildkite-agent artifact upload "${dist_file}"
 done
 
-ln  "dist/${name}-v${version}-linux-amd64" dist/handle.handle
+ln  "dist/${name}-v${version}-linux-amd64" dist/handler.handle
 
 dist_file="dist/buildkite-agent-metrics-v${version}-lambda.zip"
-zip -j "$dist_file" dist/handle.handle
+zip -j "$dist_file" dist/handler.handle
 rm dist/handle.handle
 
 buildkite-agent artifact upload "$dist_file"
