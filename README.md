@@ -36,7 +36,7 @@ buildkite-agent-metrics -token abc123 -interval 30s -queue my-queue
 
 An AWS Lambda bundle is created and published as part of the build process.
 
-It's entrypoint is `handler.handle`, it requires a `python2.7` environment and respects the following env vars:
+Its handler is `handler.handle`, it requires a `go 1.x` environment and respects the following env vars:
 
  - BUILDKITE_TOKEN
  - BUILDKITE_BACKEND
@@ -44,7 +44,7 @@ It's entrypoint is `handler.handle`, it requires a `python2.7` environment and r
  - BUILDKITE_QUIET
  - BUILDKITE_CLOUDWATCH_DIMENSIONS
 
-Take a look at https://github.com/buildkite/elastic-ci-stack-for-aws/blob/v3.3.0/templates/metrics.yml for examples of usage.
+Take a look at metrics.tf for examples of usage.
 
 ### Backends
 
@@ -80,6 +80,8 @@ go run *.go -token [buildkite agent registration token]
 ```
 
 Currently this will publish metrics to Cloudwatch under the custom metric prefix of `Buildkite`, using AWS credentials from your environment. The machine will require the [`cloudwatch:PutMetricData`](https://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/publishingMetrics.html) IAM permission.
+
+Note that build scripts can be found in ```.buildkite/steps```
 
 ## Metrics
 

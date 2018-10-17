@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/buildkite/buildkite-metrics/backend"
-	"github.com/buildkite/buildkite-metrics/collector"
-	"github.com/buildkite/buildkite-metrics/version"
+	"github.com/buildkite/buildkite-agent-metrics/backend"
+	"github.com/buildkite/buildkite-agent-metrics/collector"
+	"github.com/buildkite/buildkite-agent-metrics/version"
 )
 
 var bk backend.Backend
@@ -30,7 +30,7 @@ func runningInLambda() bool {
 func main() {
     if runningInLambda() {
     	// Make the handler available for Remote Procedure Call by AWS Lambda
-		fmt.Printf("Detected that this is running as a lambda function.")
+		fmt.Printf("Detected that this is running as a lambda function.\n")
     	lambda.Start(handle)
     	return
     }
@@ -60,7 +60,7 @@ func main() {
 	flag.Parse()
 
 	if *showVersion {
-		fmt.Printf("buildkite-metrics %s\n", version.Version)
+		fmt.Printf("buildkite-agent-metrics %s\n", version.Version)
 		os.Exit(0)
 	}
 
@@ -95,7 +95,7 @@ func main() {
 		log.SetOutput(ioutil.Discard)
 	}
 
-	userAgent := fmt.Sprintf("buildkite-metrics/%s buildkite-metrics-cli", version.Version)
+	userAgent := fmt.Sprintf("buildkite-agent-metrics/%s buildkite-agent-metrics-cli", version.Version)
 	if *interval > 0 {
 		userAgent += fmt.Sprintf(" interval=%s", *interval)
 	}
