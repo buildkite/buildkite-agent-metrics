@@ -14,10 +14,15 @@ variable region {
 }
 
 variable "buildkite_agent_token" {
+  default = "SSM-used"
 }
 
 variable "buildkite_queue" {
   default = "default"
+}
+
+variable "buildkite_token_in_ssm" {
+  default = "true"
 }
 
 provider "aws" {
@@ -61,19 +66,26 @@ resource "aws_iam_role_policy" "metrics_lambda_policy" {
                 "cloudwatch:PutMetricData"
                 ],
             "Resource": "*"
+        },
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ssm:GetParameter"
+            ],
+            "Resource": "arn:aws:ssm:${var.region}:${data.aws_caller_identity.current.account_id}:parameter/buildkite_agent_token"
         }
     ]
 }
 POLICY
 }
 
-resource "aws_lambda_function" "buildkite-agent-metrics-function" {
+resource "aws_lambda_function" "buildkite-metrics-function" {
   function_name = "buildkite-stats-to-cloudwatch"
   description = "Captures Buildkite metrics and publishes them to CloudWatch"
   role = "${aws_iam_role.metrics_role.arn}"
-  filename = "release/buildkite-agent-metrics-lambda-vlatest.zip"
+  filename = "buildkite-agent-metrics-v3.2.0-lambda.zip"
   handler = "handler.handle"
-  source_code_hash = "${base64sha256(file("release/buildkite-agent-metrics-lambda-vlatest.zip"))}"
+  source_code_hash = "${base64sha256(file("buildkite-agent-metrics-v3.2.0-lambda.zip"))}"
   runtime = "go1.x"
   memory_size = 128
   timeout = 120
@@ -82,6 +94,7 @@ resource "aws_lambda_function" "buildkite-agent-metrics-function" {
     variables {
       BUILDKITE_AGENT_TOKEN  = "${var.buildkite_agent_token}"
       BUILDKITE_QUEUE = "${var.buildkite_queue}"
+      BUILDKITE_TOKEN_IN_SSM = "${var.buildkite_token_in_ssm}"
     }
   }
 }
@@ -95,7 +108,7 @@ resource "aws_cloudwatch_event_rule" "every_minute" {
 resource "aws_lambda_permission" "allow_cloudwatch_to_invoke_lambda" {
   statement_id = "AllowExecutionFromCloudWatch"
   action = "lambda:InvokeFunction"
-  function_name = "${aws_lambda_function.buildkite-agent-metrics-function.function_name}"
+  function_name = "${aws_lambda_function.buildkite-metrics-function.function_name}"
   principal = "events.amazonaws.com"
   source_arn = "${aws_cloudwatch_event_rule.every_minute.arn}"
 }

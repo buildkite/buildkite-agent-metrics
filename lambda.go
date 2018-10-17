@@ -15,11 +15,13 @@ import (
 
 func handle() (error) {
 	token := os.Getenv("BUILDKITE_AGENT_TOKEN")
+	useSsnString := os.Getenv("BUILDKITE_TOKEN_IN_SSM")
 	backendOpt := os.Getenv("BUILDKITE_BACKEND")
 	queue := os.Getenv("BUILDKITE_QUEUE")
 	clwDimensions := os.Getenv("BUILDKITE_CLOUDWATCH_DIMENSIONS")
 	quietString := os.Getenv("BUILDKITE_QUIET")
 	quiet := quietString == "1" || quietString == "true"
+	useSsn := useSsnString == "true"
 
 	if quiet {
 		log.SetOutput(ioutil.Discard)
@@ -27,7 +29,12 @@ func handle() (error) {
 
 	t := time.Now()
 
-	userAgent := fmt.Sprintf("buildkite-agent-metrics/%s buildkite-metrics-lambda", version.Version)
+    if useSsn  {
+        ssmClient := backend.GetSsmClient()
+        token = backend.RetrieveFromParameterStore(ssmClient, "buildkite_agent_token")
+    }
+
+	userAgent := fmt.Sprintf("buildkite-metrics/%s buildkite-metrics-lambda", version.Version)
 
 	c := collector.Collector{
 		UserAgent: userAgent,
@@ -71,4 +78,3 @@ func handle() (error) {
 	log.Printf("Finished in %s", time.Now().Sub(t))
 	return nil
 }
-

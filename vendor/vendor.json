@@ -33,6 +33,24 @@
 			"revisionTime": "2018-10-16T10:09:54Z"
 		},
 		{
+			"checksumSHA1": "tXRIRarT7qepHconxydtO7mXod4=",
+			"path": "github.com/aws/aws-sdk-go/private/protocol/json/jsonutil",
+			"revision": "58b3352bf772eabe95791645d9eb7f308c017e50",
+			"revisionTime": "2018-10-16T21:18:00Z"
+		},
+		{
+			"checksumSHA1": "v2c4B7IgTyjl7ShytqbTOqhCIoM=",
+			"path": "github.com/aws/aws-sdk-go/private/protocol/jsonrpc",
+			"revision": "58b3352bf772eabe95791645d9eb7f308c017e50",
+			"revisionTime": "2018-10-16T21:18:00Z"
+		},
+		{
+			"checksumSHA1": "rjhyLklllbyziCrIcimq8CIJKiE=",
+			"path": "github.com/aws/aws-sdk-go/service/ssm",
+			"revision": "58b3352bf772eabe95791645d9eb7f308c017e50",
+			"revisionTime": "2018-10-16T21:18:00Z"
+		},
+		{
 			"checksumSHA1": "1ofoMs1jDuI/ngXwPPXAFLfZMyU=",
 			"path": "github.com/aws/aws-sdk-go/aws",
 			"revision": "58b3352bf772eabe95791645d9eb7f308c017e50",
