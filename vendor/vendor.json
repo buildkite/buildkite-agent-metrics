@@ -147,5 +147,5 @@
 			"revisionTime": "2017-10-26T07:52:28Z"
 		}
 	],
-	"rootPath": "github.com/buildkite/buildkite-metrics"
+	"rootPath": "github.com/buildkite/buildkite-agent-metrics"
 }

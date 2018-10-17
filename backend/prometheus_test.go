@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/buildkite/buildkite-metrics/collector"
+	"github.com/buildkite/buildkite-agent-metrics/collector"
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
 )
