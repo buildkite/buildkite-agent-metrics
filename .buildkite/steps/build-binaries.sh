@@ -39,6 +39,6 @@ ln  "dist/${name}-v${version}-linux-amd64" dist/handler.handle
 
 dist_file="dist/buildkite-agent-metrics-v${version}-lambda.zip"
 zip -j "$dist_file" dist/handler.handle
-rm dist/handle.handle
+rm dist/handler.handle
 
 buildkite-agent artifact upload "$dist_file"
