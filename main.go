@@ -30,7 +30,7 @@ func runningInLambda() bool {
 func main() {
     if runningInLambda() {
     	// Make the handler available for Remote Procedure Call by AWS Lambda
-		fmt.Printf("Detected that this is running as a lambda function.")
+		fmt.Printf("Detected that this is running as a lambda function.\n")
     	lambda.Start(handle)
     	return
     }

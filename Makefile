@@ -2,6 +2,7 @@
 
 BINARY := buildkite-agent-metrics
 VERSION ?= vlatest
+HANDLER ?= handler.handle
 PLATFORMS := linux darwin
 os = $(word 1, $@)
 
@@ -16,10 +17,10 @@ $(PLATFORMS):
 
 .PHONY: $(BINARY)-lambda
 $(BINARY)-lambda: linux
-	rm -f $(BINARY)
-	ln release/$(BINARY)-$(VERSION)-linux-amd64 $(BINARY)
-	zip release/$@-$(VERSION).zip $(BINARY)
-	rm $(BINARY)
+	rm -f $(HANDLER)
+	ln release/$(BINARY)-$(VERSION)-linux-amd64 $(HANDLER)
+	zip release/$@-$(VERSION).zip $(HANDLER)
+	rm $(HANDLER)
 
 .PHONY: release
 release: darwin linux $(BINARY)-lambda
