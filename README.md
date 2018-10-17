@@ -36,7 +36,7 @@ buildkite-agent-metrics -token abc123 -interval 30s -queue my-queue
 
 An AWS Lambda bundle is created and published as part of the build process.
 
-It's entrypoint is `buildkite-agent`, it requires a `go 1.x` environment and respects the following env vars:
+Its handler is `buildkite-agent`, it requires a `go 1.x` environment and respects the following env vars:
 
  - BUILDKITE_TOKEN
  - BUILDKITE_BACKEND
