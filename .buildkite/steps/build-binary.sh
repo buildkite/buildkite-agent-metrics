@@ -8,7 +8,7 @@ version=$(awk -F\" '/const Version/ {print $2}' version/version.go)
 dist_file="dist/buildkite-metrics-v${version}-${GOOS}-${GOARCH}"
 
 go_version="1.9.2"
-go_pkg="github.com/buildkite/buildkite-metrics"
+go_pkg="github.com/buildkite/buildkite-agent-metrics"
 
 rm -rf dist
 mkdir -p dist
