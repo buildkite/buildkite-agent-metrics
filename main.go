@@ -9,9 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/buildkite/buildkite-metrics/backend"
-	"github.com/buildkite/buildkite-metrics/collector"
-	"github.com/buildkite/buildkite-metrics/version"
+	"github.com/buildkite/buildkite-agent-metrics/backend"
+	"github.com/buildkite/buildkite-agent-metrics/collector"
+	"github.com/buildkite/buildkite-agent-metrics/version"
 )
 
 var bk backend.Backend
