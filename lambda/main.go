@@ -41,7 +41,7 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 
 	t := time.Now()
 
-	userAgent := fmt.Sprintf("buildkite-metrics/%s buildkite-metrics-lambda", version.Version)
+	userAgent := fmt.Sprintf("buildkite-agent-metrics/%s buildkite-agent-metrics-lambda", version.Version)
 
 	c := collector.Collector{
 		UserAgent: userAgent,

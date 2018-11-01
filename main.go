@@ -42,7 +42,7 @@ func main() {
 	flag.Parse()
 
 	if *showVersion {
-		fmt.Printf("buildkite-metrics %s\n", version.Version)
+		fmt.Printf("buildkite-agent-metrics %s\n", version.Version)
 		os.Exit(0)
 	}
 
@@ -77,7 +77,7 @@ func main() {
 		log.SetOutput(ioutil.Discard)
 	}
 
-	userAgent := fmt.Sprintf("buildkite-metrics/%s buildkite-metrics-cli", version.Version)
+	userAgent := fmt.Sprintf("buildkite-agent-metrics/%s buildkite-agent-metrics-cli", version.Version)
 	if *interval > 0 {
 		userAgent += fmt.Sprintf(" interval=%s", *interval)
 	}
