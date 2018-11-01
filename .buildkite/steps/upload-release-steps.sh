@@ -3,6 +3,11 @@ set -euo pipefail
 
 export VERSION=$(awk -F\" '/const Version/ {print $2}' version/version.go)
 
+if [[ "$BUILDKITE_BRANCH" != "master" ]] ; then
+  echo "Skipping non-master branch $BUILDKITE_BRANCH"
+  exit 0
+fi
+
 git fetch --prune origin "+refs/tags/*:refs/tags/*"
 
 echo "Checking if $VERSION is a tag..."
