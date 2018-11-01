@@ -70,17 +70,14 @@ func validateReturns(handler reflect.Type) error {
 	return nil
 }
 
-// NewHandler creates a base lambda handler from the given handler function. The
-// returned Handler performs JSON deserialization and deserialization, and
-// delegates to the input handler function.  The handler function parameter must
-// satisfy the rules documented by Start.  If handlerFunc is not a valid
-// handler, the returned Handler simply reports the validation error.
-func NewHandler(handlerFunc interface{}) Handler {
-	if handlerFunc == nil {
+// newHandler Creates the base lambda handler, which will do basic payload unmarshaling before defering to handlerSymbol.
+// If handlerSymbol is not a valid handler, the returned function will be a handler that just reports the validation error.
+func newHandler(handlerSymbol interface{}) lambdaHandler {
+	if handlerSymbol == nil {
 		return errorHandler(fmt.Errorf("handler is nil"))
 	}
-	handler := reflect.ValueOf(handlerFunc)
-	handlerType := reflect.TypeOf(handlerFunc)
+	handler := reflect.ValueOf(handlerSymbol)
+	handlerType := reflect.TypeOf(handlerSymbol)
 	if handlerType.Kind() != reflect.Func {
 		return errorHandler(fmt.Errorf("handler kind %s is not %s", handlerType.Kind(), reflect.Func))
 	}
@@ -94,7 +91,7 @@ func NewHandler(handlerFunc interface{}) Handler {
 		return errorHandler(err)
 	}
 
-	return lambdaHandler(func(ctx context.Context, payload []byte) (interface{}, error) {
+	return func(ctx context.Context, payload []byte) (interface{}, error) {
 		// construct arguments
 		var args []reflect.Value
 		if takesContext {
@@ -126,5 +123,5 @@ func NewHandler(handlerFunc interface{}) Handler {
 		}
 
 		return val, err
-	})
+	}
 }
