@@ -73,9 +73,12 @@ The Prometheus backend supports the following arguments
 
 ## Development
 
+This tool is built with Go 1.11+ and [Go Modules](https://github.com/golang/go/wiki/Modules).
+
 You can build and run the binary tool locally with golang installed:
 
 ```
+export GO111MODULE=on
 go run *.go -token [buildkite agent registration token]
 ```
 

@@ -1,14 +1,31 @@
 steps:
   - name: ":hammer_and_wrench:"
-    command: ".buildkite/steps/test.sh"
+    plugins:
+      - docker#v2.0.0:
+          image: "golang:1.11"
+          command: ["go", "test", "-v", "-race", "."]
+          environment:
+            - GO111MODULE=on
 
   - wait
-
-  - name: ":mac: amd64"
-    command: .buildkite/steps/build-binary.sh darwin amd64
-
-  - name: ":linux: amd64"
-    command: .buildkite/steps/build-binary.sh linux amd64
+  - name: ":golang: :pipeline:"
+    plugins:
+      - golang-cross-compile#v1.3.0:
+          build: main.go
+          import: github.com/buildkite/buildkite-agent-metrics
+          targets:
+            - version: "1.11"
+              goos: linux
+              goarch: amd64
+              gomodule: "on"
+            - version: "1.11"
+              goos: windows
+              goarch: amd64
+              gomodule: "on"
+            - version: "1.11"
+              goos: darwin
+              goarch: amd64
+              gomodule: "on"
 
   - name: ":lambda:"
     command: .buildkite/steps/build-lambda.sh
