@@ -17,4 +17,4 @@ buildkite-agent artifact download "dist/*" .
 docker run -v "$PWD:$PWD" -w "$PWD" -e GITHUB_RELEASE_ACCESS_TOKEN --rm "buildkite/github-release" "v${version}" dist/* \
   --commit "${BUILDKITE_COMMIT}" \
   --tag "v${version}" \
-  --github-repository "buildkite/buildkite-metrics"
+  --github-repository "buildkite/buildkite-agent-metrics"

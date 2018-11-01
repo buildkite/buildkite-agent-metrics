@@ -1,11 +1,19 @@
 #!/bin/bash
 set -eu
 
-go_pkg="github.com/buildkite/buildkite-metrics"
+go_pkg="github.com/buildkite/buildkite-agent-metrics"
 go_src_dir="/go/src/${go_pkg}"
 version=$(awk -F\" '/const Version/ {print $2}' version/version.go)
-dist_file="dist/buildkite-metrics-v${version}-lambda.zip"
+dist_file="dist/buildkite-agent-metrics-v${version}-lambda.zip"
+
+docker run --rm --volume "$PWD:${go_src_dir}" \
+  --workdir "${go_src_dir}" \
+  --rm golang:1.9 \
+  sh -c "go get ./lambda && go build -o ./lambda/handler ./lambda"
+
+chmod +x ./lambda/handler
 
 mkdir -p dist/
-docker run --rm -v "${PWD}:${go_src_dir}" -w "${go_src_dir}" eawsy/aws-lambda-go --package "$dist_file"
+zip -j "$dist_file" lambda/handler
+
 buildkite-agent artifact upload "$dist_file"

@@ -2,3 +2,4 @@ dist/
 build/
 handler.zip
 bin/
+lambda/handler
