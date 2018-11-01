@@ -25,6 +25,7 @@ BASE_BUCKET=buildkite-metrics
 echo "~~~ :buildkite: Downloading artifacts"
 mkdir -p dist/
 buildkite-agent artifact download "dist/*" dist/
+buildkite-agent artifact download "buildkite-agent-metrics-*" dist/
 
 ls -al dist/
 
