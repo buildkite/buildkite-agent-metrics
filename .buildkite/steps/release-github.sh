@@ -12,9 +12,8 @@ echo '--- Downloading binaries'
 
 rm -rf dist
 mkdir -p dist
-buildkite-agent artifact download "dist/*" .
-buildkite-agent artifact download "buildkite-agent-metrics-*" .
-
+buildkite-agent artifact download handler.zip ./dist
+buildkite-agent artifact download "buildkite-agent-metrics-*" ./dist
 
 docker run -v "$PWD:$PWD" -w "$PWD" -e GITHUB_RELEASE_ACCESS_TOKEN --rm "buildkite/github-release" "v${version}" dist/* \
   --commit "${BUILDKITE_COMMIT}" \
