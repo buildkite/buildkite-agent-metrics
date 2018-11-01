@@ -1,14 +1,6 @@
 steps:
   - block: ":rocket: Release ${VERSION}?"
 
-  - label: ":s3:"
-    command: ".buildkite/steps/upload-to-s3.sh"
-    branches: master
-    agents:
-      queue: "deploy"
-    concurrency: 1
-    concurrency_group: 'release_buildkite_metrics_s3'
-
   - label: ":github:"
     command: ".buildkite/steps/release-github.sh"
     branches: master
