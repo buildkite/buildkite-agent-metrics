@@ -1,11 +1,11 @@
-module github.com/buildkite/buildkite-metrics
+module github.com/buildkite/buildkite-agent-metrics
 
 require (
 	github.com/DataDog/datadog-go v0.0.0-20180129105149-9487d3a9d3be
+	github.com/aws/aws-lambda-go v1.6.0
 	github.com/aws/aws-sdk-go v1.15.64
 	github.com/beorn7/perks v0.0.0-20160804104726-4c0e84591b9a // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/eawsy/aws-lambda-go v0.0.0-20161116161946-39dc993a238c
 	github.com/golang/protobuf v0.0.0-20180202184318-bbd03ef6da3a // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect

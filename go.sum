@@ -1,13 +1,13 @@
 github.com/DataDog/datadog-go v0.0.0-20180129105149-9487d3a9d3be h1:31IgTu8jwQ6z0xz2r55LdVIJDJN1KDq0HZ/BRCi14QA=
 github.com/DataDog/datadog-go v0.0.0-20180129105149-9487d3a9d3be/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
+github.com/aws/aws-lambda-go v1.6.0 h1:T+u/g79zPKw1oJM7xYhvpq7i4Sjc0iVsXZUaqRVVSOg=
+github.com/aws/aws-lambda-go v1.6.0/go.mod h1:zUsUQhAUjYzR8AuduJPCfhBuKWUaDbQiPOG+ouzmE1A=
 github.com/aws/aws-sdk-go v1.15.64 h1:xI5HhxebTF+jVqVOraUDqI3kr24n+yTvslwZCo3OhGA=
 github.com/aws/aws-sdk-go v1.15.64/go.mod h1:E3/ieXAlvM0XWO57iftYVDLLvQ824smPP3ATZkfNZeM=
 github.com/beorn7/perks v0.0.0-20160804104726-4c0e84591b9a h1:BtpsbiV638WQZwhA98cEZw2BsbnQJrbd0BI7tsy0W1c=
 github.com/beorn7/perks v0.0.0-20160804104726-4c0e84591b9a/go.mod h1:Dwedo/Wpr24TaqPxmxbtue+5NUziq4I4S80YR8gNf3Q=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/eawsy/aws-lambda-go v0.0.0-20161116161946-39dc993a238c h1:BvLVcVBBGyHgk2PN+cYbU4Q8b/NTqxvoq/nCcpsWqRs=
-github.com/eawsy/aws-lambda-go v0.0.0-20161116161946-39dc993a238c/go.mod h1:4gET2E5JmpmYq9yc/RxellpusH7Zf/nYG/yUCeXkZ9w=
 github.com/golang/protobuf v0.0.0-20180202184318-bbd03ef6da3a h1:9xtEQaWwpPa1IeJROAONpl9Q0rXujyf4RISq8tRGQFo=
 github.com/golang/protobuf v0.0.0-20180202184318-bbd03ef6da3a/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
 github.com/jmespath/go-jmespath v0.0.0-20160202185014-0b12d6b521d8 h1:12VvqtR6Aowv3l/EQUlocDHW2Cp4G9WJVH7uyH8QFJE=
