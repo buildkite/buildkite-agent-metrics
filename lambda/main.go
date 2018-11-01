@@ -60,26 +60,26 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 		statsdTags := strings.ToLower(os.Getenv("STATSD_TAGS")) == "true"
 		b, err = backend.NewStatsDBackend(statsdHost, statsdTags)
 		if err != nil {
-			return nil, err
+			return "", err
 		}
 	} else {
 		dimensions, err := backend.ParseCloudWatchDimensions(clwDimensions)
 		if err != nil {
-			return nil, err
+			return "", err
 		}
 		b = backend.NewCloudWatchBackend(dimensions)
 	}
 
 	res, err := c.Collect()
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	res.Dump()
 
 	err = b.Collect(res)
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
 	log.Printf("Finished in %s", time.Now().Sub(t))
