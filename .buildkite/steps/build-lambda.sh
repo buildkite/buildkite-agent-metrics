@@ -8,9 +8,10 @@ dist_file="dist/buildkite-agent-metrics-v${version}-lambda.zip"
 
 docker run --rm --volume "$PWD:${go_src_dir}" \
   --workdir "${go_src_dir}" \
-  --rm golang:1.11 \
   --env GO111MODULE=on \
-  sh -c "go get ./lambda && go build -o ./lambda/handler ./lambda"
+  --rm \
+    golang:1.11 \
+    sh -c "go get ./lambda && go build -o ./lambda/handler ./lambda"
 
 chmod +x ./lambda/handler
 
