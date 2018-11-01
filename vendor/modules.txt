@@ -1,10 +1,10 @@
-# github.com/DataDog/datadog-go v0.0.0-20180129105149-9487d3a9d3be
+# github.com/DataDog/datadog-go v0.0.0-20180822151419-281ae9f2d895
 github.com/DataDog/datadog-go/statsd
 # github.com/aws/aws-lambda-go v1.6.0
 github.com/aws/aws-lambda-go/lambda
 github.com/aws/aws-lambda-go/lambda/messages
 github.com/aws/aws-lambda-go/lambdacontext
-# github.com/aws/aws-sdk-go v1.15.64
+# github.com/aws/aws-sdk-go v1.15.66
 github.com/aws/aws-sdk-go/aws
 github.com/aws/aws-sdk-go/aws/session
 github.com/aws/aws-sdk-go/service/cloudwatch
@@ -34,24 +34,25 @@ github.com/aws/aws-sdk-go/private/protocol/rest
 github.com/aws/aws-sdk-go/private/protocol/query/queryutil
 github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
 github.com/aws/aws-sdk-go/internal/sdkuri
-# github.com/beorn7/perks v0.0.0-20160804104726-4c0e84591b9a
+# github.com/beorn7/perks v0.0.0-20180321164747-3a771d992973
 github.com/beorn7/perks/quantile
-# github.com/golang/protobuf v0.0.0-20180202184318-bbd03ef6da3a
+# github.com/golang/protobuf v1.2.0
 github.com/golang/protobuf/proto
-# github.com/jmespath/go-jmespath v0.0.0-20160202185014-0b12d6b521d8
+# github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
 github.com/jmespath/go-jmespath
 # github.com/matttproud/golang_protobuf_extensions v1.0.1
 github.com/matttproud/golang_protobuf_extensions/pbutil
-# github.com/prometheus/client_golang v0.0.0-20180223144718-c3324c1198cf
+# github.com/prometheus/client_golang v0.9.0
 github.com/prometheus/client_golang/prometheus
 github.com/prometheus/client_golang/prometheus/promhttp
-# github.com/prometheus/client_model v0.0.0-20171117100541-99fa1f4be8e5
+github.com/prometheus/client_golang/prometheus/internal
+# github.com/prometheus/client_model v0.0.0-20180712105110-5c3871d89910
 github.com/prometheus/client_model/go
-# github.com/prometheus/common v0.0.0-20180228092548-6fb6fce6f8b7
+# github.com/prometheus/common v0.0.0-20181020173914-7e9e6cabbd39
 github.com/prometheus/common/expfmt
 github.com/prometheus/common/model
 github.com/prometheus/common/internal/bitbucket.org/ww/goautoneg
-# github.com/prometheus/procfs v0.0.0-20180228150732-d274e363d575
+# github.com/prometheus/procfs v0.0.0-20181005140218-185b4288413d
 github.com/prometheus/procfs
 github.com/prometheus/procfs/nfs
 github.com/prometheus/procfs/xfs
