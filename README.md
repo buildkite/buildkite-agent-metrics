@@ -36,7 +36,7 @@ buildkite-agent-metrics -token abc123 -interval 30s -queue my-queue
 
 An AWS Lambda bundle is created and published as part of the build process.
 
-It's entrypoint is `handler.handle`, it requires a `python2.7` environment and respects the following env vars:
+It's entrypoint is `handler`, it requires a `go1.x` environment and respects the following env vars:
 
  - BUILDKITE_TOKEN
  - BUILDKITE_BACKEND
@@ -44,7 +44,15 @@ It's entrypoint is `handler.handle`, it requires a `python2.7` environment and r
  - BUILDKITE_QUIET
  - BUILDKITE_CLOUDWATCH_DIMENSIONS
 
-Take a look at https://github.com/buildkite/elastic-ci-stack-for-aws/blob/v3.3.0/templates/metrics.yml for examples of usage.
+```bash
+aws lambda create-function \
+  --function-name buildkite-agent-metrics \
+  --memory 128 \
+  --role arn:aws:iam::account-id:role/execution_role \
+  --runtime go1.x \
+  --zip-file fileb://handler.zip \
+  --handler handler
+```
 
 ### Backends
 
