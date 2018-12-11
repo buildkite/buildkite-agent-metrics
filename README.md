@@ -46,12 +46,11 @@ It's entrypoint is `handler`, it requires a `go1.x` environment and respects the
 
 ```bash
 aws lambda create-function \
-  --region region \
   --function-name buildkite-agent-metrics \
   --memory 128 \
   --role arn:aws:iam::account-id:role/execution_role \
   --runtime go1.x \
-  --zip-file fileb://path-to-your-zip-file/handler.zip \
+  --zip-file fileb://handler.zip \
   --handler handler
 ```
 
