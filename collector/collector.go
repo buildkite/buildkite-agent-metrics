@@ -32,6 +32,7 @@ type Collector struct {
 type Result struct {
 	Totals map[string]int
 	Queues map[string]map[string]int
+	Org    string
 }
 
 type metricsAgentsResponse struct {
@@ -61,9 +62,14 @@ type allMetricsJobsResponse struct {
 	Queues map[string]metricsJobsResponse `json:"queues"`
 }
 
+type allMetricsOrganizationResponse struct {
+	Slug string `json:"slug"`
+}
+
 type allMetricsResponse struct {
-	Agents allMetricsAgentsResponse `json:"agents"`
-	Jobs   allMetricsJobsResponse   `json:"jobs"`
+	Agents       allMetricsAgentsResponse       `json:"agents"`
+	Jobs         allMetricsJobsResponse         `json:"jobs"`
+	Organization allMetricsOrganizationResponse `json:"organization"`
 }
 
 func (c *Collector) Collect() (*Result, error) {
@@ -117,6 +123,9 @@ func (c *Collector) Collect() (*Result, error) {
 		if err != nil {
 			return nil, err
 		}
+
+		log.Printf("Found organization %q", allMetrics.Organization.Slug)
+		result.Org = allMetrics.Organization.Slug
 
 		result.Totals[ScheduledJobsCount] = allMetrics.Jobs.Scheduled
 		result.Totals[RunningJobsCount] = allMetrics.Jobs.Running
@@ -204,12 +213,12 @@ func (c *Collector) Collect() (*Result, error) {
 
 func (r Result) Dump() {
 	for name, c := range r.Totals {
-		log.Printf("Buildkite > %s = %d", name, c)
+		log.Printf("Buildkite > Org=%s > %s=%d", r.Org, name, c)
 	}
 
 	for name, c := range r.Queues {
 		for k, v := range c {
-			log.Printf("Buildkite > [queue = %s] > %s = %d", name, k, v)
+			log.Printf("Buildkite > Org=%s > Queue=%s > %s=%d", r.Org, name, k, v)
 		}
 	}
 }
