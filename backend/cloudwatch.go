@@ -68,9 +68,10 @@ func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 			})
 		}
 
-		dimensions = append(dimensions, &cloudwatch.Dimension{
-			Name: aws.String("Queue"), Value: aws.String(name),
-		})
+		dimensions = append(dimensions,
+			&cloudwatch.Dimension{Name: aws.String("Queue"), Value: aws.String(name)},
+			&cloudwatch.Dimension{Name: aws.String("Org"), Value: aws.String(r.Org)},
+		)
 
 		metrics = append(metrics, cloudwatchMetrics(c, dimensions)...)
 	}
