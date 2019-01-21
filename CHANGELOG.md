@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v4.1.1](https://github.com/buildkite/buildkite-agent-metrics/tree/v4.1.1) (2019-01-21)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v4.1.0...v4.1.1)
+
+### Fixed
+- Add missing organization dimension to per-queue metrics [#68](https://github.com/buildkite/buildkite-agent-metrics/pull/68) (@lox)
+
 ## [v4.1.0](https://github.com/buildkite/buildkite-agent-metrics/tree/v4.1.0) (2019-01-03)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v4.0.0...v4.1.0)
 
