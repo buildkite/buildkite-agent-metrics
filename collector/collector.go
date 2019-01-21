@@ -35,6 +35,10 @@ type Result struct {
 	Org    string
 }
 
+type organizationResponse struct {
+	Slug string `json:"slug"`
+}
+
 type metricsAgentsResponse struct {
 	Idle  int `json:"idle"`
 	Busy  int `json:"busy"`
@@ -48,8 +52,9 @@ type metricsJobsResponse struct {
 }
 
 type queueMetricsResponse struct {
-	Agents metricsAgentsResponse `json:"agents"`
-	Jobs   metricsJobsResponse   `json:"jobs"`
+	Agents       metricsAgentsResponse `json:"agents"`
+	Jobs         metricsJobsResponse   `json:"jobs"`
+	Organization organizationResponse  `json:"organization"`
 }
 
 type allMetricsAgentsResponse struct {
@@ -62,14 +67,10 @@ type allMetricsJobsResponse struct {
 	Queues map[string]metricsJobsResponse `json:"queues"`
 }
 
-type allMetricsOrganizationResponse struct {
-	Slug string `json:"slug"`
-}
-
 type allMetricsResponse struct {
-	Agents       allMetricsAgentsResponse       `json:"agents"`
-	Jobs         allMetricsJobsResponse         `json:"jobs"`
-	Organization allMetricsOrganizationResponse `json:"organization"`
+	Agents       allMetricsAgentsResponse `json:"agents"`
+	Jobs         allMetricsJobsResponse   `json:"jobs"`
+	Organization organizationResponse     `json:"organization"`
 }
 
 func (c *Collector) Collect() (*Result, error) {
@@ -122,6 +123,10 @@ func (c *Collector) Collect() (*Result, error) {
 		err = json.NewDecoder(res.Body).Decode(&allMetrics)
 		if err != nil {
 			return nil, err
+		}
+
+		if allMetrics.Organization.Slug == "" {
+			return nil, fmt.Errorf("No organization slug was found in the metrics response")
 		}
 
 		log.Printf("Found organization %q", allMetrics.Organization.Slug)
@@ -193,6 +198,13 @@ func (c *Collector) Collect() (*Result, error) {
 		if err != nil {
 			return nil, err
 		}
+
+		if queueMetrics.Organization.Slug == "" {
+			return nil, fmt.Errorf("No organization slug was found in the metrics response")
+		}
+
+		log.Printf("Found organization %q", queueMetrics.Organization.Slug)
+		result.Org = queueMetrics.Organization.Slug
 
 		result.Queues[c.Queue] = map[string]int{
 			ScheduledJobsCount:  queueMetrics.Jobs.Scheduled,
