@@ -10,15 +10,6 @@ import (
 	"time"
 )
 
-const (
-	ScheduledJobsCount  = "ScheduledJobsCount"
-	RunningJobsCount    = "RunningJobsCount"
-	UnfinishedJobsCount = "UnfinishedJobsCount"
-	IdleAgentCount      = "IdleAgentCount"
-	BusyAgentCount      = "BusyAgentCount"
-	TotalAgentCount     = "TotalAgentCount"
-)
-
 type Collector struct {
 	Endpoint  string
 	Token     string
@@ -29,9 +20,19 @@ type Collector struct {
 	DebugHttp bool
 }
 
+type Metrics struct {
+	ScheduledJobsCount  int
+	RunningJobsCount    int
+	UnfinishedJobsCount int
+	IdleAgentCount      int
+	BusyAgentCount      int
+	TotalAgentCount     int
+	AgentUtilization    int
+}
+
 type Result struct {
-	Totals map[string]int
-	Queues map[string]map[string]int
+	Totals Metrics
+	Queues map[string]Metrics
 	Org    string
 }
 
@@ -75,8 +76,7 @@ type allMetricsResponse struct {
 
 func (c *Collector) Collect() (*Result, error) {
 	result := &Result{
-		Totals: map[string]int{},
-		Queues: map[string]map[string]int{},
+		Queues: map[string]Metrics{},
 	}
 
 	if c.Queue == "" {
@@ -132,12 +132,14 @@ func (c *Collector) Collect() (*Result, error) {
 		log.Printf("Found organization %q", allMetrics.Organization.Slug)
 		result.Org = allMetrics.Organization.Slug
 
-		result.Totals[ScheduledJobsCount] = allMetrics.Jobs.Scheduled
-		result.Totals[RunningJobsCount] = allMetrics.Jobs.Running
-		result.Totals[UnfinishedJobsCount] = allMetrics.Jobs.Total
-		result.Totals[IdleAgentCount] = allMetrics.Agents.Idle
-		result.Totals[BusyAgentCount] = allMetrics.Agents.Busy
-		result.Totals[TotalAgentCount] = allMetrics.Agents.Total
+		result.Totals = Metrics{
+			ScheduledJobsCount:  allMetrics.Jobs.Scheduled,
+			RunningJobsCount:    allMetrics.Jobs.Running,
+			UnfinishedJobsCount: allMetrics.Jobs.Total,
+			IdleAgentCount:      allMetrics.Agents.Idle,
+			BusyAgentCount:      allMetrics.Agents.Busy,
+			TotalAgentCount:     allMetrics.Agents.Total,
+		}
 
 		for queueName, queueJobMetrics := range allMetrics.Jobs.Queues {
 			if _, ok := result.Queues[queueName]; !ok {
