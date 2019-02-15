@@ -34,11 +34,11 @@ buildkite-agent-metrics -token abc123 -interval 30s -queue my-queue
 
 ### Running as an AWS Lambda
 
-An AWS Lambda bundle is created and published as part of the build process.
+An AWS Lambda bundle is created and published as part of the build process. The lambda will require the [`cloudwatch:PutMetricData`](https://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/publishingMetrics.html) IAM permission.
 
 It's entrypoint is `handler`, it requires a `go1.x` environment and respects the following env vars:
 
- - BUILDKITE_TOKEN
+ - BUILDKITE_AGENT_TOKEN
  - BUILDKITE_BACKEND
  - BUILDKITE_QUEUE
  - BUILDKITE_QUIET
