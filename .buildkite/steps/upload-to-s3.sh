@@ -14,8 +14,6 @@ EXTRA_REGIONS=(
   ap-southeast-2
   ap-northeast-1
   ca-central-1
-  cn-north-1
-  cn-northwest-1
   eu-central-1
   eu-west-1
   eu-west-2
