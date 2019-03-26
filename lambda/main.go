@@ -29,13 +29,13 @@ func main() {
 
 func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 	token := os.Getenv("BUILDKITE_AGENT_TOKEN")
-	useSsnString := os.Getenv("BUILDKITE_TOKEN_IN_SSM")
+	useSsmString := os.Getenv("BUILDKITE_TOKEN_IN_SSM")
 	backendOpt := os.Getenv("BUILDKITE_BACKEND")
 	queue := os.Getenv("BUILDKITE_QUEUE")
 	clwDimensions := os.Getenv("BUILDKITE_CLOUDWATCH_DIMENSIONS")
 	quietString := os.Getenv("BUILDKITE_QUIET")
 	quiet := quietString == "1" || quietString == "true"
-	useSsn := useSsnString == "true"
+	useSsm := useSsmString == "true"
 
 	if quiet {
 		log.SetOutput(ioutil.Discard)
@@ -43,7 +43,7 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 
 	t := time.Now()
 
-	if useSsn {
+	if useSsm {
 		ssmClient := backend.GetSsmClient()
 		token = backend.RetrieveFromParameterStore(ssmClient, "buildkite_agent_token")
 	}
