@@ -12,7 +12,7 @@ func TestCollectorWithEmptyResponseForAllQueues(t *testing.T) {
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/metrics" {
 			w.WriteHeader(http.StatusOK)
-			io.WriteString(w, `{}`)
+			io.WriteString(w, `{"organization": {"slug": "org-name"}}`)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
 		}
@@ -38,6 +38,7 @@ func TestCollectorWithEmptyResponseForAllQueues(t *testing.T) {
 		{"Totals", res.Totals, TotalAgentCount, 0},
 		{"Totals", res.Totals, BusyAgentCount, 0},
 		{"Totals", res.Totals, IdleAgentCount, 0},
+		{"Totals", res.Totals, BusyAgentPercentage, 0},
 	}
 
 	for _, tc := range testCases {
@@ -57,7 +58,7 @@ func TestCollectorWithNoJobsForAllQueues(t *testing.T) {
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/metrics" {
 			w.WriteHeader(http.StatusOK)
-			io.WriteString(w, `{"jobs":{"scheduled":0,"running":0,"all":0,"queues":{}},"agents":{"idle":0,"busy":0,"all":0,"queues":{}}}`)
+			io.WriteString(w, `{"organization": {"slug": "org-name"}, "jobs":{"scheduled":0,"running":0,"all":0,"queues":{}},"agents":{"idle":0,"busy":0,"all":0,"queues":{}}}`)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
 		}
@@ -83,6 +84,7 @@ func TestCollectorWithNoJobsForAllQueues(t *testing.T) {
 		{"Totals", res.Totals, TotalAgentCount, 0},
 		{"Totals", res.Totals, BusyAgentCount, 0},
 		{"Totals", res.Totals, IdleAgentCount, 0},
+		{"Totals", res.Totals, BusyAgentPercentage, 0},
 	}
 
 	for _, tc := range testCases {
@@ -102,7 +104,7 @@ func TestCollectorWithSomeJobsAndAgentsForAllQueues(t *testing.T) {
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/metrics" {
 			w.WriteHeader(http.StatusOK)
-			io.WriteString(w, `{"jobs":{"scheduled":3,"running":1,"total":4,"queues":{"default":{"scheduled":2,"running":1,"total":3},"deploy":{"scheduled":1,"running":0,"total":1}}},"agents":{"idle":0,"busy":1,"total":1,"queues":{"default":{"idle":0,"busy":1,"total":1}}}}`)
+			io.WriteString(w, `{"organization": {"slug": "org-name"}, "jobs":{"scheduled":3,"running":1,"total":4,"queues":{"default":{"scheduled":2,"running":1,"total":3},"deploy":{"scheduled":1,"running":0,"total":1}}},"agents":{"idle":0,"busy":1,"total":1,"queues":{"default":{"idle":0,"busy":1,"total":1}}}}`)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
 		}
@@ -128,6 +130,7 @@ func TestCollectorWithSomeJobsAndAgentsForAllQueues(t *testing.T) {
 		{"Totals", res.Totals, TotalAgentCount, 1},
 		{"Totals", res.Totals, BusyAgentCount, 1},
 		{"Totals", res.Totals, IdleAgentCount, 0},
+		{"Totals", res.Totals, BusyAgentPercentage, 100},
 
 		{"Queue.default", res.Queues["default"], RunningJobsCount, 1},
 		{"Queue.default", res.Queues["default"], ScheduledJobsCount, 2},
@@ -166,7 +169,7 @@ func TestCollectorWithSomeJobsAndAgentsForAQueue(t *testing.T) {
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/metrics/queue" && r.URL.Query().Get("name") == "deploy" {
 			w.WriteHeader(http.StatusOK)
-			io.WriteString(w, `{"jobs":{"scheduled":3,"running":1,"total":4},"agents":{"idle":0,"busy":1,"total":1}}`)
+			io.WriteString(w, `{"organization": {"slug": "org-name"}, "jobs":{"scheduled":3,"running":1,"total":4},"agents":{"idle":0,"busy":1,"total":1}}`)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
 		}
@@ -196,6 +199,7 @@ func TestCollectorWithSomeJobsAndAgentsForAQueue(t *testing.T) {
 		{"Queue.deploy", res.Queues["deploy"], TotalAgentCount, 1},
 		{"Queue.deploy", res.Queues["deploy"], BusyAgentCount, 1},
 		{"Queue.deploy", res.Queues["deploy"], IdleAgentCount, 0},
+		{"Queue.deploy", res.Queues["deploy"], BusyAgentPercentage, 100},
 	}
 
 	for _, tc := range testCases {
