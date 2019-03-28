@@ -6,20 +6,10 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ssm"
 	"os"
-	"sync"
 )
 
-var ssmClient *ssm.SSM
-var once sync.Once
-
-func GetSsmClient() *ssm.SSM {
-	once.Do(func() {
-		ssmClient = ssm.New(session.Must(session.NewSession()))
-	})
-	return ssmClient
-}
-
-func RetrieveFromParameterStore(ssmClient *ssm.SSM, key string) string {
+func RetrieveFromParameterStore(key string) string {
+	ssmClient := ssm.New(session.New())
 	output, err := ssmClient.GetParameter(&ssm.GetParameterInput{
 		Name:           &key,
 		WithDecryption: aws.Bool(true),
