@@ -50,6 +50,7 @@ func NewStackdriverBackend(projectID string) (*StackDriverBackend, error){
 	return &StackDriverBackend{
 		projectId: 		projectID,
 		client: 		c,
+		queues: 		make(map[string]string),
 	}, nil
 }
 
@@ -90,7 +91,7 @@ func createCustomMetric(c *monitoring.MetricClient, projectID *string, metricTyp
 		Type: *metricType,
 		MetricKind:  metric.MetricDescriptor_GAUGE,
 		ValueType:   metric.MetricDescriptor_INT64,
-		Description: fmt.Sprintf("Buildkite meetric: [%s]" + *metricType),
+		Description: fmt.Sprintf("Buildkite metric: [%s]" + *metricType),
 		DisplayName: *metricType,
 	}
 	req := &monitoringpb.CreateMetricDescriptorRequest{
