@@ -26,7 +26,7 @@ type StackDriverBackend struct {
 }
 
 // NewStackdriverBackend returns a new StackDriverBackend for the specified project
-func NewStackdriverBackend(projectID string) (*StackDriverBackend, error){
+func NewStackdriverBackend(gcpProjectID string) (*StackDriverBackend, error){
 	ctx := context.Background()
 	c, err := monitoring.NewMetricClient(ctx)
 	if err != nil {
@@ -42,13 +42,13 @@ func NewStackdriverBackend(projectID string) (*StackDriverBackend, error){
 	}
 	for _, name := range countTypes {
 		mt := fmt.Sprintf(metricTotalPrefix, name)
-		if _, err = createCustomMetric(c, &projectID, &mt); err != nil {
+		if _, err = createCustomMetric(c, &gcpProjectID, &mt); err != nil {
 			return nil, err
 		}
 	}
 
 	return &StackDriverBackend{
-		projectId: 		projectID,
+		projectId: 		gcpProjectID,
 		client: 		c,
 		queues: 		make(map[string]string),
 	}, nil

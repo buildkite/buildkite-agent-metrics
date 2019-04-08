@@ -34,7 +34,7 @@ func main() {
 		prometheusAddr = flag.String("prometheus-addr", ":8080", "Prometheus metrics transport bind address")
 		prometheusPath = flag.String("prometheus-path", "/metrics", "Prometheus metrics transport path")
 		clwDimensions  = flag.String("cloudwatch-dimensions", "", "Cloudwatch dimensions to index metrics under, in the form of Key=Value, Other=Value")
-		projectID      = flag.String("stackdriver-projectID", "", "Specify Stackdriver projectID")
+		gcpProjectID   = flag.String("stackdriver-projectID", "", "Specify Stackdriver projectID")
 
 		// filters
 		queue = flag.String("queue", "", "Only include a specific queue")
@@ -71,9 +71,9 @@ func main() {
 		bk = backend.NewPrometheusBackend(*prometheusPath, *prometheusAddr)
 	case "stackdriver":
 		var err error
-		bk, err = backend.NewStackdriverBackend(*projectID)
+		bk, err = backend.NewStackdriverBackend(*gcpProjectID)
 		if err != nil {
-			fmt.Printf("Error starting Stackdriver, err: %v\n", err)
+			fmt.Printf("Error starting Stackdriver backend, err: %v\n", err)
 			os.Exit(1)
 		}
 	default:
