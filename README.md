@@ -1,6 +1,6 @@
 # Buildkite Agent Metrics
 
-A command-line tool for collecting [Buildkite](https://buildkite.com/) agent metrics, focusing on enabling auto-scaling. Currently [AWS Cloudwatch](http://aws.amazon.com/cloudwatch/), [StatsD](https://github.com/etsy/statsd) and [Prometheus](https://prometheus.io) are supported.
+A command-line tool for collecting [Buildkite](https://buildkite.com/) agent metrics, focusing on enabling auto-scaling. Currently [AWS Cloudwatch](http://aws.amazon.com/cloudwatch/), [StatsD](https://github.com/etsy/statsd), [Prometheus](https://prometheus.io) and [Stackdriver](https://cloud.google.com/stackdriver/) are supported.
 
 [![Build status](https://badge.buildkite.com/80d04fcde3a306bef44e77aadb1f1ffdc20ebb3c8f1f585a60.svg)](https://buildkite.com/buildkite/buildkite-agent-metrics)
 
@@ -71,6 +71,10 @@ The Prometheus backend supports the following arguments
 
 * `-prometheus-addr`: The local address to listen on (defaults to `:8080`).
 * `-prometheus-path`: The path under `prometheus-addr` to expose metrics on (defaults to `/metrics`).
+
+The Stackdriver backend supports the following arguments
+
+* `-stackdriver-gcp-projectID`: The Google Cloud Platform to report metrics for
 
 ### Upgrading from v2 to v3
 

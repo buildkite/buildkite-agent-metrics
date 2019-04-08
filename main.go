@@ -28,12 +28,13 @@ func main() {
 		endpoint    = flag.String("endpoint", "https://agent.buildkite.com/v3", "A custom Buildkite Agent API endpoint")
 
 		// backend config
-		backendOpt     = flag.String("backend", "cloudwatch", "Specify the backend to use: cloudwatch, statsd, prometheus")
+		backendOpt     = flag.String("backend", "cloudwatch", "Specify the backend to use: cloudwatch, statsd, prometheus, stackdriver")
 		statsdHost     = flag.String("statsd-host", "127.0.0.1:8125", "Specify the StatsD server")
 		statsdTags     = flag.Bool("statsd-tags", false, "Whether your StatsD server supports tagging like Datadog")
 		prometheusAddr = flag.String("prometheus-addr", ":8080", "Prometheus metrics transport bind address")
 		prometheusPath = flag.String("prometheus-path", "/metrics", "Prometheus metrics transport path")
 		clwDimensions  = flag.String("cloudwatch-dimensions", "", "Cloudwatch dimensions to index metrics under, in the form of Key=Value, Other=Value")
+		gcpProjectID   = flag.String("stackdriver-projectID", "", "Specify Stackdriver projectID")
 
 		// filters
 		queue = flag.String("queue", "", "Only include a specific queue")
@@ -68,6 +69,13 @@ func main() {
 		}
 	case "prometheus":
 		bk = backend.NewPrometheusBackend(*prometheusPath, *prometheusAddr)
+	case "stackdriver":
+		var err error
+		bk, err = backend.NewStackdriverBackend(*gcpProjectID)
+		if err != nil {
+			fmt.Printf("Error starting Stackdriver backend, err: %v\n", err)
+			os.Exit(1)
+		}
 	default:
 		fmt.Println("Must provide a supported backend: cloudwatch, statsd, prometheus")
 		os.Exit(1)
