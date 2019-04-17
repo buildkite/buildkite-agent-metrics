@@ -14,8 +14,8 @@ import (
 )
 
 const (
-	metricTotalPrefix = "custom.googleapis.com/buildlkite/total/%s"
-	metricQueuePrefix = "custom.googleapis.com/buildlkite/queue/%s/%s"
+	metricTotalPrefix = "custom.googleapis.com/buildkite/total/%s"
+	metricQueuePrefix = "custom.googleapis.com/buildkite/queue/%s/%s"
 )
 
 // StackDriverBackend sends metrics to GCP Stackdriver
