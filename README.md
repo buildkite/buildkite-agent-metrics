@@ -59,7 +59,6 @@ aws lambda create-function \
 You can build a docker image for the `buildkite-agent-metrics` following:
 
 ```
-GO111MODULE=on GOOS=linux GOARCH=amd64 go build -o bin/buildkite-agent-metrics .
 docker build -t buildkite-agent-metrics .
 ```
 
