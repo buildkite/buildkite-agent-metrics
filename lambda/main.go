@@ -29,6 +29,7 @@ func main() {
 
 func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 	token := os.Getenv("BUILDKITE_AGENT_TOKEN")
+	ssmTokenKey := os.Getenv("BUILDKITE_AGENT_TOKEN_SSM_KEY")
 	backendOpt := os.Getenv("BUILDKITE_BACKEND")
 	queue := os.Getenv("BUILDKITE_QUEUE")
 	clwDimensions := os.Getenv("BUILDKITE_CLOUDWATCH_DIMENSIONS")
@@ -40,6 +41,10 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 	}
 
 	t := time.Now()
+
+	if ssmTokenKey != "" {
+		token = backend.RetrieveFromParameterStore(ssmTokenKey)
+	}
 
 	userAgent := fmt.Sprintf("buildkite-agent-metrics/%s buildkite-agent-metrics-lambda", version.Version)
 
