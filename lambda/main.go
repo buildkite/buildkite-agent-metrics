@@ -16,6 +16,10 @@ import (
 	"github.com/buildkite/buildkite-agent-metrics/version"
 )
 
+var (
+	nextPollTime time.Time
+)
+
 func main() {
 	if os.Getenv(`DEBUG`) != "" {
 		_, err := Handler(context.Background(), json.RawMessage([]byte{}))
@@ -41,6 +45,12 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 	}
 
 	t := time.Now()
+
+	if !nextPollTime.IsZero() && nextPollTime.After(t) {
+		log.Printf("Skipping polling, next poll time is in %v",
+			nextPollTime.Sub(t))
+		return "", nil
+	}
 
 	if ssmTokenKey != "" {
 		token = backend.RetrieveFromParameterStore(ssmTokenKey)
@@ -88,5 +98,9 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 	}
 
 	log.Printf("Finished in %s", time.Now().Sub(t))
+
+	// Store the next acceptable poll time in global state
+	nextPollTime = time.Now().Add(res.PollDuration)
+
 	return "", nil
 }
