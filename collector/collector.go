@@ -15,6 +15,7 @@ const (
 	ScheduledJobsCount  = "ScheduledJobsCount"
 	RunningJobsCount    = "RunningJobsCount"
 	UnfinishedJobsCount = "UnfinishedJobsCount"
+	WaitingJobsCount    = "WaitingJobsCount"
 	IdleAgentCount      = "IdleAgentCount"
 	BusyAgentCount      = "BusyAgentCount"
 	TotalAgentCount     = "TotalAgentCount"
@@ -52,6 +53,7 @@ type metricsAgentsResponse struct {
 type metricsJobsResponse struct {
 	Scheduled int `json:"scheduled"`
 	Running   int `json:"running"`
+	Waiting   int `json:"waiting"`
 	Total     int `json:"total"`
 }
 
@@ -150,6 +152,7 @@ func (c *Collector) Collect() (*Result, error) {
 		result.Totals[ScheduledJobsCount] = allMetrics.Jobs.Scheduled
 		result.Totals[RunningJobsCount] = allMetrics.Jobs.Running
 		result.Totals[UnfinishedJobsCount] = allMetrics.Jobs.Total
+		result.Totals[WaitingJobsCount] = allMetrics.Jobs.Waiting
 		result.Totals[IdleAgentCount] = allMetrics.Agents.Idle
 		result.Totals[BusyAgentCount] = allMetrics.Agents.Busy
 		result.Totals[TotalAgentCount] = allMetrics.Agents.Total
@@ -161,6 +164,7 @@ func (c *Collector) Collect() (*Result, error) {
 			result.Queues[queueName][ScheduledJobsCount] = queueJobMetrics.Scheduled
 			result.Queues[queueName][RunningJobsCount] = queueJobMetrics.Running
 			result.Queues[queueName][UnfinishedJobsCount] = queueJobMetrics.Total
+			result.Queues[queueName][WaitingJobsCount] = queueJobMetrics.Waiting
 		}
 
 		for queueName, queueAgentMetrics := range allMetrics.Agents.Queues {
@@ -225,6 +229,7 @@ func (c *Collector) Collect() (*Result, error) {
 			ScheduledJobsCount:  queueMetrics.Jobs.Scheduled,
 			RunningJobsCount:    queueMetrics.Jobs.Running,
 			UnfinishedJobsCount: queueMetrics.Jobs.Total,
+			WaitingJobsCount:    queueMetrics.Jobs.Waiting,
 			IdleAgentCount:      queueMetrics.Agents.Idle,
 			BusyAgentCount:      queueMetrics.Agents.Busy,
 			TotalAgentCount:     queueMetrics.Agents.Total,
