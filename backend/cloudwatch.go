@@ -51,34 +51,40 @@ func NewCloudWatchBackend(dimensions []CloudWatchDimension) *CloudWatchBackend {
 func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 	svc := cloudwatch.New(session.New())
 
-	for _, d := range cb.dimensions {
-		log.Printf("Using custom Cloudwatch dimension of [ %s = %s ]", d.Key, d.Value)
+	metrics := []*cloudwatch.MetricDatum{}
+
+	// Set the baseline org dimension
+	dimensions := []*cloudwatch.Dimension{
+		&cloudwatch.Dimension{Name: aws.String("Org"), Value: aws.String(r.Org)},
 	}
 
-	metrics := []*cloudwatch.MetricDatum{}
+	// Add custom dimension if provided
+	for _, d := range cb.dimensions {
+		log.Printf("Using custom Cloudwatch dimension of [ %s = %s ]", d.Key, d.Value)
+
+		dimensions = append(dimensions, &cloudwatch.Dimension{
+			Name: aws.String(d.Key), Value: aws.String(d.Value),
+		})
+	}
+
+	// Add total metrics
 	metrics = append(metrics, cloudwatchMetrics(r.Totals, nil)...)
 
 	for name, c := range r.Queues {
-		dimensions := []*cloudwatch.Dimension{}
+		queueDimensions := dimensions
 
-		// Add custom dimension if provided
-		for _, d := range cb.dimensions {
-			dimensions = append(dimensions, &cloudwatch.Dimension{
-				Name: aws.String(d.Key), Value: aws.String(d.Value),
-			})
-		}
-
-		// Add the queue and org dimensions
-		dimensions = append(dimensions,
+		// Add an queue dimension
+		queueDimensions = append(queueDimensions,
 			&cloudwatch.Dimension{Name: aws.String("Queue"), Value: aws.String(name)},
-			&cloudwatch.Dimension{Name: aws.String("Org"), Value: aws.String(r.Org)},
 		)
 
-		metrics = append(metrics, cloudwatchMetrics(c, dimensions)...)
+		// Add per-queue metrics
+		metrics = append(metrics, cloudwatchMetrics(c, queueDimensions)...)
 	}
 
 	log.Printf("Extracted %d cloudwatch metrics from results", len(metrics))
 
+	// Chunk into batches of 10 metrics
 	for _, chunk := range chunkCloudwatchMetrics(10, metrics) {
 		log.Printf("Submitting chunk of %d metrics to Cloudwatch", len(chunk))
 		_, err := svc.PutMetricData(&cloudwatch.PutMetricDataInput{
