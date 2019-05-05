@@ -119,13 +119,16 @@ func main() {
 
 	if *interval > 0 {
 		for {
-			// Respect the min poll duration returned by
-			// the API
-			if *interval > minPollDuration {
-				time.Sleep(minPollDuration)
-			} else {
-				time.Sleep(*interval)
+			waitTime := *interval
+
+			// Respect the min poll duration returned by the API
+			if *interval < minPollDuration {
+				log.Printf("Increasing poll duration based on rate-limit headers")
+				waitTime = minPollDuration
 			}
+
+			log.Printf("Waiting for %v (minimum of %v)", waitTime, minPollDuration)
+			time.Sleep(waitTime)
 
 			minPollDuration, err = f()
 			if err != nil {
