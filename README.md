@@ -54,6 +54,22 @@ aws lambda create-function \
   --handler handler
 ```
 
+### Running as a Container
+
+You can build a docker image for the `buildkite-agent-metrics` following:
+
+```
+docker build -t buildkite-agent-metrics .
+```
+
+This will create a local docker image named as `buildkite-agent-metrics` that you can tag and push to your own registry.
+
+You can use the command-line arguments in a docker execution in the same way as described before:
+
+```
+docker run --rm buildkite-agent-metrics -token abc123 -interval 30s -queue my-queue
+```
+
 ### Backends
 
 By default metrics will be submitted to CloudWatch but the backend can be switched to StatsD or Prometheus using the command-line argument `-backend statsd` or `-backend prometheus` respectively.
