@@ -2,12 +2,14 @@ package collector
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -118,6 +120,7 @@ func (c *Collector) Collect() (*Result, error) {
 		if err != nil {
 			return nil, err
 		}
+		defer res.Body.Close()
 
 		if c.DebugHttp {
 			if dump, err := httputil.DumpResponse(res, true); err == nil {
@@ -125,8 +128,25 @@ func (c *Collector) Collect() (*Result, error) {
 			}
 		}
 
+		// Handle any errors
+		if res.StatusCode != http.StatusOK {
+			// If it's json response, show the error message
+			if strings.HasPrefix(res.Header.Get("Content-Type"), "application/json") {
+				var errStruct struct {
+					Message string `json:"message"`
+				}
+				err := json.NewDecoder(res.Body).Decode(&errStruct)
+				if err == nil {
+					return nil, errors.New(errStruct.Message)
+				} else {
+					log.Printf("Failed to decode error: %v", err)
+				}
+			}
+
+			return nil, fmt.Errorf("Request failed with %s (%d)", res.Status, res.StatusCode)
+		}
+
 		var allMetrics allMetricsResponse
-		defer res.Body.Close()
 
 		// Check if we get a poll duration header from server
 		if pollSeconds := res.Header.Get(PollDurationHeader); pollSeconds != "" {
