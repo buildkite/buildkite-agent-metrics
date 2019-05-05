@@ -12,14 +12,20 @@ func TestCollectorWithEmptyResponseForAllQueues(t *testing.T) {
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/metrics" {
 			w.WriteHeader(http.StatusOK)
-			io.WriteString(w, `{}`)
+			_, _ = io.WriteString(w, `{
+				"organization": {
+					"slug": "test"
+				},
+				"jobs": {},
+				"agents": {}
+			}`)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
 		}
 	}))
 	c := &Collector{
-		Endpoint: s.URL,
-		Token: "abc123",
+		Endpoint:  s.URL,
+		Token:     "abc123",
 		UserAgent: "some-client/1.2.3",
 	}
 	res, err := c.Collect()
@@ -57,14 +63,30 @@ func TestCollectorWithNoJobsForAllQueues(t *testing.T) {
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/metrics" {
 			w.WriteHeader(http.StatusOK)
-			io.WriteString(w, `{"jobs":{"scheduled":0,"running":0,"all":0,"queues":{}},"agents":{"idle":0,"busy":0,"all":0,"queues":{}}}`)
+			_, _ = io.WriteString(w, `{
+				"organization": {
+				  "slug": "test"
+				},
+				"jobs": {
+				  "scheduled": 0,
+				  "running": 0,
+				  "total": 0,
+				  "queues": {}
+				},
+				"agents": {
+				  "idle": 0,
+				  "busy": 0,
+				  "total": 0,
+				  "queues": {}
+				}
+			  }`)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
 		}
 	}))
 	c := &Collector{
-		Endpoint: s.URL,
-		Token: "abc123",
+		Endpoint:  s.URL,
+		Token:     "abc123",
 		UserAgent: "some-client/1.2.3",
 	}
 	res, err := c.Collect()
@@ -102,14 +124,47 @@ func TestCollectorWithSomeJobsAndAgentsForAllQueues(t *testing.T) {
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/metrics" {
 			w.WriteHeader(http.StatusOK)
-			io.WriteString(w, `{"jobs":{"scheduled":3,"running":1,"total":4,"queues":{"default":{"scheduled":2,"running":1,"total":3},"deploy":{"scheduled":1,"running":0,"total":1}}},"agents":{"idle":0,"busy":1,"total":1,"queues":{"default":{"idle":0,"busy":1,"total":1}}}}`)
+			_, _ = io.WriteString(w, `{
+				"organization": {
+				  "slug": "test"
+				},
+				"jobs": {
+				  "scheduled": 3,
+				  "running": 1,
+				  "total": 4,
+				  "queues": {
+					"default": {
+					  "scheduled": 2,
+					  "running": 1,
+					  "total": 3
+					},
+					"deploy": {
+					  "scheduled": 1,
+					  "running": 0,
+					  "total": 1
+					}
+				  }
+				},
+				"agents": {
+				  "idle": 0,
+				  "busy": 1,
+				  "total": 1,
+				  "queues": {
+					"default": {
+					  "idle": 0,
+					  "busy": 1,
+					  "total": 1
+					}
+				  }
+				}
+			  }`)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
 		}
 	}))
 	c := &Collector{
-		Endpoint: s.URL,
-		Token: "abc123",
+		Endpoint:  s.URL,
+		Token:     "abc123",
 		UserAgent: "some-client/1.2.3",
 	}
 	res, err := c.Collect()
@@ -166,16 +221,30 @@ func TestCollectorWithSomeJobsAndAgentsForAQueue(t *testing.T) {
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path == "/metrics/queue" && r.URL.Query().Get("name") == "deploy" {
 			w.WriteHeader(http.StatusOK)
-			io.WriteString(w, `{"jobs":{"scheduled":3,"running":1,"total":4},"agents":{"idle":0,"busy":1,"total":1}}`)
+			_, _ = io.WriteString(w, `{
+				"organization": {
+				  "slug": "test"
+				},
+				"jobs": {
+				  "scheduled": 3,
+				  "running": 1,
+				  "total": 4
+				},
+				"agents": {
+				  "idle": 0,
+				  "busy": 1,
+				  "total": 1
+				}
+			  }`)
 		} else {
 			w.WriteHeader(http.StatusNotFound)
 		}
 	}))
 	c := &Collector{
-		Endpoint: s.URL,
-		Token: "abc123",
+		Endpoint:  s.URL,
+		Token:     "abc123",
 		UserAgent: "some-client/1.2.3",
-		Queue: "deploy",
+		Queue:     "deploy",
 	}
 	res, err := c.Collect()
 	if err != nil {
