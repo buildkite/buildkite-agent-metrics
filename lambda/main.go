@@ -33,6 +33,7 @@ func main() {
 
 func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 	token := os.Getenv("BUILDKITE_AGENT_TOKEN")
+	awsRegion := os.Getenv("AWS_REGION")
 	ssmTokenKey := os.Getenv("BUILDKITE_AGENT_TOKEN_SSM_KEY")
 	backendOpt := os.Getenv("BUILDKITE_BACKEND")
 	queue := os.Getenv("BUILDKITE_QUEUE")
@@ -82,7 +83,7 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		b = backend.NewCloudWatchBackend(dimensions)
+		b = backend.NewCloudWatchBackend(awsRegion, dimensions)
 	}
 
 	res, err := c.Collect()

@@ -33,6 +33,7 @@ func main() {
 		statsdTags     = flag.Bool("statsd-tags", false, "Whether your StatsD server supports tagging like Datadog")
 		prometheusAddr = flag.String("prometheus-addr", ":8080", "Prometheus metrics transport bind address")
 		prometheusPath = flag.String("prometheus-path", "/metrics", "Prometheus metrics transport path")
+		clwRegion      = flag.String("cloudwatch-region", "", "AWS Region to connect to, defaults to $AWS_REGION or us-east-1")
 		clwDimensions  = flag.String("cloudwatch-dimensions", "", "Cloudwatch dimensions to index metrics under, in the form of Key=Value, Other=Value")
 
 		// filters
@@ -53,12 +54,18 @@ func main() {
 
 	switch strings.ToLower(*backendOpt) {
 	case "cloudwatch":
+		region := *clwRegion
+		if envRegion := os.Getenv(`AWS_REGION`); region == "" && envRegion != "" {
+			region = envRegion
+		} else {
+			region = `us-east-1`
+		}
 		dimensions, err := backend.ParseCloudWatchDimensions(*clwDimensions)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		bk = backend.NewCloudWatchBackend(dimensions)
+		bk = backend.NewCloudWatchBackend(region, dimensions)
 	case "statsd":
 		var err error
 		bk, err = backend.NewStatsDBackend(*statsdHost, *statsdTags)

@@ -40,17 +40,27 @@ func ParseCloudWatchDimensions(ds string) ([]CloudWatchDimension, error) {
 
 // CloudWatchBackend sends metrics to AWS CloudWatch
 type CloudWatchBackend struct {
+	region     string
 	dimensions []CloudWatchDimension
 }
 
 // NewCloudWatchBackend returns a new CloudWatchBackend with optional dimensions
-func NewCloudWatchBackend(dimensions []CloudWatchDimension) *CloudWatchBackend {
-	return &CloudWatchBackend{dimensions: dimensions}
+func NewCloudWatchBackend(region string, dimensions []CloudWatchDimension) *CloudWatchBackend {
+	return &CloudWatchBackend{
+		region:     region,
+		dimensions: dimensions,
+	}
 }
 
 func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
-	svc := cloudwatch.New(session.New())
+	sess, err := session.NewSession(&aws.Config{
+		Region: aws.String(cb.region),
+	})
+	if err != nil {
+		return err
+	}
 
+	svc := cloudwatch.New(sess)
 	for _, d := range cb.dimensions {
 		log.Printf("Using custom Cloudwatch dimension of [ %s = %s ]", d.Key, d.Value)
 	}
