@@ -113,19 +113,19 @@ Currently this will publish metrics to Cloudwatch under the custom metric prefix
 The following metrics are gathered when no specific queue is supplied:
 
 ```
-Buildkite > RunningJobsCount
-Buildkite > ScheduledJobsCount
-Buildkite > UnfinishedJobsCount
-Buildkite > IdleAgentsCount
-Buildkite > BusyAgentsCount
-Buildkite > TotalAgentsCount
+Buildkite > (Org) > RunningJobsCount
+Buildkite > (Org) > ScheduledJobsCount
+Buildkite > (Org) > UnfinishedJobsCount
+Buildkite > (Org) > IdleAgentsCount
+Buildkite > (Org) > BusyAgentsCount
+Buildkite > (Org) > TotalAgentsCount
 
-Buildkite > (Queue) > RunningJobsCount
-Buildkite > (Queue) > ScheduledJobsCount
-Buildkite > (Queue) > UnfinishedJobsCount
-Buildkite > (Queue) > IdleAgentsCount
-Buildkite > (Queue) > BusyAgentsCount
-Buildkite > (Queue) > TotalAgentsCount
+Buildkite > (Org, Queue) > RunningJobsCount
+Buildkite > (Org, Queue) > ScheduledJobsCount
+Buildkite > (Org, Queue) > UnfinishedJobsCount
+Buildkite > (Org, Queue) > IdleAgentsCount
+Buildkite > (Org, Queue) > BusyAgentsCount
+Buildkite > (Org, Queue) > TotalAgentsCount
 ```
 
 When a queue is specified, only that queue's metrics are published.
