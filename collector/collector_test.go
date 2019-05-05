@@ -44,6 +44,7 @@ func TestCollectorWithEmptyResponseForAllQueues(t *testing.T) {
 		{"Totals", res.Totals, TotalAgentCount, 0},
 		{"Totals", res.Totals, BusyAgentCount, 0},
 		{"Totals", res.Totals, IdleAgentCount, 0},
+		{"Totals", res.Totals, BusyAgentPercentage, 0},
 	}
 
 	for _, tc := range testCases {
@@ -105,6 +106,7 @@ func TestCollectorWithNoJobsForAllQueues(t *testing.T) {
 		{"Totals", res.Totals, TotalAgentCount, 0},
 		{"Totals", res.Totals, BusyAgentCount, 0},
 		{"Totals", res.Totals, IdleAgentCount, 0},
+		{"Totals", res.Totals, BusyAgentPercentage, 0},
 	}
 
 	for _, tc := range testCases {
@@ -183,6 +185,7 @@ func TestCollectorWithSomeJobsAndAgentsForAllQueues(t *testing.T) {
 		{"Totals", res.Totals, TotalAgentCount, 1},
 		{"Totals", res.Totals, BusyAgentCount, 1},
 		{"Totals", res.Totals, IdleAgentCount, 0},
+		{"Totals", res.Totals, BusyAgentPercentage, 100},
 
 		{"Queue.default", res.Queues["default"], RunningJobsCount, 1},
 		{"Queue.default", res.Queues["default"], ScheduledJobsCount, 2},
@@ -265,6 +268,7 @@ func TestCollectorWithSomeJobsAndAgentsForAQueue(t *testing.T) {
 		{"Queue.deploy", res.Queues["deploy"], TotalAgentCount, 1},
 		{"Queue.deploy", res.Queues["deploy"], BusyAgentCount, 1},
 		{"Queue.deploy", res.Queues["deploy"], IdleAgentCount, 0},
+		{"Queue.deploy", res.Queues["deploy"], BusyAgentPercentage, 100},
 	}
 
 	for _, tc := range testCases {

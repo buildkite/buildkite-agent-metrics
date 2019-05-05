@@ -19,6 +19,7 @@ const (
 	IdleAgentCount      = "IdleAgentCount"
 	BusyAgentCount      = "BusyAgentCount"
 	TotalAgentCount     = "TotalAgentCount"
+	BusyAgentPercentage = "BusyAgentPercentage"
 
 	PollDurationHeader = `Buildkite-Agent-Metrics-Poll-Duration`
 )
@@ -156,6 +157,7 @@ func (c *Collector) Collect() (*Result, error) {
 		result.Totals[IdleAgentCount] = allMetrics.Agents.Idle
 		result.Totals[BusyAgentCount] = allMetrics.Agents.Busy
 		result.Totals[TotalAgentCount] = allMetrics.Agents.Total
+		result.Totals[BusyAgentPercentage] = busyAgentPercentage(allMetrics.Agents.metricsAgentsResponse)
 
 		for queueName, queueJobMetrics := range allMetrics.Jobs.Queues {
 			if _, ok := result.Queues[queueName]; !ok {
@@ -174,6 +176,7 @@ func (c *Collector) Collect() (*Result, error) {
 			result.Queues[queueName][IdleAgentCount] = queueAgentMetrics.Idle
 			result.Queues[queueName][BusyAgentCount] = queueAgentMetrics.Busy
 			result.Queues[queueName][TotalAgentCount] = queueAgentMetrics.Total
+			result.Queues[queueName][BusyAgentPercentage] = busyAgentPercentage(queueAgentMetrics)
 		}
 	} else {
 		log.Printf("Collecting agent metrics for queue '%s'", c.Queue)
@@ -233,6 +236,7 @@ func (c *Collector) Collect() (*Result, error) {
 			IdleAgentCount:      queueMetrics.Agents.Idle,
 			BusyAgentCount:      queueMetrics.Agents.Busy,
 			TotalAgentCount:     queueMetrics.Agents.Total,
+			BusyAgentPercentage: busyAgentPercentage(queueMetrics.Agents),
 		}
 	}
 
@@ -241,6 +245,13 @@ func (c *Collector) Collect() (*Result, error) {
 	}
 
 	return result, nil
+}
+
+func busyAgentPercentage(agents metricsAgentsResponse) int {
+	if agents.Total > 0 {
+		return int(100 * agents.Busy / agents.Total)
+	}
+	return 0
 }
 
 func (r Result) Dump() {
