@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.0.0](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.0.0) (2019-05-05)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v4.1.2...v5.0.0)
+
+### Changed
+- Add BusyAgentPercentage metric [#80](https://github.com/buildkite/buildkite-agent-metrics/pull/80) (@arromer)
+- Drop metrics with only queue dimension [#82](https://github.com/buildkite/buildkite-agent-metrics/pull/82) (@lox)
+- Add WaitingJobsCount metric [#81](https://github.com/buildkite/buildkite-agent-metrics/pull/81) (@lox)
+- Read AWS_REGION for cloudwatch, default to us-east-1 [#79](https://github.com/buildkite/buildkite-agent-metrics/pull/79) (@lox)
+- Add a Dockerfile [#77](https://github.com/buildkite/buildkite-agent-metrics/pull/77) (@amalucelli)
+- Enforce Buildkite-Agent-Metrics-Poll-Duration header [#83](https://github.com/buildkite/buildkite-agent-metrics/pull/83) (@lox)
+- Add support for reading buildkite token from ssm [#76](https://github.com/buildkite/buildkite-agent-metrics/pull/76) (@arromer)
+- Update bucket publishing for new regions [#74](https://github.com/buildkite/buildkite-agent-metrics/pull/74) (@lox)
+- Update the readme to have the correct Environment variables and expla… [#73](https://github.com/buildkite/buildkite-agent-metrics/pull/73) (@bmbentson)
+
 ## [v4.1.3](https://github.com/buildkite/buildkite-agent-metrics/tree/v4.1.3) (2019-03-26)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v4.1.2...v4.1.3)
 
