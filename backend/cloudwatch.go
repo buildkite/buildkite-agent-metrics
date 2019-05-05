@@ -61,7 +61,6 @@ func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 	}
 
 	svc := cloudwatch.New(sess)
-]
 	for _, d := range cb.dimensions {
 		log.Printf("Using custom Cloudwatch dimension of [ %s = %s ]", d.Key, d.Value)
 	}
