@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"strconv"
 	"time"
 )
 
@@ -17,6 +18,8 @@ const (
 	IdleAgentCount      = "IdleAgentCount"
 	BusyAgentCount      = "BusyAgentCount"
 	TotalAgentCount     = "TotalAgentCount"
+
+	PollDurationHeader = `Buildkite-Agent-Metrics-Poll-Duration`
 )
 
 type Collector struct {
@@ -30,9 +33,10 @@ type Collector struct {
 }
 
 type Result struct {
-	Totals map[string]int
-	Queues map[string]map[string]int
-	Org    string
+	Totals       map[string]int
+	Queues       map[string]map[string]int
+	Org          string
+	PollDuration time.Duration
 }
 
 type organizationResponse struct {
@@ -120,6 +124,17 @@ func (c *Collector) Collect() (*Result, error) {
 
 		var allMetrics allMetricsResponse
 		defer res.Body.Close()
+
+		// Check if we get a poll duration header from server
+		if pollSeconds := res.Header.Get(PollDurationHeader); pollSeconds != "" {
+			pollSecondsInt, err := strconv.ParseInt(pollSeconds, 10, 64)
+			if err != nil {
+				log.Printf("Failed to parse %s header: %v", PollDurationHeader, err)
+			} else {
+				result.PollDuration = time.Duration(pollSecondsInt) * time.Second
+			}
+		}
+
 		err = json.NewDecoder(res.Body).Decode(&allMetrics)
 		if err != nil {
 			return nil, err

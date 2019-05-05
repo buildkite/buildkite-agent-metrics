@@ -92,33 +92,46 @@ func main() {
 		DebugHttp: *debugHttp,
 	}
 
-	f := func() error {
+	f := func() (time.Duration, error) {
 		t := time.Now()
 
 		result, err := c.Collect()
 		if err != nil {
-			return err
+			return time.Duration(0), err
 		}
 
 		if !*dryRun {
 			err = bk.Collect(result)
 			if err != nil {
-				return err
+				return time.Duration(0), err
 			}
 		}
 
 		log.Printf("Finished in %s", time.Now().Sub(t))
-		return nil
+		return result.PollDuration, nil
 	}
 
-	if err := f(); err != nil {
+	minPollDuration, err := f()
+	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
 	if *interval > 0 {
-		for _ = range time.NewTicker(*interval).C {
-			if err := f(); err != nil {
+		for {
+			waitTime := *interval
+
+			// Respect the min poll duration returned by the API
+			if *interval < minPollDuration {
+				log.Printf("Increasing poll duration based on rate-limit headers")
+				waitTime = minPollDuration
+			}
+
+			log.Printf("Waiting for %v (minimum of %v)", waitTime, minPollDuration)
+			time.Sleep(waitTime)
+
+			minPollDuration, err = f()
+			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}
