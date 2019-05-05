@@ -33,6 +33,7 @@ func main() {
 		statsdTags     = flag.Bool("statsd-tags", false, "Whether your StatsD server supports tagging like Datadog")
 		prometheusAddr = flag.String("prometheus-addr", ":8080", "Prometheus metrics transport bind address")
 		prometheusPath = flag.String("prometheus-path", "/metrics", "Prometheus metrics transport path")
+		clwRegion      = flag.String("cloudwatch-region", "", "AWS Region to connect to, defaults to $AWS_REGION or us-east-1")
 		clwDimensions  = flag.String("cloudwatch-dimensions", "", "Cloudwatch dimensions to index metrics under, in the form of Key=Value, Other=Value")
 
 		// filters
@@ -53,12 +54,18 @@ func main() {
 
 	switch strings.ToLower(*backendOpt) {
 	case "cloudwatch":
+		region := *clwRegion
+		if envRegion := os.Getenv(`AWS_REGION`); region == "" && envRegion != "" {
+			region = envRegion
+		} else {
+			region = `us-east-1`
+		}
 		dimensions, err := backend.ParseCloudWatchDimensions(*clwDimensions)
 		if err != nil {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		bk = backend.NewCloudWatchBackend(dimensions)
+		bk = backend.NewCloudWatchBackend(region, dimensions)
 	case "statsd":
 		var err error
 		bk, err = backend.NewStatsDBackend(*statsdHost, *statsdTags)
@@ -92,33 +99,46 @@ func main() {
 		DebugHttp: *debugHttp,
 	}
 
-	f := func() error {
+	f := func() (time.Duration, error) {
 		t := time.Now()
 
 		result, err := c.Collect()
 		if err != nil {
-			return err
+			return time.Duration(0), err
 		}
 
 		if !*dryRun {
 			err = bk.Collect(result)
 			if err != nil {
-				return err
+				return time.Duration(0), err
 			}
 		}
 
 		log.Printf("Finished in %s", time.Now().Sub(t))
-		return nil
+		return result.PollDuration, nil
 	}
 
-	if err := f(); err != nil {
+	minPollDuration, err := f()
+	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
 
 	if *interval > 0 {
-		for _ = range time.NewTicker(*interval).C {
-			if err := f(); err != nil {
+		for {
+			waitTime := *interval
+
+			// Respect the min poll duration returned by the API
+			if *interval < minPollDuration {
+				log.Printf("Increasing poll duration based on rate-limit headers")
+				waitTime = minPollDuration
+			}
+
+			log.Printf("Waiting for %v (minimum of %v)", waitTime, minPollDuration)
+			time.Sleep(waitTime)
+
+			minPollDuration, err = f()
+			if err != nil {
 				fmt.Println(err)
 				os.Exit(1)
 			}

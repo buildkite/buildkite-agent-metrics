@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"strconv"
 	"time"
 )
 
@@ -14,10 +15,13 @@ const (
 	ScheduledJobsCount  = "ScheduledJobsCount"
 	RunningJobsCount    = "RunningJobsCount"
 	UnfinishedJobsCount = "UnfinishedJobsCount"
+	WaitingJobsCount    = "WaitingJobsCount"
 	IdleAgentCount      = "IdleAgentCount"
 	BusyAgentCount      = "BusyAgentCount"
 	TotalAgentCount     = "TotalAgentCount"
 	BusyAgentPercentage = "BusyAgentPercentage"
+
+	PollDurationHeader = `Buildkite-Agent-Metrics-Poll-Duration`
 )
 
 type Collector struct {
@@ -31,9 +35,10 @@ type Collector struct {
 }
 
 type Result struct {
-	Totals map[string]int
-	Queues map[string]map[string]int
-	Org    string
+	Totals       map[string]int
+	Queues       map[string]map[string]int
+	Org          string
+	PollDuration time.Duration
 }
 
 type organizationResponse struct {
@@ -49,6 +54,7 @@ type metricsAgentsResponse struct {
 type metricsJobsResponse struct {
 	Scheduled int `json:"scheduled"`
 	Running   int `json:"running"`
+	Waiting   int `json:"waiting"`
 	Total     int `json:"total"`
 }
 
@@ -121,6 +127,17 @@ func (c *Collector) Collect() (*Result, error) {
 
 		var allMetrics allMetricsResponse
 		defer res.Body.Close()
+
+		// Check if we get a poll duration header from server
+		if pollSeconds := res.Header.Get(PollDurationHeader); pollSeconds != "" {
+			pollSecondsInt, err := strconv.ParseInt(pollSeconds, 10, 64)
+			if err != nil {
+				log.Printf("Failed to parse %s header: %v", PollDurationHeader, err)
+			} else {
+				result.PollDuration = time.Duration(pollSecondsInt) * time.Second
+			}
+		}
+
 		err = json.NewDecoder(res.Body).Decode(&allMetrics)
 		if err != nil {
 			return nil, err
@@ -136,6 +153,7 @@ func (c *Collector) Collect() (*Result, error) {
 		result.Totals[ScheduledJobsCount] = allMetrics.Jobs.Scheduled
 		result.Totals[RunningJobsCount] = allMetrics.Jobs.Running
 		result.Totals[UnfinishedJobsCount] = allMetrics.Jobs.Total
+		result.Totals[WaitingJobsCount] = allMetrics.Jobs.Waiting
 		result.Totals[IdleAgentCount] = allMetrics.Agents.Idle
 		result.Totals[BusyAgentCount] = allMetrics.Agents.Busy
 		result.Totals[TotalAgentCount] = allMetrics.Agents.Total
@@ -148,6 +166,7 @@ func (c *Collector) Collect() (*Result, error) {
 			result.Queues[queueName][ScheduledJobsCount] = queueJobMetrics.Scheduled
 			result.Queues[queueName][RunningJobsCount] = queueJobMetrics.Running
 			result.Queues[queueName][UnfinishedJobsCount] = queueJobMetrics.Total
+			result.Queues[queueName][WaitingJobsCount] = queueJobMetrics.Waiting
 		}
 
 		for queueName, queueAgentMetrics := range allMetrics.Agents.Queues {
@@ -213,6 +232,7 @@ func (c *Collector) Collect() (*Result, error) {
 			ScheduledJobsCount:  queueMetrics.Jobs.Scheduled,
 			RunningJobsCount:    queueMetrics.Jobs.Running,
 			UnfinishedJobsCount: queueMetrics.Jobs.Total,
+			WaitingJobsCount:    queueMetrics.Jobs.Waiting,
 			IdleAgentCount:      queueMetrics.Agents.Idle,
 			BusyAgentCount:      queueMetrics.Agents.Busy,
 			TotalAgentCount:     queueMetrics.Agents.Total,

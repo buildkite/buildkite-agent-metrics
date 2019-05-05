@@ -16,6 +16,10 @@ import (
 	"github.com/buildkite/buildkite-agent-metrics/version"
 )
 
+var (
+	nextPollTime time.Time
+)
+
 func main() {
 	if os.Getenv(`DEBUG`) != "" {
 		_, err := Handler(context.Background(), json.RawMessage([]byte{}))
@@ -29,6 +33,8 @@ func main() {
 
 func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 	token := os.Getenv("BUILDKITE_AGENT_TOKEN")
+	awsRegion := os.Getenv("AWS_REGION")
+	ssmTokenKey := os.Getenv("BUILDKITE_AGENT_TOKEN_SSM_KEY")
 	backendOpt := os.Getenv("BUILDKITE_BACKEND")
 	queue := os.Getenv("BUILDKITE_QUEUE")
 	clwDimensions := os.Getenv("BUILDKITE_CLOUDWATCH_DIMENSIONS")
@@ -40,6 +46,16 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 	}
 
 	t := time.Now()
+
+	if !nextPollTime.IsZero() && nextPollTime.After(t) {
+		log.Printf("Skipping polling, next poll time is in %v",
+			nextPollTime.Sub(t))
+		return "", nil
+	}
+
+	if ssmTokenKey != "" {
+		token = backend.RetrieveFromParameterStore(ssmTokenKey)
+	}
 
 	userAgent := fmt.Sprintf("buildkite-agent-metrics/%s buildkite-agent-metrics-lambda", version.Version)
 
@@ -67,7 +83,7 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		b = backend.NewCloudWatchBackend(dimensions)
+		b = backend.NewCloudWatchBackend(awsRegion, dimensions)
 	}
 
 	res, err := c.Collect()
@@ -83,5 +99,9 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 	}
 
 	log.Printf("Finished in %s", time.Now().Sub(t))
+
+	// Store the next acceptable poll time in global state
+	nextPollTime = time.Now().Add(res.PollDuration)
+
 	return "", nil
 }
