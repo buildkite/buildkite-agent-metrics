@@ -36,6 +36,8 @@ func main() {
 		clwRegion      = flag.String("cloudwatch-region", "", "AWS Region to connect to, defaults to $AWS_REGION or us-east-1")
 		clwDimensions  = flag.String("cloudwatch-dimensions", "", "Cloudwatch dimensions to index metrics under, in the form of Key=Value, Other=Value")
 		gcpProjectID   = flag.String("stackdriver-projectid", "", "Specify Stackdriver Project ID")
+		nrAppName      = flag.String("newrelic-app-name", "", "New Relic application name for metric events")
+		nrLicenseKey   = flag.String("newrelic-license-key", "", "New Relic license key for publishing events")
 
 		// filters
 		queue = flag.String("queue", "", "Only include a specific queue")
@@ -53,6 +55,7 @@ func main() {
 		os.Exit(1)
 	}
 
+	var err error
 	switch strings.ToLower(*backendOpt) {
 	case "cloudwatch":
 		region := *clwRegion
@@ -68,7 +71,6 @@ func main() {
 		}
 		bk = backend.NewCloudWatchBackend(region, dimensions)
 	case "statsd":
-		var err error
 		bk, err = backend.NewStatsDBackend(*statsdHost, *statsdTags)
 		if err != nil {
 			fmt.Printf("Error starting StatsD, err: %v\n", err)
@@ -77,14 +79,19 @@ func main() {
 	case "prometheus":
 		bk = backend.NewPrometheusBackend(*prometheusPath, *prometheusAddr)
 	case "stackdriver":
-		var err error
 		bk, err = backend.NewStackDriverBackend(*gcpProjectID)
 		if err != nil {
 			fmt.Printf("Error starting Stackdriver backend, err: %v\n", err)
 			os.Exit(1)
 		}
+	case "newrelic":
+		bk, err = backend.NewNewRelicBackend(*nrAppName, *nrLicenseKey)
+		if err != nil {
+			fmt.Printf("Error starting New Relic client: %v\n", err)
+			os.Exit(1)
+		}
 	default:
-		fmt.Println("Must provide a supported backend: cloudwatch, statsd, prometheus")
+		fmt.Println("Must provide a supported backend: cloudwatch, statsd, prometheus, stackdriver, newrelic")
 		os.Exit(1)
 	}
 

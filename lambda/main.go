@@ -71,14 +71,23 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 
 	var b backend.Backend
 	var err error
-	if backendOpt == "statsd" {
+	switch strings.ToLower(backendOpt) {
+	case "statsd":
 		statsdHost := os.Getenv("STATSD_HOST")
 		statsdTags := strings.ToLower(os.Getenv("STATSD_TAGS")) == "true"
 		b, err = backend.NewStatsDBackend(statsdHost, statsdTags)
 		if err != nil {
 			return "", err
 		}
-	} else {
+	case "newrelic":
+		nrAppName := os.Getenv("NEWRELIC_APP_NAME")
+		nrLicenseKey := os.Getenv("NEWRELIC_LICENSE_KEY")
+		b, err = backend.NewNewRelicBackend(nrAppName, nrLicenseKey)
+		if err != nil {
+			fmt.Printf("Error starting New Relic client: %v\n", err)
+			os.Exit(1)
+		}
+	default:
 		dimensions, err := backend.ParseCloudWatchDimensions(clwDimensions)
 		if err != nil {
 			return "", err
@@ -96,6 +105,11 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 	err = b.Collect(res)
 	if err != nil {
 		return "", err
+	}
+
+	original, ok := b.(*backend.NewRelicBackend)
+	if ok {
+		original.Dispose()
 	}
 
 	log.Printf("Finished in %s", time.Now().Sub(t))
