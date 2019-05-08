@@ -34,7 +34,7 @@ func main() {
 		prometheusAddr = flag.String("prometheus-addr", ":8080", "Prometheus metrics transport bind address")
 		prometheusPath = flag.String("prometheus-path", "/metrics", "Prometheus metrics transport path")
 		clwDimensions  = flag.String("cloudwatch-dimensions", "", "Cloudwatch dimensions to index metrics under, in the form of Key=Value, Other=Value")
-		gcpProjectID   = flag.String("stackdriver-projectID", "", "Specify Stackdriver projectID")
+		gcpProjectID   = flag.String("stackdriver-projectid", "", "Specify Stackdriver Project ID")
 
 		// filters
 		queue = flag.String("queue", "", "Only include a specific queue")
