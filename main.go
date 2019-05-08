@@ -71,7 +71,7 @@ func main() {
 		bk = backend.NewPrometheusBackend(*prometheusPath, *prometheusAddr)
 	case "stackdriver":
 		var err error
-		bk, err = backend.NewStackdriverBackend(*gcpProjectID)
+		bk, err = backend.NewStackDriverBackend(*gcpProjectID)
 		if err != nil {
 			fmt.Printf("Error starting Stackdriver backend, err: %v\n", err)
 			os.Exit(1)

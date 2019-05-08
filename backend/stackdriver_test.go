@@ -2,13 +2,13 @@ package backend
 
 import (
 	"fmt"
-	"google.golang.org/genproto/googleapis/api/label"
-	"google.golang.org/genproto/googleapis/api/metric"
 	"reflect"
 	"testing"
 	"time"
 
 	"github.com/golang/protobuf/ptypes/timestamp"
+	"google.golang.org/genproto/googleapis/api/label"
+	"google.golang.org/genproto/googleapis/api/metric"
 	monitoringpb "google.golang.org/genproto/googleapis/monitoring/v3"
 )
 
@@ -22,19 +22,19 @@ func Test_createCustomMetricRequest(t *testing.T) {
 		args args
 		want *monitoringpb.CreateMetricDescriptorRequest
 	}{
-		{name: "HappyPath", args: args{projectID:  "test-project-id", metricType: "test-metric-type"}, want: &monitoringpb.CreateMetricDescriptorRequest{
+		{name: "HappyPath", args: args{projectID: "test-project-id", metricType: "test-metric-type"}, want: &monitoringpb.CreateMetricDescriptorRequest{
 			Name: "projects/test-project-id",
 			MetricDescriptor: &metric.MetricDescriptor{
-				Name: 			"test-metric-type",
-				Type: 			"test-metric-type",
-				MetricKind: 	metric.MetricDescriptor_GAUGE,
-				ValueType:  	metric.MetricDescriptor_INT64,
-				Description:	fmt.Sprintf("Buildkite metric: [test-metric-type]"),
-				DisplayName: 	"test-metric-type",
-				Labels:      	[]*label.LabelDescriptor{{
-					Key: 			queueLabelKey,
-					ValueType: 		label.LabelDescriptor_STRING,
-					Description: 	queueDescription,
+				Name:        "test-metric-type",
+				Type:        "test-metric-type",
+				MetricKind:  metric.MetricDescriptor_GAUGE,
+				ValueType:   metric.MetricDescriptor_INT64,
+				Description: fmt.Sprintf("Buildkite metric: [test-metric-type]"),
+				DisplayName: "test-metric-type",
+				Labels: []*label.LabelDescriptor{{
+					Key:         queueLabelKey,
+					ValueType:   label.LabelDescriptor_STRING,
+					Description: queueDescription,
 				}},
 			},
 		}},
@@ -65,13 +65,13 @@ func Test_createTimeSeriesValueRequest(t *testing.T) {
 		args args
 		want *monitoringpb.CreateTimeSeriesRequest
 	}{
-		{	name: "Happy Path",
+		{name: "Happy Path",
 			args: args{projectID: "test-project-id", metricType: "test-metric-type", queue: "test-queue", value: 13, time: now},
 			want: &monitoringpb.CreateTimeSeriesRequest{
 				Name: "projects/test-project-id",
 				TimeSeries: []*monitoringpb.TimeSeries{{
 					Metric: &metric.Metric{
-						Type: "test-metric-type",
+						Type:   "test-metric-type",
 						Labels: map[string]string{queueLabelKey: "test-queue"},
 					},
 					Points: []*monitoringpb.Point{{
@@ -88,13 +88,13 @@ func Test_createTimeSeriesValueRequest(t *testing.T) {
 				}},
 			},
 		},
-		{	name: "Bad Queue Name",
+		{name: "Bad Queue Name",
 			args: args{projectID: "test-project-id", metricType: "test-metric-type", queue: "${BUILDKITE_QUEUE:-default}", value: 13, time: now},
 			want: &monitoringpb.CreateTimeSeriesRequest{
 				Name: "projects/test-project-id",
 				TimeSeries: []*monitoringpb.TimeSeries{{
 					Metric: &metric.Metric{
-						Type: "test-metric-type",
+						Type:   "test-metric-type",
 						Labels: map[string]string{queueLabelKey: "${BUILDKITE_QUEUE:-default}"},
 					},
 					Points: []*monitoringpb.Point{{
