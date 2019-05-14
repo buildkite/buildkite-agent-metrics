@@ -36,10 +36,11 @@ func main() {
 		clwRegion      = flag.String("cloudwatch-region", "", "AWS Region to connect to, defaults to $AWS_REGION or us-east-1")
 		clwDimensions  = flag.String("cloudwatch-dimensions", "", "Cloudwatch dimensions to index metrics under, in the form of Key=Value, Other=Value")
 		gcpProjectID   = flag.String("stackdriver-projectid", "", "Specify Stackdriver Project ID")
-
-		// filters
-		queue = flag.String("queue", "", "Only include a specific queue")
 	)
+
+	// custom config for multiple queues
+	var queues stringSliceFlag
+	flag.Var(&queues, "queue", "Specific queues to process")
 
 	flag.Parse()
 
@@ -101,7 +102,7 @@ func main() {
 		UserAgent: userAgent,
 		Endpoint:  *endpoint,
 		Token:     *token,
-		Queue:     *queue,
+		Queues:    []string(queues),
 		Quiet:     *quiet,
 		Debug:     *debug,
 		DebugHttp: *debugHttp,
@@ -152,4 +153,15 @@ func main() {
 			}
 		}
 	}
+}
+
+type stringSliceFlag []string
+
+func (i *stringSliceFlag) String() string {
+	return fmt.Sprintf("%v", *i)
+}
+
+func (i *stringSliceFlag) Set(value string) error {
+	*i = append(*i, value)
+	return nil
 }

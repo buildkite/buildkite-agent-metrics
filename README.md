@@ -32,6 +32,12 @@ Restrict it to a single queue with `-queue` if you're scaling a single cluster o
 buildkite-agent-metrics -token abc123 -interval 30s -queue my-queue
 ```
 
+Restrict it to a multiple queues with `-queue`:
+
+```
+buildkite-agent-metrics -token abc123 -interval 30s -queue my-queue1 -queue my-queue2
+```
+
 ### Running as an AWS Lambda
 
 An AWS Lambda bundle is created and published as part of the build process. The lambda will require the [`cloudwatch:PutMetricData`](https://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/publishingMetrics.html) IAM permission.

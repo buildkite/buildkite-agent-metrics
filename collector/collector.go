@@ -30,7 +30,7 @@ type Collector struct {
 	Endpoint  string
 	Token     string
 	UserAgent string
-	Queue     string
+	Queues    []string
 	Quiet     bool
 	Debug     bool
 	DebugHttp bool
@@ -88,7 +88,7 @@ func (c *Collector) Collect() (*Result, error) {
 		Queues: map[string]map[string]int{},
 	}
 
-	if c.Queue == "" {
+	if len(c.Queues) == 0 {
 		log.Println("Collecting agent metrics for all queues")
 
 		endpoint, err := url.Parse(c.Endpoint)
@@ -199,64 +199,66 @@ func (c *Collector) Collect() (*Result, error) {
 			result.Queues[queueName][BusyAgentPercentage] = busyAgentPercentage(queueAgentMetrics)
 		}
 	} else {
-		log.Printf("Collecting agent metrics for queue '%s'", c.Queue)
+		for _, queue := range c.Queues {
+			log.Printf("Collecting agent metrics for queue '%s'", queue)
 
-		endpoint, err := url.Parse(c.Endpoint)
-		if err != nil {
-			return nil, err
-		}
-
-		endpoint.Path += "/metrics/queue"
-		endpoint.RawQuery = url.Values{"name": {c.Queue}}.Encode()
-
-		req, err := http.NewRequest("GET", endpoint.String(), nil)
-		if err != nil {
-			return nil, err
-		}
-
-		req.Header.Set("User-Agent", c.UserAgent)
-		req.Header.Set("Authorization", fmt.Sprintf("Token %s", c.Token))
-
-		if c.DebugHttp {
-			if dump, err := httputil.DumpRequest(req, true); err == nil {
-				log.Printf("DEBUG request uri=%s\n%s\n", req.URL, dump)
+			endpoint, err := url.Parse(c.Endpoint)
+			if err != nil {
+				return nil, err
 			}
-		}
 
-		res, err := http.DefaultClient.Do(req)
-		if err != nil {
-			return nil, err
-		}
+			endpoint.Path += "/metrics/queue"
+			endpoint.RawQuery = url.Values{"name": {queue}}.Encode()
 
-		if c.DebugHttp {
-			if dump, err := httputil.DumpResponse(res, true); err == nil {
-				log.Printf("DEBUG response uri=%s\n%s\n", req.URL, dump)
+			req, err := http.NewRequest("GET", endpoint.String(), nil)
+			if err != nil {
+				return nil, err
 			}
-		}
 
-		var queueMetrics queueMetricsResponse
-		defer res.Body.Close()
-		err = json.NewDecoder(res.Body).Decode(&queueMetrics)
-		if err != nil {
-			return nil, err
-		}
+			req.Header.Set("User-Agent", c.UserAgent)
+			req.Header.Set("Authorization", fmt.Sprintf("Token %s", c.Token))
 
-		if queueMetrics.Organization.Slug == "" {
-			return nil, fmt.Errorf("No organization slug was found in the metrics response")
-		}
+			if c.DebugHttp {
+				if dump, err := httputil.DumpRequest(req, true); err == nil {
+					log.Printf("DEBUG request uri=%s\n%s\n", req.URL, dump)
+				}
+			}
 
-		log.Printf("Found organization %q", queueMetrics.Organization.Slug)
-		result.Org = queueMetrics.Organization.Slug
+			res, err := http.DefaultClient.Do(req)
+			if err != nil {
+				return nil, err
+			}
 
-		result.Queues[c.Queue] = map[string]int{
-			ScheduledJobsCount:  queueMetrics.Jobs.Scheduled,
-			RunningJobsCount:    queueMetrics.Jobs.Running,
-			UnfinishedJobsCount: queueMetrics.Jobs.Total,
-			WaitingJobsCount:    queueMetrics.Jobs.Waiting,
-			IdleAgentCount:      queueMetrics.Agents.Idle,
-			BusyAgentCount:      queueMetrics.Agents.Busy,
-			TotalAgentCount:     queueMetrics.Agents.Total,
-			BusyAgentPercentage: busyAgentPercentage(queueMetrics.Agents),
+			if c.DebugHttp {
+				if dump, err := httputil.DumpResponse(res, true); err == nil {
+					log.Printf("DEBUG response uri=%s\n%s\n", req.URL, dump)
+				}
+			}
+
+			var queueMetrics queueMetricsResponse
+			defer res.Body.Close()
+			err = json.NewDecoder(res.Body).Decode(&queueMetrics)
+			if err != nil {
+				return nil, err
+			}
+
+			if queueMetrics.Organization.Slug == "" {
+				return nil, fmt.Errorf("No organization slug was found in the metrics response")
+			}
+
+			log.Printf("Found organization %q", queueMetrics.Organization.Slug)
+			result.Org = queueMetrics.Organization.Slug
+
+			result.Queues[queue] = map[string]int{
+				ScheduledJobsCount:  queueMetrics.Jobs.Scheduled,
+				RunningJobsCount:    queueMetrics.Jobs.Running,
+				UnfinishedJobsCount: queueMetrics.Jobs.Total,
+				WaitingJobsCount:    queueMetrics.Jobs.Waiting,
+				IdleAgentCount:      queueMetrics.Agents.Idle,
+				BusyAgentCount:      queueMetrics.Agents.Busy,
+				TotalAgentCount:     queueMetrics.Agents.Total,
+				BusyAgentPercentage: busyAgentPercentage(queueMetrics.Agents),
+			}
 		}
 	}
 
