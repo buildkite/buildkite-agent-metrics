@@ -63,7 +63,7 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 		UserAgent: userAgent,
 		Endpoint:  "https://agent.buildkite.com/v3",
 		Token:     token,
-		Queue:     queue,
+		Queues:    []string{queue},
 		Quiet:     quiet,
 		Debug:     false,
 		DebugHttp: false,
