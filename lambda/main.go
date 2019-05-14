@@ -109,7 +109,10 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 
 	original, ok := b.(backend.Closer)
 	if ok {
-		original.Close()
+		err := original.Close()
+		if err != nil {
+			return "", err
+		}
 	}
 
 	log.Printf("Finished in %s", time.Now().Sub(t))
