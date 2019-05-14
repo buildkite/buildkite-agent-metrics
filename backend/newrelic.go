@@ -65,8 +65,10 @@ func toCustomEvent(queueName string, queueMetrics map[string]int) map[string]int
 	return eventData
 }
 
-// Dispose NR client
-func (nr *NewRelicBackend) Dispose() {
+// Close by shutting down NR client
+func (nr *NewRelicBackend) Close() error {
 	nr.client.Shutdown(newRelicConnectionTimeout)
 	log.Printf("Disposed New Relic client")
+
+	return nil
 }

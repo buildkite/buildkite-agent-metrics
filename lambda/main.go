@@ -74,7 +74,7 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 	switch strings.ToLower(backendOpt) {
 	case "statsd":
 		statsdHost := os.Getenv("STATSD_HOST")
-		statsdTags := strings.ToLower(os.Getenv("STATSD_TAGS")) == "true"
+		statsdTags := strings.EqualFold(os.Getenv("STATSD_TAGS"), "true")
 		b, err = backend.NewStatsDBackend(statsdHost, statsdTags)
 		if err != nil {
 			return "", err
@@ -107,9 +107,9 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 		return "", err
 	}
 
-	original, ok := b.(*backend.NewRelicBackend)
+	original, ok := b.(backend.Closer)
 	if ok {
-		original.Dispose()
+		original.Close()
 	}
 
 	log.Printf("Finished in %s", time.Now().Sub(t))
