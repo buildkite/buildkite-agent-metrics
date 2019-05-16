@@ -1,6 +1,6 @@
 # Buildkite Agent Metrics
 
-A command-line tool for collecting [Buildkite](https://buildkite.com/) agent metrics, focusing on enabling auto-scaling. Currently [AWS Cloudwatch](http://aws.amazon.com/cloudwatch/), [StatsD](https://github.com/etsy/statsd), [Prometheus](https://prometheus.io) and [Stackdriver](https://cloud.google.com/stackdriver/) are supported.
+A command-line tool for collecting [Buildkite](https://buildkite.com/) agent metrics, focusing on enabling auto-scaling. Currently [AWS Cloudwatch](http://aws.amazon.com/cloudwatch/), [StatsD](https://github.com/etsy/statsd), [Prometheus](https://prometheus.io), [Stackdriver](https://cloud.google.com/stackdriver/) and [New Relic](https://newrelic.com/products/insights) are supported.
 
 [![Build status](https://badge.buildkite.com/80d04fcde3a306bef44e77aadb1f1ffdc20ebb3c8f1f585a60.svg)](https://buildkite.com/buildkite/buildkite-agent-metrics)
 
