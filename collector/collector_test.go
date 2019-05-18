@@ -247,7 +247,7 @@ func TestCollectorWithSomeJobsAndAgentsForAQueue(t *testing.T) {
 		Endpoint:  s.URL,
 		Token:     "abc123",
 		UserAgent: "some-client/1.2.3",
-		Queue:     "deploy",
+		Queues:    []string{"deploy"},
 	}
 	res, err := c.Collect()
 	if err != nil {
