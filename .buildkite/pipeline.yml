@@ -7,14 +7,16 @@ steps:
       - docker#v3.2.0:
           image: "golang:1.11"
           command: ["go", "test", "-v", "-race", "."]
-          environment:
-            - GO111MODULE=on
+
+  - wait
 
   - label: ':hammer: Build'
     commands:
       - "docker build -t ${TREB_IMAGE_TAG} ."
       - "docker tag ${TREB_IMAGE_TAG} ${TREB_SHORT_IMAGE_TAG}"
       - "docker push ${TREB_IMAGE_TAG}"
+
+  - wait
 
   - label: ':happo: Publish'
     plugins:

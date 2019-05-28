@@ -1,6 +1,6 @@
 name: buildkite-agent-metrics
 kind: cronjob
-schedule: * * * * *
+schedule: * * * * * *
 cmd:
   - "/bin/chamber"
   - "exec"
