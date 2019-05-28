@@ -17,6 +17,7 @@ import (
 var bk backend.Backend
 
 func main() {
+
 	var (
 		token       = flag.String("token", "", "A Buildkite Agent Registration Token")
 		interval    = flag.Duration("interval", 0, "Update metrics every interval, rather than once")
@@ -52,8 +53,12 @@ func main() {
 	}
 
 	if *token == "" {
-		fmt.Println("Must provide a value for -token")
-		os.Exit(1)
+		envToken := os.Getenv("AGENT_TOKEN")
+		if envToken == "" {
+			fmt.Println("Must provide a value for -token")
+			os.Exit(1)
+		}
+		*token = envToken
 	}
 
 	var err error
