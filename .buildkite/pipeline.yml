@@ -6,7 +6,7 @@ steps:
     plugins:
       - docker#v3.2.0:
           image: "golang:1.11"
-          command: ["go", "test", "-v", "-race", "."]
+          command: ["go", "test", "-mod=vendor", "-v", "-race", "."]
 
   - wait
 
