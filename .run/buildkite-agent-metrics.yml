@@ -7,7 +7,7 @@ cmd:
   - "--"
   - "./buildkite-agent-metrics"
   - "-interval"
-  - "5s"
+  - "30s"
   - "-backend"
   - "statsd"
   - "-statsd-host"
