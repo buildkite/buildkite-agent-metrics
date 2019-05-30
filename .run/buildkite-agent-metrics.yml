@@ -11,7 +11,7 @@ cmd:
   - "-backend"
   - "statsd"
   - "-statsd-host"
-  - ":8125"
+  - "172.17.42.1:8125"
   - "-debug"
 
 container:
