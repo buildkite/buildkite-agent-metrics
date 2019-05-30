@@ -1,12 +1,13 @@
 name: buildkite-agent-metrics
-kind: cronjob
-schedule: 0/5 * * * ? *
+kind: service 
 cmd:
   - "/bin/chamber"
   - "exec"
   - "buildkite-agent-metrics"
   - "--"
   - "./buildkite-agent-metrics"
+  - "-interval"
+  - "5s"
   - "-backend"
   - "statsd"
   - "-statsd-host"
