@@ -9,6 +9,9 @@ cmd:
   - "./buildkite-agent-metrics"
   - "-backend"
   - "statsd"
+  - "-statsd-host"
+  - ":8125"
+  - "-debug"
 
 container:
   image: buildkite-agent-metrics
