@@ -1,11 +1,6 @@
 name: buildkite-agent-metrics
 kind: service 
 cmd:
-  - "/bin/chamber"
-  - "exec"
-  - "buildkite-agent-metrics"
-  - "--"
-  - "./buildkite-agent-metrics"
   - "-interval"
   - "30s"
   - "-backend"

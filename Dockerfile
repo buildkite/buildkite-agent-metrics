@@ -8,3 +8,4 @@ FROM alpine:3.9
 RUN apk update && apk add curl ca-certificates
 COPY --from=chamber /chamber /bin/chamber
 COPY --from=builder /go/src/github.com/buildkite/buildkite-agent-metrics/buildkite-agent-metrics .
+ENTRYPOINT ["/bin/chamber", "exec", "buildkite-agent-metrics", "--", "./buildkite-agent-metrics"]
