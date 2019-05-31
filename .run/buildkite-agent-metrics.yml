@@ -11,6 +11,7 @@ container:
     - "statsd"
     - "-statsd-host"
     - "172.17.42.1:8125"
+    - "-statsd-tags"
     - "-debug"
 
 resources:
