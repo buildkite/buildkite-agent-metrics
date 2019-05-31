@@ -1,17 +1,17 @@
 name: buildkite-agent-metrics
 kind: service 
-cmd:
-  - "-interval"
-  - "30s"
-  - "-backend"
-  - "statsd"
-  - "-statsd-host"
-  - "172.17.42.1:8125"
-  - "-debug"
 
 container:
   image: buildkite-agent-metrics
   repository: 528451384384.dkr.ecr.us-west-2.amazonaws.com
+  cmd:
+    - "-interval"
+    - "30s"
+    - "-backend"
+    - "statsd"
+    - "-statsd-host"
+    - "172.17.42.1:8125"
+    - "-debug"
 
 resources:
   cpu_shares: 128
