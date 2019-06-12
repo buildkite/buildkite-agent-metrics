@@ -3,29 +3,30 @@ package backend
 import (
 	"context"
 	"fmt"
-	"github.com/buildkite/buildkite-agent-metrics/collector"
-	"github.com/golang/protobuf/ptypes/timestamp"
-	"google.golang.org/genproto/googleapis/api/label"
 	"log"
 	"time"
 
-	"cloud.google.com/go/monitoring/apiv3"
+	"github.com/buildkite/buildkite-agent-metrics/collector"
+	"github.com/golang/protobuf/ptypes/timestamp"
+	"google.golang.org/genproto/googleapis/api/label"
+
+	monitoring "cloud.google.com/go/monitoring/apiv3"
 	"google.golang.org/genproto/googleapis/api/metric"
 	monitoringpb "google.golang.org/genproto/googleapis/monitoring/v3"
 )
 
 const (
 	metricTotalPrefix = "custom.googleapis.com/buildkite/total/%s"
-	queueLabelKey = "Queue"
-	queueDescription = "Queue Descriptor"
+	queueLabelKey     = "Queue"
+	queueDescription  = "Queue Descriptor"
 	totalMetricsQueue = "Total"
 )
 
 // StackDriverBackend sends metrics to GCP Stackdriver
 type StackDriverBackend struct {
-	projectId		string
-	client 			*monitoring.MetricClient
-	metricTypes 	map[string]string
+	projectId   string
+	client      *monitoring.MetricClient
+	metricTypes map[string]string
 }
 
 // NewStackDriverBackend returns a new StackDriverBackend for the specified project
@@ -37,9 +38,9 @@ func NewStackDriverBackend(gcpProjectID string) (*StackDriverBackend, error) {
 	}
 
 	return &StackDriverBackend{
-		projectId: 		gcpProjectID,
-		client: 		c,
-		metricTypes:    make(map[string]string),
+		projectId:   gcpProjectID,
+		client:      c,
+		metricTypes: make(map[string]string),
 	}, nil
 }
 
@@ -88,22 +89,21 @@ func (sd *StackDriverBackend) Collect(r *collector.Result) error {
 }
 
 // createCustomMetricRequest creates a custom metric request as specified by the metric type.
-func createCustomMetricRequest(projectID *string, metricType *string) (*monitoringpb.CreateMetricDescriptorRequest) {
+func createCustomMetricRequest(projectID *string, metricType *string) *monitoringpb.CreateMetricDescriptorRequest {
 	l := &label.LabelDescriptor{
-		Key:				queueLabelKey,
-		ValueType: 			label.LabelDescriptor_STRING,
-		Description: 		queueDescription,
-
+		Key:         queueLabelKey,
+		ValueType:   label.LabelDescriptor_STRING,
+		Description: queueDescription,
 	}
 	labels := []*label.LabelDescriptor{l}
 	md := &metric.MetricDescriptor{
-		Name: *metricType,
-		Type: *metricType,
+		Name:        *metricType,
+		Type:        *metricType,
 		MetricKind:  metric.MetricDescriptor_GAUGE,
 		ValueType:   metric.MetricDescriptor_INT64,
 		Description: fmt.Sprintf("Buildkite metric: [%s]", *metricType),
 		DisplayName: *metricType,
-		Labels: 	 labels,
+		Labels:      labels,
 	}
 	req := &monitoringpb.CreateMetricDescriptorRequest{
 		Name:             "projects/" + *projectID,
@@ -119,7 +119,7 @@ func createTimeSeriesValueRequest(projectID *string, metricType *string, queue s
 		Name: "projects/" + *projectID,
 		TimeSeries: []*monitoringpb.TimeSeries{{
 			Metric: &metric.Metric{
-				Type: *metricType,
+				Type:   *metricType,
 				Labels: map[string]string{queueLabelKey: queue},
 			},
 			Points: []*monitoringpb.Point{{

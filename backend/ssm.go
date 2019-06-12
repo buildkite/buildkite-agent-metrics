@@ -2,10 +2,11 @@ package backend
 
 import (
 	"fmt"
+	"os"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/ssm"
-	"os"
 )
 
 func RetrieveFromParameterStore(key string) string {
