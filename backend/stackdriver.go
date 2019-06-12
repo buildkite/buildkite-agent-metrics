@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/buildkite/buildkite-agent-metrics/collector"
@@ -16,11 +17,14 @@ import (
 )
 
 const (
-	metricTotalPrefix = "custom.googleapis.com/buildkite/total/%s"
+	metricName        = "custom.googleapis.com/buildkite/%s/%s"
 	queueLabelKey     = "Queue"
 	queueDescription  = "Queue Descriptor"
 	totalMetricsQueue = "Total"
 )
+
+// Stackdriver does not allow dashes in metric names
+var dashReplacer = strings.NewReplacer("-", "_")
 
 // StackDriverBackend sends metrics to GCP Stackdriver
 type StackDriverBackend struct {
@@ -50,10 +54,11 @@ func (sd *StackDriverBackend) Collect(r *collector.Result) error {
 	now := &timestamp.Timestamp{
 		Seconds: time.Now().Unix(),
 	}
+	orgName := dashReplacer.Replace(r.Org)
 	for name, value := range r.Totals {
 		mt, present := sd.metricTypes[name]
 		if !present {
-			mt = fmt.Sprintf(metricTotalPrefix, name)
+			mt = fmt.Sprintf(metricName, orgName, name)
 			metricReq := createCustomMetricRequest(&sd.projectID, &mt)
 			_, err := sd.client.CreateMetricDescriptor(ctx, metricReq)
 			if err != nil {
@@ -75,7 +80,7 @@ func (sd *StackDriverBackend) Collect(r *collector.Result) error {
 
 	for queue, counts := range r.Queues {
 		for name, value := range counts {
-			mt := fmt.Sprintf(metricTotalPrefix, name)
+			mt := fmt.Sprintf(metricName, orgName, name)
 			req := createTimeSeriesValueRequest(&sd.projectID, &mt, queue, value, now)
 			err := sd.client.CreateTimeSeries(ctx, req)
 			if err != nil {
