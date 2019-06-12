@@ -24,7 +24,7 @@ const (
 
 // StackDriverBackend sends metrics to GCP Stackdriver
 type StackDriverBackend struct {
-	projectId   string
+	projectID   string
 	client      *monitoring.MetricClient
 	metricTypes map[string]string
 }
@@ -38,12 +38,13 @@ func NewStackDriverBackend(gcpProjectID string) (*StackDriverBackend, error) {
 	}
 
 	return &StackDriverBackend{
-		projectId:   gcpProjectID,
+		projectID:   gcpProjectID,
 		client:      c,
 		metricTypes: make(map[string]string),
 	}, nil
 }
 
+// Collect metrics
 func (sd *StackDriverBackend) Collect(r *collector.Result) error {
 	ctx := context.Background()
 	now := &timestamp.Timestamp{
@@ -53,7 +54,7 @@ func (sd *StackDriverBackend) Collect(r *collector.Result) error {
 		mt, present := sd.metricTypes[name]
 		if !present {
 			mt = fmt.Sprintf(metricTotalPrefix, name)
-			metricReq := createCustomMetricRequest(&sd.projectId, &mt)
+			metricReq := createCustomMetricRequest(&sd.projectID, &mt)
 			_, err := sd.client.CreateMetricDescriptor(ctx, metricReq)
 			if err != nil {
 				retErr := fmt.Errorf("[Collect] could not create custom metric [%s]: %v", mt, err)
@@ -63,7 +64,7 @@ func (sd *StackDriverBackend) Collect(r *collector.Result) error {
 			log.Printf("[Collect] created custom metric [%s]", mt)
 			sd.metricTypes[name] = mt
 		}
-		req := createTimeSeriesValueRequest(&sd.projectId, &mt, totalMetricsQueue, value, now)
+		req := createTimeSeriesValueRequest(&sd.projectID, &mt, totalMetricsQueue, value, now)
 		err := sd.client.CreateTimeSeries(ctx, req)
 		if err != nil {
 			retErr := fmt.Errorf("[Collect] could not write metric [%s] value [%d], %v ", mt, value, err)
@@ -75,7 +76,7 @@ func (sd *StackDriverBackend) Collect(r *collector.Result) error {
 	for queue, counts := range r.Queues {
 		for name, value := range counts {
 			mt := fmt.Sprintf(metricTotalPrefix, name)
-			req := createTimeSeriesValueRequest(&sd.projectId, &mt, queue, value, now)
+			req := createTimeSeriesValueRequest(&sd.projectID, &mt, queue, value, now)
 			err := sd.client.CreateTimeSeries(ctx, req)
 			if err != nil {
 				retErr := fmt.Errorf("[Collect] could not write metric [%s] value [%d], %v ", mt, value, err)
