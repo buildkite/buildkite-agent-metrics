@@ -96,7 +96,7 @@ The Prometheus backend supports the following arguments
 
 The Stackdriver backend supports the following arguments
 
-* `-stackdriver-gcp-projectid`: The Google Cloud Platform to report metrics for
+* `-stackdriver-projectid`: The Google Cloud Platform project to report metrics for.
 
 ### Upgrading from v2 to v3
 
