@@ -46,7 +46,7 @@ It's entrypoint is `handler`, it requires a `go1.x` environment and respects the
 
  - BUILDKITE_AGENT_TOKEN
  - BUILDKITE_BACKEND
- - BUILDKITE_QUEUE
+ - BUILDKITE_QUEUE (may be a comma separated list of queues to monitor)
  - BUILDKITE_QUIET
  - BUILDKITE_CLOUDWATCH_DIMENSIONS
 

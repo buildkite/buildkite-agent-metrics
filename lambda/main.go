@@ -57,9 +57,9 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 		token = backend.RetrieveFromParameterStore(ssmTokenKey)
 	}
 
-	var queues = []string{}
+	queues := []string{}
 	if queue != "" {
-		queues = append(queues, queue)
+		queues = strings.Split(queue, ",")
 	}
 
 	userAgent := fmt.Sprintf("buildkite-agent-metrics/%s buildkite-agent-metrics-lambda", version.Version)
