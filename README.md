@@ -44,11 +44,37 @@ An AWS Lambda bundle is created and published as part of the build process. The 
 
 It's entrypoint is `handler`, it requires a `go1.x` environment and respects the following env vars:
 
- - BUILDKITE_AGENT_TOKEN
- - BUILDKITE_BACKEND
- - BUILDKITE_QUEUE (may be a comma separated list of queues to monitor)
- - BUILDKITE_QUIET
- - BUILDKITE_CLOUDWATCH_DIMENSIONS
+ - `BUILDKITE_BACKEND` : The name of the backend to use (e.g. `cloudwatch`, `statsd`, `prometheus` or `stackdriver`).
+ - `BUILDKITE_QUEUE` : A comma separated list of Buildkite queues to process (e.g. `backend-deploy,ui-deploy`).
+ - `BUILDKITE_QUIET` : A boolean specifying that only `ERROR` log lines must be printed. (e.g. `1`, `true`).
+ - `BUILDKITE_CLOUDWATCH_DIMENSIONS` : A comma separated list in the form of Key=Value, Other=Value containing the Cloudwatch dimensions to index metrics under. 
+ 
+Additionally, one of the following groups of environment variables must be set in order to define how the Lambda function
+should obtain the required Buildkite API token:
+ 
+##### Option 1 - Provide the token as plain-text
+   
+- `BUILDKITE_AGENT_TOKEN` : The Buildkite agent API token to use.
+ 
+#### Option 2 - Retrieve token from AWS Systems Manager
+
+- `BUILDKITE_AGENT_TOKEN_SSM_KEY` : The parameter name which contains the token value in AWS 
+Systems Manager. 
+ 
+**Note**: Parameters stored as `String` and `SecureString` are currently supported. 
+
+#### Option 3 - Retrieve token from AWS Secrets Manager
+
+- `BUILDKITE_AGENT_SECRETS_MANAGER_SECRET_ID`: The id of the secret which contains the token value
+in AWS Secrets Manager. 
+
+- (Optional) `BUILDKITE_AGENT_SECRETS_MANAGER_JSON_KEY`: The JSON key containing the token value in the secret JSON blob.
+
+**Note 1**: Both `SecretBinary` and `SecretString` are supported. In the case of `SecretBinary`, the secret payload will
+be automatically decoded and returned as a plain-text string.
+
+**Note 2**: `BUILDKITE_AGENT_SECRETS_MANAGER_JSON_KEY` can be used on secrets of type `SecretBinary` only if their 
+binary payload corresponds to a valid JSON object containing the provided key. 
 
 ```bash
 aws lambda create-function \
@@ -117,6 +143,27 @@ go run *.go -token [buildkite agent registration token]
 ```
 
 Currently this will publish metrics to Cloudwatch under the custom metric prefix of `Buildkite`, using AWS credentials from your environment. The machine will require the [`cloudwatch:PutMetricData`](https://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/publishingMetrics.html) IAM permission.
+
+### The `token` package
+
+It is an abstraction layer enabling the retrieval of a Buildkite API token
+from different sources.
+
+The current supported sources are:
+
+- AWS Systems Manager (a.k.a parameter store).
+- AWS Secrets Manager.
+- OS environment variable.
+
+#### Tests
+
+All the tests for AWS dependant resources require their corresponding auto-generated mocks. Thus,
+before running them, you need to generate such mocks by executing:
+
+```bash
+go generate token/secretsmanager_test.go
+go generate token/ssm_test.go
+```
 
 ## Metrics
 
