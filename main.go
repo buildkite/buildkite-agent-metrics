@@ -137,7 +137,6 @@ func main() {
 	minPollDuration, err := f()
 	if err != nil {
 		fmt.Println(err)
-		os.Exit(1)
 	}
 
 	if *interval > 0 {
@@ -156,7 +155,6 @@ func main() {
 			minPollDuration, err = f()
 			if err != nil {
 				fmt.Println(err)
-				os.Exit(1)
 			}
 		}
 	}

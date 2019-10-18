@@ -113,7 +113,7 @@ func (c *Collector) Collect() (*Result, error) {
 		}
 
 		httpClient := &http.Client{
-			Timeout: 5 * time.Second,
+			Timeout: 15 * time.Second,
 		}
 
 		res, err := httpClient.Do(req)
