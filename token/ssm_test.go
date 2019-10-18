@@ -2,11 +2,12 @@ package token
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ssm"
 	"github.com/buildkite/buildkite-agent-metrics/token/mock"
 	"github.com/golang/mock/gomock"
-	"testing"
 )
 
 //go:generate mockgen -source ssm.go -mock_names SSMClient=SSMClient -package mock -destination mock/ssm_client.go

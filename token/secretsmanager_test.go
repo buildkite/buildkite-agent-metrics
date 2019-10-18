@@ -3,11 +3,12 @@ package token
 import (
 	"encoding/base64"
 	"fmt"
+	"testing"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/buildkite/buildkite-agent-metrics/token/mock"
 	"github.com/golang/mock/gomock"
-	"testing"
 )
 
 //go:generate mockgen -source secretsmanager.go -mock_names SecretsManagerClient=SecretsManagerClient -package mock -destination mock/secretsmanager_client.go
