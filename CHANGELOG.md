@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.1.0](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.1.0) (2019-05-18)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.0.0...v5.1.0)
+
+### Changed
+- Support multiple queue params [#86](https://github.com/buildkite/buildkite-agent-metrics/pull/86) (@lox)
+- Add New Relic backend [#85](https://github.com/buildkite/buildkite-agent-metrics/pull/85) (@chloehutchinson)
+- Add Stackdriver Backend [#78](https://github.com/buildkite/buildkite-agent-metrics/pull/78) (@winfieldj)
+
 ## [v5.0.0](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.0.0) (2019-05-05)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v4.1.2...v5.0.0)
 

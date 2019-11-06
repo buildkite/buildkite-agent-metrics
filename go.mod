@@ -5,6 +5,7 @@ require (
 	github.com/DataDog/datadog-go v0.0.0-20180822151419-281ae9f2d895
 	github.com/aws/aws-lambda-go v1.6.0
 	github.com/aws/aws-sdk-go v1.15.66
+	github.com/golang/mock v1.2.0
 	github.com/golang/protobuf v1.2.0
 	github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af // indirect
 	github.com/newrelic/go-agent v2.7.0+incompatible
