@@ -180,9 +180,9 @@ func initTokenProvider(awsRegion string) (token.Provider, error) {
 		}
 		client := secretsmanager.New(sess)
 		if jsonKey == "" {
-			return token.NewSecretsManager(client, secretsManagerSecretID, token.WithSecretsManagerJSONSecret(jsonKey))
-		} else {
 			return token.NewSecretsManager(client, secretsManagerSecretID)
+		} else {
+			return token.NewSecretsManager(client, secretsManagerSecretID, token.WithSecretsManagerJSONSecret(jsonKey))
 		}
 	}
 
