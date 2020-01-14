@@ -5,6 +5,11 @@ container:
   image: buildkite-agent-metrics
   repository: 528451384384.dkr.ecr.us-west-2.amazonaws.com
   cmd:
+    - "/bin/chamber"
+    - "exec"
+    - "buildkite-agent-metrics"
+    - "--"
+    - "/buildkite-agent-metrics"
     - "-interval"
     - "30s"
     - "-backend"
