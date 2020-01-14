@@ -23,3 +23,4 @@ steps:
       - ssh://git@github.com/segmentio/treb-publish-buildkite-plugin#v0.2.0:
           configs:
             - .run/buildkite-agent-metrics.yml
+            - .run/buildkite-agent-metrics-cloudwatch.yml
