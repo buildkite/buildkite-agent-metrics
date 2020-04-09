@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.2.0](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.2.0) (2020-03-05)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.1.0...v5.2.0)
+
+### Changed
+- Add support for AWS SecretsManager as BK token provider [#98](https://github.com/buildkite/buildkite-agent-metrics/pull/98) (@alloveras)
+- Don't exit on when error is encountered [#94](https://github.com/buildkite/buildkite-agent-metrics/pull/94) (@amalucelli)
+- Stackdriver: Use organization specific metric names. [#87](https://github.com/buildkite/buildkite-agent-metrics/pull/87) (@philwo)
+- Fix typo in README.md. [#88](https://github.com/buildkite/buildkite-agent-metrics/pull/88) (@philwo)
+
 ## [v5.1.0](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.1.0) (2019-05-18)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.0.0...v5.1.0)
 
