@@ -1,5 +1,7 @@
 module github.com/buildkite/buildkite-agent-metrics
 
+go 1.12
+
 require (
 	cloud.google.com/go v0.37.2
 	github.com/DataDog/datadog-go v0.0.0-20180822151419-281ae9f2d895
