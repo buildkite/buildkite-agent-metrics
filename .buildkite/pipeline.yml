@@ -2,7 +2,7 @@ steps:
   - name: ":hammer_and_wrench:"
     plugins:
       - docker#v2.0.0:
-          image: "golang:1.11"
+          image: "golang:1.15"
           command: ["go", "test", "-v", "-race", "."]
           environment:
             - GO111MODULE=on
@@ -14,15 +14,15 @@ steps:
           build: main.go
           import: github.com/buildkite/buildkite-agent-metrics
           targets:
-            - version: "1.11"
+            - version: "1.15"
               goos: linux
               goarch: amd64
               gomodule: "on"
-            - version: "1.11"
+            - version: "1.15"
               goos: windows
               goarch: amd64
               gomodule: "on"
-            - version: "1.11"
+            - version: "1.15"
               goos: darwin
               goarch: amd64
               gomodule: "on"
@@ -37,10 +37,8 @@ steps:
     agents:
       queue: "deploy"
     concurrency: 1
-    concurrency_group: 'release_buildkite_metrics_s3'
+    concurrency_group: "release_buildkite_metrics_s3"
 
   - wait
   - name: ":pipeline:"
     command: .buildkite/steps/upload-release-steps.sh
-
-
