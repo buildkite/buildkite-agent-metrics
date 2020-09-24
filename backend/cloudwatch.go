@@ -62,6 +62,7 @@ func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 
 	svc := cloudwatch.New(sess)
 	metrics := []*cloudwatch.MetricDatum{}
+	duration := r.PollDuration.Milliseconds() / 1000
 
 	// Set the baseline org dimension
 	dimensions := []*cloudwatch.Dimension{
@@ -78,7 +79,7 @@ func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 	}
 
 	// Add total metrics
-	metrics = append(metrics, cloudwatchMetrics(r.Totals, nil)...)
+	metrics = append(metrics, cloudwatchMetrics(r.Totals, nil, duration)...)
 
 	for name, c := range r.Queues {
 		queueDimensions := dimensions
@@ -89,7 +90,7 @@ func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 		)
 
 		// Add per-queue metrics
-		metrics = append(metrics, cloudwatchMetrics(c, queueDimensions)...)
+		metrics = append(metrics, cloudwatchMetrics(c, queueDimensions, duration)...)
 	}
 
 	log.Printf("Extracted %d cloudwatch metrics from results", len(metrics))
@@ -109,15 +110,16 @@ func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 	return nil
 }
 
-func cloudwatchMetrics(counts map[string]int, dimensions []*cloudwatch.Dimension) []*cloudwatch.MetricDatum {
+func cloudwatchMetrics(counts map[string]int, dimensions []*cloudwatch.Dimension, duration int64) []*cloudwatch.MetricDatum {
 	m := []*cloudwatch.MetricDatum{}
 
 	for k, v := range counts {
 		m = append(m, &cloudwatch.MetricDatum{
-			MetricName: aws.String(k),
-			Dimensions: dimensions,
-			Value:      aws.Float64(float64(v)),
-			Unit:       aws.String("Count"),
+			MetricName:        aws.String(k),
+			Dimensions:        dimensions,
+			Value:             aws.Float64(float64(v)),
+			Unit:              aws.String("Count"),
+			StorageResolution: &duration,
 		})
 	}
 
