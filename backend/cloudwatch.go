@@ -113,6 +113,13 @@ func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 func cloudwatchMetrics(counts map[string]int, dimensions []*cloudwatch.Dimension, duration int64) []*cloudwatch.MetricDatum {
 	m := []*cloudwatch.MetricDatum{}
 
+	if duration < 60 {
+		// PutMetricData supports either normal (60s) or high frequency (1s)
+		// metrics - other values result in an error.
+		duration = 1
+	} else {
+		duration = 60
+	}
 	for k, v := range counts {
 		m = append(m, &cloudwatch.MetricDatum{
 			MetricName:        aws.String(k),

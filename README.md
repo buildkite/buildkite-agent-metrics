@@ -47,34 +47,34 @@ It's entrypoint is `handler`, it requires a `go1.x` environment and respects the
  - `BUILDKITE_BACKEND` : The name of the backend to use (e.g. `cloudwatch`, `statsd`, `prometheus` or `stackdriver`).
  - `BUILDKITE_QUEUE` : A comma separated list of Buildkite queues to process (e.g. `backend-deploy,ui-deploy`).
  - `BUILDKITE_QUIET` : A boolean specifying that only `ERROR` log lines must be printed. (e.g. `1`, `true`).
- - `BUILDKITE_CLOUDWATCH_DIMENSIONS` : A comma separated list in the form of Key=Value, Other=Value containing the Cloudwatch dimensions to index metrics under. 
- 
+ - `BUILDKITE_CLOUDWATCH_DIMENSIONS` : A comma separated list in the form of Key=Value, Other=Value containing the Cloudwatch dimensions to index metrics under.
+
 Additionally, one of the following groups of environment variables must be set in order to define how the Lambda function
 should obtain the required Buildkite API token:
- 
+
 ##### Option 1 - Provide the token as plain-text
-   
+
 - `BUILDKITE_AGENT_TOKEN` : The Buildkite agent API token to use.
- 
+
 #### Option 2 - Retrieve token from AWS Systems Manager
 
-- `BUILDKITE_AGENT_TOKEN_SSM_KEY` : The parameter name which contains the token value in AWS 
-Systems Manager. 
- 
-**Note**: Parameters stored as `String` and `SecureString` are currently supported. 
+- `BUILDKITE_AGENT_TOKEN_SSM_KEY` : The parameter name which contains the token value in AWS
+Systems Manager.
+
+**Note**: Parameters stored as `String` and `SecureString` are currently supported.
 
 #### Option 3 - Retrieve token from AWS Secrets Manager
 
 - `BUILDKITE_AGENT_SECRETS_MANAGER_SECRET_ID`: The id of the secret which contains the token value
-in AWS Secrets Manager. 
+in AWS Secrets Manager.
 
 - (Optional) `BUILDKITE_AGENT_SECRETS_MANAGER_JSON_KEY`: The JSON key containing the token value in the secret JSON blob.
 
 **Note 1**: Both `SecretBinary` and `SecretString` are supported. In the case of `SecretBinary`, the secret payload will
 be automatically decoded and returned as a plain-text string.
 
-**Note 2**: `BUILDKITE_AGENT_SECRETS_MANAGER_JSON_KEY` can be used on secrets of type `SecretBinary` only if their 
-binary payload corresponds to a valid JSON object containing the provided key. 
+**Note 2**: `BUILDKITE_AGENT_SECRETS_MANAGER_JSON_KEY` can be used on secrets of type `SecretBinary` only if their
+binary payload corresponds to a valid JSON object containing the provided key.
 
 ```bash
 aws lambda create-function \
@@ -109,6 +109,8 @@ By default metrics will be submitted to CloudWatch but the backend can be switch
 The Cloudwatch backend supports the following arguments:
 
 * `-cloudwatch-dimensions`: A optional custom dimension in the form of `Key=Value, Key=Value`
+
+If `-interval` is less than 60 seconds the metrics will be sent to CloudWatch as [High-Resolution Metrics](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html#high-resolution-metrics).
 
 The StatsD backend supports the following arguments:
 
