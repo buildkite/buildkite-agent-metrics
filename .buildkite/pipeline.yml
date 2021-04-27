@@ -19,12 +19,20 @@ steps:
               goarch: amd64
               gomodule: "on"
             - version: "1.15"
+              goos: linux
+              goarch: arm64
+              gomodule: "on"
+            - version: "1.15"
               goos: windows
               goarch: amd64
               gomodule: "on"
             - version: "1.15"
               goos: darwin
               goarch: amd64
+              gomodule: "on"
+            - version: "1.15"
+              goos: darwin
+              goarch: arm64
               gomodule: "on"
 
   - name: ":lambda:"
