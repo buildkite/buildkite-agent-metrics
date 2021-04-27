@@ -4,7 +4,7 @@ set -eu
 docker run --rm --volume "$PWD:/code" \
   --workdir "/code" \
   --rm \
-    golang:1.11 \
+    golang:1.16 \
     sh -c "go get ./lambda && go build -o ./lambda/handler ./lambda"
 
 chmod +x ./lambda/handler

@@ -2,7 +2,7 @@ steps:
   - name: ":hammer_and_wrench:"
     plugins:
       - docker#v2.0.0:
-          image: "golang:1.15"
+          image: "golang:1.16"
           command: ["go", "test", "-v", "-race", "."]
           environment:
             - GO111MODULE=on
@@ -14,23 +14,23 @@ steps:
           build: main.go
           import: github.com/buildkite/buildkite-agent-metrics
           targets:
-            - version: "1.15"
+            - version: "1.16"
               goos: linux
               goarch: amd64
               gomodule: "on"
-            - version: "1.15"
+            - version: "1.16"
               goos: linux
               goarch: arm64
               gomodule: "on"
-            - version: "1.15"
+            - version: "1.16"
               goos: windows
               goarch: amd64
               gomodule: "on"
-            - version: "1.15"
+            - version: "1.16"
               goos: darwin
               goarch: amd64
               gomodule: "on"
-            - version: "1.15"
+            - version: "1.16"
               goos: darwin
               goarch: arm64
               gomodule: "on"
