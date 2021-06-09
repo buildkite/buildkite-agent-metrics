@@ -173,6 +173,7 @@ The following metrics are gathered when no specific queue is supplied:
 Buildkite > (Org) > RunningJobsCount
 Buildkite > (Org) > ScheduledJobsCount
 Buildkite > (Org) > UnfinishedJobsCount
+Buildkite > (Org) > WaitingJobsCount
 Buildkite > (Org) > IdleAgentsCount
 Buildkite > (Org) > BusyAgentsCount
 Buildkite > (Org) > BusyAgentPercentage
@@ -181,6 +182,7 @@ Buildkite > (Org) > TotalAgentsCount
 Buildkite > (Org, Queue) > RunningJobsCount
 Buildkite > (Org, Queue) > ScheduledJobsCount
 Buildkite > (Org, Queue) > UnfinishedJobsCount
+Buildkite > (Org, Queue) > WaitingJobsCount
 Buildkite > (Org, Queue) > IdleAgentsCount
 Buildkite > (Org, Queue) > BusyAgentsCount
 Buildkite > (Org, Queue) > BusyAgentPercentage
