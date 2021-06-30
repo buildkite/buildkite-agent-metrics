@@ -1,10 +1,8 @@
-FROM golang:1.15 as builder
-WORKDIR /go/src/github.com/buildkite/buildkite-agent-metrics/
-COPY . .
-RUN GO111MODULE=on GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o buildkite-agent-metrics .
+FROM gcr.io/distroless/base
 
-FROM alpine:3.9
-RUN apk update && apk add curl ca-certificates
-COPY --from=builder /go/src/github.com/buildkite/buildkite-agent-metrics/buildkite-agent-metrics .
-EXPOSE 8080 8125
-ENTRYPOINT ["./buildkite-agent-metrics"]
+LABEL maintainer="Rajat Vig <rajat.vig@gmail.com>"
+
+COPY dist/buildkite-agent-metrics-linux-amd64 /bin/buildkite-agent-metrics
+
+EXPOSE      8080
+ENTRYPOINT  [ "/bin/buildkite-agent-metrics" ]

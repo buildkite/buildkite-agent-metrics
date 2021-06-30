@@ -34,3 +34,6 @@ steps:
               goos: darwin
               goarch: arm64
               gomodule: "on"
+
+  - name: "Upload Docker Image"
+    command: buildkite-agent pipeline upload .buildkite/pipeline.gcr.yml
