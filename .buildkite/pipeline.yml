@@ -35,5 +35,6 @@ steps:
               goarch: arm64
               gomodule: "on"
 
+  - wait
   - name: "Upload Docker Image"
     command: buildkite-agent pipeline upload .buildkite/pipeline.gcr.yml
