@@ -100,6 +100,48 @@ You can use the command-line arguments in a docker execution in the same way as 
 
 ```
 docker run --rm buildkite-agent-metrics -token abc123 -interval 30s -queue my-queue
+
+### Supported command line flags
+buildkite-agent-metrics --help
+Usage of buildkite-agent-metrics:
+  -backend string
+    	Specify the backend to use: cloudwatch, statsd, prometheus, stackdriver (default "cloudwatch")
+  -cloudwatch-dimensions string
+    	Cloudwatch dimensions to index metrics under, in the form of Key=Value, Other=Value
+  -cloudwatch-region string
+    	AWS Region to connect to, defaults to $AWS_REGION or us-east-1
+  -debug
+    	Show debug output
+  -debug-http
+    	Show full http traces
+  -dry-run
+    	Whether to only print metrics
+  -endpoint string
+    	A custom Buildkite Agent API endpoint (default "https://agent.buildkite.com/v3")
+  -interval duration
+    	Update metrics every interval, rather than once
+  -newrelic-app-name string
+    	New Relic application name for metric events
+  -newrelic-license-key string
+    	New Relic license key for publishing events
+  -prometheus-addr string
+    	Prometheus metrics transport bind address (default ":8080")
+  -prometheus-path string
+    	Prometheus metrics transport path (default "/metrics")
+  -queue value
+    	Specific queues to process
+  -quiet
+    	Only print errors
+  -stackdriver-projectid string
+    	Specify Stackdriver Project ID
+  -statsd-host string
+    	Specify the StatsD server (default "127.0.0.1:8125")
+  -statsd-tags
+    	Whether your StatsD server supports tagging like Datadog
+  -token string
+    	A Buildkite Agent Registration Token
+  -version
+    	Show the version
 ```
 
 ### Backends
