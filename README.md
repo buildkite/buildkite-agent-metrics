@@ -102,7 +102,8 @@ docker run --rm buildkite-agent-metrics -token abc123 -interval 30s -queue my-qu
 ```
 
 ### Supported command line flags
-```$ buildkite-agent-metrics --help
+```
+$ buildkite-agent-metrics --help
 Usage of buildkite-agent-metrics:
   -backend string
     	Specify the backend to use: cloudwatch, statsd, prometheus, stackdriver (default "cloudwatch")
@@ -141,7 +142,8 @@ Usage of buildkite-agent-metrics:
   -token string
     	A Buildkite Agent Registration Token
   -version
-    	Show the version```
+    	Show the version
+```
 
 ### Backends
 
