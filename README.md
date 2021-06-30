@@ -4,7 +4,6 @@ A command-line tool for collecting [Buildkite](https://buildkite.com/) agent met
 
 [![Build status](https://badge.buildkite.com/80d04fcde3a306bef44e77aadb1f1ffdc20ebb3c8f1f585a60.svg)](https://buildkite.com/buildkite/buildkite-agent-metrics)
 
-**Note: Formerly known as `buildkite-metrics`, but now `buildkite-agent-metrics` to reflect the focus of the tool.**
 
 ## Installing
 
@@ -50,7 +49,7 @@ It's entrypoint is `handler`, it requires a `go1.x` environment and respects the
  - `BUILDKITE_CLOUDWATCH_DIMENSIONS` : A comma separated list in the form of Key=Value, Other=Value containing the Cloudwatch dimensions to index metrics under. 
  
 Additionally, one of the following groups of environment variables must be set in order to define how the Lambda function
-should obtain the required Buildkite API token:
+should obtain the required Buildkite Agent API token:
  
 ##### Option 1 - Provide the token as plain-text
    
@@ -102,7 +101,7 @@ You can use the command-line arguments in a docker execution in the same way as 
 docker run --rm buildkite-agent-metrics -token abc123 -interval 30s -queue my-queue
 
 ### Supported command line flags
-buildkite-agent-metrics --help
+``$ buildkite-agent-metrics --help
 Usage of buildkite-agent-metrics:
   -backend string
     	Specify the backend to use: cloudwatch, statsd, prometheus, stackdriver (default "cloudwatch")
@@ -141,7 +140,7 @@ Usage of buildkite-agent-metrics:
   -token string
     	A Buildkite Agent Registration Token
   -version
-    	Show the version
+    	Show the version``
 ```
 
 ### Backends
@@ -188,7 +187,7 @@ Currently this will publish metrics to Cloudwatch under the custom metric prefix
 
 ### The `token` package
 
-It is an abstraction layer enabling the retrieval of a Buildkite API token
+It is an abstraction layer enabling the retrieval of a Buildkite Agent API token
 from different sources.
 
 The current supported sources are:
