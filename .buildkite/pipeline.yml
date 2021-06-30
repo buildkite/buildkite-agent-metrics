@@ -36,9 +36,5 @@ steps:
               gomodule: "on"
 
   - wait
-  - name: "Copy Artifact"
-    command: buildkite-agent artifact download "buildkite-agent-metrics-linux-amd64" ./dist
-  - name: "Build and Push"
-    command:
-      - docker build -t gcr.io/etsy-gcr-dev/buildkite-agent-metrics:5.2.0 .
-      - docker push gcr.io/etsy-gcr-dev/buildkite-agent-metrics:5.2.0
+  - name: "Upload Docker Image"
+    command: buildkite-agent pipeline upload .buildkite/pipeline.gcr.yml
