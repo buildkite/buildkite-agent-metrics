@@ -53,7 +53,7 @@ should obtain the required Buildkite Agent API token:
  
 ##### Option 1 - Provide the token as plain-text
    
-- `BUILDKITE_AGENT_TOKEN` : The Buildkite agent API token to use.
+- `BUILDKITE_AGENT_TOKEN` : The Buildkite Agent API token to use.
  
 #### Option 2 - Retrieve token from AWS Systems Manager
 
@@ -158,14 +158,19 @@ The StatsD backend supports the following arguments:
 * `-statsd-host HOST`: The StatsD host and port (defaults to `127.0.0.1:8125`).
 * `-statsd-tags`: Some StatsD servers like the agent provided by Datadog support tags. If specified, metrics will be tagged by `queue` otherwise metrics will include the queue name in the metric. Only enable this option if you know your StatsD server supports tags.
 
-The Prometheus backend supports the following arguments
+The Prometheus backend supports the following arguments:
 
 * `-prometheus-addr`: The local address to listen on (defaults to `:8080`).
 * `-prometheus-path`: The path under `prometheus-addr` to expose metrics on (defaults to `/metrics`).
 
-The Stackdriver backend supports the following arguments
+The Stackdriver backend supports the following arguments:
 
 * `-stackdriver-projectid`: The Google Cloud Platform project to report metrics for.
+
+The New Relic backend supports the following arguments:
+
+*   -newrelic-app-name: String for the New Relic app name
+*   -newrelic-license-key: The New Relic license key. Must be of type `INGEST`
 
 ### Upgrading from v2 to v3
 
