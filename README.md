@@ -169,8 +169,8 @@ The Stackdriver backend supports the following arguments:
 
 The New Relic backend supports the following arguments:
 
-*   -newrelic-app-name: String for the New Relic app name
-*   -newrelic-license-key: The New Relic license key. Must be of type `INGEST`
+*   `-newrelic-app-name`: String for the New Relic app name
+*   `-newrelic-license-key`: The New Relic license key. Must be of type `INGEST`
 
 ### Upgrading from v2 to v3
 
