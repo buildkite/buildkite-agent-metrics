@@ -4,7 +4,6 @@ A command-line tool for collecting [Buildkite](https://buildkite.com/) agent met
 
 [![Build status](https://badge.buildkite.com/80d04fcde3a306bef44e77aadb1f1ffdc20ebb3c8f1f585a60.svg)](https://buildkite.com/buildkite/buildkite-agent-metrics)
 
-**Note: Formerly known as `buildkite-metrics`, but now `buildkite-agent-metrics` to reflect the focus of the tool.**
 
 ## Installing
 
@@ -50,11 +49,11 @@ It's entrypoint is `handler`, it requires a `go1.x` environment and respects the
  - `BUILDKITE_CLOUDWATCH_DIMENSIONS` : A comma separated list in the form of Key=Value, Other=Value containing the Cloudwatch dimensions to index metrics under. 
  
 Additionally, one of the following groups of environment variables must be set in order to define how the Lambda function
-should obtain the required Buildkite API token:
+should obtain the required Buildkite Agent API token:
  
 ##### Option 1 - Provide the token as plain-text
    
-- `BUILDKITE_AGENT_TOKEN` : The Buildkite agent API token to use.
+- `BUILDKITE_AGENT_TOKEN` : The Buildkite Agent API token to use.
  
 #### Option 2 - Retrieve token from AWS Systems Manager
 
@@ -102,6 +101,50 @@ You can use the command-line arguments in a docker execution in the same way as 
 docker run --rm buildkite-agent-metrics -token abc123 -interval 30s -queue my-queue
 ```
 
+### Supported command line flags
+```
+$ buildkite-agent-metrics --help
+Usage of buildkite-agent-metrics:
+  -backend string
+    	Specify the backend to use: cloudwatch, statsd, prometheus, stackdriver (default "cloudwatch")
+  -cloudwatch-dimensions string
+    	Cloudwatch dimensions to index metrics under, in the form of Key=Value, Other=Value
+  -cloudwatch-region string
+    	AWS Region to connect to, defaults to $AWS_REGION or us-east-1
+  -debug
+    	Show debug output
+  -debug-http
+    	Show full http traces
+  -dry-run
+    	Whether to only print metrics
+  -endpoint string
+    	A custom Buildkite Agent API endpoint (default "https://agent.buildkite.com/v3")
+  -interval duration
+    	Update metrics every interval, rather than once
+  -newrelic-app-name string
+    	New Relic application name for metric events
+  -newrelic-license-key string
+    	New Relic license key for publishing events
+  -prometheus-addr string
+    	Prometheus metrics transport bind address (default ":8080")
+  -prometheus-path string
+    	Prometheus metrics transport path (default "/metrics")
+  -queue value
+    	Specific queues to process
+  -quiet
+    	Only print errors
+  -stackdriver-projectid string
+    	Specify Stackdriver Project ID
+  -statsd-host string
+    	Specify the StatsD server (default "127.0.0.1:8125")
+  -statsd-tags
+    	Whether your StatsD server supports tagging like Datadog
+  -token string
+    	A Buildkite Agent Registration Token
+  -version
+    	Show the version
+```
+
 ### Backends
 
 By default metrics will be submitted to CloudWatch but the backend can be switched to StatsD or Prometheus using the command-line argument `-backend statsd` or `-backend prometheus` respectively.
@@ -115,14 +158,19 @@ The StatsD backend supports the following arguments:
 * `-statsd-host HOST`: The StatsD host and port (defaults to `127.0.0.1:8125`).
 * `-statsd-tags`: Some StatsD servers like the agent provided by Datadog support tags. If specified, metrics will be tagged by `queue` otherwise metrics will include the queue name in the metric. Only enable this option if you know your StatsD server supports tags.
 
-The Prometheus backend supports the following arguments
+The Prometheus backend supports the following arguments:
 
 * `-prometheus-addr`: The local address to listen on (defaults to `:8080`).
 * `-prometheus-path`: The path under `prometheus-addr` to expose metrics on (defaults to `/metrics`).
 
-The Stackdriver backend supports the following arguments
+The Stackdriver backend supports the following arguments:
 
 * `-stackdriver-projectid`: The Google Cloud Platform project to report metrics for.
+
+The New Relic backend supports the following arguments:
+
+*   `-newrelic-app-name`: String for the New Relic app name
+*   `-newrelic-license-key`: The New Relic license key. Must be of type `INGEST`
 
 ### Upgrading from v2 to v3
 
@@ -146,7 +194,7 @@ Currently this will publish metrics to Cloudwatch under the custom metric prefix
 
 ### The `token` package
 
-It is an abstraction layer enabling the retrieval of a Buildkite API token
+It is an abstraction layer enabling the retrieval of a Buildkite Agent API token
 from different sources.
 
 The current supported sources are:
