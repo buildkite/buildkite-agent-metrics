@@ -52,8 +52,12 @@ func main() {
 	}
 
 	if *token == "" {
-		fmt.Println("Must provide a value for -token")
-		os.Exit(1)
+		if bkToken := os.Getenv("BUILDKITE_AGENT_TOKEN"); bkToken != "" {
+			*token = bkToken
+		} else {
+			fmt.Println("Must provide a token")
+			os.Exit(1)
+		}
 	}
 
 	var err error
