@@ -4,7 +4,6 @@ FROM golang:1.17 AS build
 ENV LAMBDA_VERSION="5.3.0" 
 
 WORKDIR /app
-COPY . /app
 
 RUN apt-get update && apt-get install -y wget tar && \
     wget "https://github.com/buildkite/buildkite-agent-metrics/archive/refs/tags/v${LAMBDA_VERSION}.tar.gz" && \
