@@ -1,0 +1,7 @@
+FROM public.ecr.aws/lambda/provided:al2
+
+RUN yum install -y unzip wget && \
+    wget "https://github.com/buildkite/buildkite-agent-metrics/releases/latest/download/handler.zip" && \
+    unzip handler.zip && rm -f handler.zip
+
+ENTRYPOINT ["./handler"]

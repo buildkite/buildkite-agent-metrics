@@ -5,7 +5,7 @@ go 1.16
 require (
 	cloud.google.com/go v0.37.2
 	github.com/DataDog/datadog-go v0.0.0-20180822151419-281ae9f2d895
-	github.com/aws/aws-lambda-go v1.6.0
+	github.com/aws/aws-lambda-go v1.28.0
 	github.com/aws/aws-sdk-go v1.15.66
 	github.com/golang/mock v1.2.0
 	github.com/golang/protobuf v1.2.0
