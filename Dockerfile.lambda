@@ -1,4 +1,4 @@
-FROM golang:1.17 AS build
+FROM golang:1.16 AS build
 
 # See https://github.com/buildkite/buildkite-agent-metrics/releases for latest version
 ENV LAMBDA_VERSION="5.3.0" 
