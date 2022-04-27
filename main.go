@@ -106,6 +106,8 @@ func main() {
 			fmt.Printf("Error starting New Relic client: %v\n", err)
 			os.Exit(1)
 		}
+	case "stdout":
+		bk = backend.NewStdoutBackend()
 	default:
 		fmt.Println("Must provide a supported backend: cloudwatch, statsd, prometheus, stackdriver, newrelic")
 		os.Exit(1)
