@@ -11,7 +11,6 @@ import (
 	"time"
 
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/aws/aws-sdk-go/service/ssm"
@@ -46,8 +45,6 @@ func main() {
 
 func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 	var b backend.Backend
-	var provider token.Provider
-	var bkToken string
 	var err error
 
 	awsRegion := os.Getenv("AWS_REGION")
@@ -69,12 +66,14 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 		return "", nil
 	}
 
-	provider, err = initTokenProvider(awsRegion)
-	if err != nil {
-		return "", err
-	}
+	sess := session.Must(session.NewSession())
+	tokenProviderChain := token.NewProviderChain(
+		token.NewEnvVar(),
+		token.NewSecretsManager(secretsmanager.New(sess)),
+		token.NewSSM(ssm.New(sess)),
+	)
 
-	bkToken, err = provider.Get()
+	bkToken, err := tokenProviderChain.Resolve()
 	if err != nil {
 		return "", err
 	}
@@ -146,60 +145,4 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 	nextPollTime = time.Now().Add(res.PollDuration)
 
 	return "", nil
-}
-
-func initTokenProvider(awsRegion string) (token.Provider, error) {
-	mutuallyExclusiveEnvVars := []string{
-		BKAgentTokenEnvVar,
-		BKAgentTokenSSMKeyEnvVar,
-		BKAgentTokenSecretsManagerSecretIDEnvVar,
-	}
-
-	if err := checkMutuallyExclusiveEnvVars(mutuallyExclusiveEnvVars...); err != nil {
-		return nil, err
-	}
-
-	if bkToken := os.Getenv(BKAgentTokenEnvVar); bkToken != "" {
-		return token.NewInMemory(bkToken)
-	}
-
-	if ssmKey := os.Getenv(BKAgentTokenSSMKeyEnvVar); ssmKey != "" {
-		sess, err := session.NewSession(&aws.Config{Region: aws.String(awsRegion)})
-		if err != nil {
-			return nil, err
-		}
-		client := ssm.New(sess)
-		return token.NewSSM(client, ssmKey)
-	}
-
-	if secretsManagerSecretID := os.Getenv(BKAgentTokenSecretsManagerSecretIDEnvVar); secretsManagerSecretID != "" {
-		jsonKey := os.Getenv(BKAgentTokenSecretsManagerJSONKeyEnvVar)
-		sess, err := session.NewSession(&aws.Config{Region: aws.String(awsRegion)})
-		if err != nil {
-			return nil, err
-		}
-		client := secretsmanager.New(sess)
-		if jsonKey == "" {
-			return token.NewSecretsManager(client, secretsManagerSecretID)
-		} else {
-			return token.NewSecretsManager(client, secretsManagerSecretID, token.WithSecretsManagerJSONSecret(jsonKey))
-		}
-	}
-
-	return nil, fmt.Errorf("failed to initialize Buildkite token provider: one of the [%s] environment variables "+
-		"must be provided", strings.Join(mutuallyExclusiveEnvVars, ","))
-}
-
-func checkMutuallyExclusiveEnvVars(varNames ...string) error {
-	foundVars := make([]string, 0)
-	for _, varName := range varNames {
-		value := os.Getenv(varName)
-		if value != "" {
-			foundVars = append(foundVars, value)
-		}
-	}
-	if len(foundVars) > 1 {
-		return fmt.Errorf("the environment variables [%s] are mutually exclusive", strings.Join(foundVars, ","))
-	}
-	return nil
 }
