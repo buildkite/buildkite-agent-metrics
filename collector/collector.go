@@ -88,6 +88,10 @@ func (c *Collector) Collect() (*Result, error) {
 		Queues: map[string]map[string]int{},
 	}
 
+	httpClient := &http.Client{
+		Timeout: 15 * time.Second,
+	}
+	
 	if len(c.Queues) == 0 {
 		log.Println("Collecting agent metrics for all queues")
 
@@ -110,10 +114,6 @@ func (c *Collector) Collect() (*Result, error) {
 			if dump, err := httputil.DumpRequest(req, true); err == nil {
 				log.Printf("DEBUG request uri=%s\n%s\n", req.URL, dump)
 			}
-		}
-
-		httpClient := &http.Client{
-			Timeout: 15 * time.Second,
 		}
 
 		res, err := httpClient.Do(req)
@@ -224,7 +224,7 @@ func (c *Collector) Collect() (*Result, error) {
 				}
 			}
 
-			res, err := http.DefaultClient.Do(req)
+			res, err := httpClient.Do(req)
 			if err != nil {
 				return nil, err
 			}
