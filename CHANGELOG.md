@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.4.0](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.4.0) (2022-06-10)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.3.0...v5.4.0)
+
+### Changed
+- Standardize http.Client collector configurations [#121](https://github.com/buildkite/buildkite-agent-metrics/pull/121) (@alloveras)
+- Update AWS Lambda SDK v1.6.0 -> v1.28.0, add a lambda-specific dockerfile [#120](https://github.com/buildkite/buildkite-agent-metrics/pull/120) (@ohookins)
+
 ## [v5.3.0](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.2.1...v5.3.0) (2021-07-16)
 
 ### Addded
