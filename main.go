@@ -9,8 +9,12 @@ import (
 	"strings"
 	"time"
 
+	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/secretsmanager"
+	"github.com/aws/aws-sdk-go/service/ssm"
 	"github.com/buildkite/buildkite-agent-metrics/backend"
 	"github.com/buildkite/buildkite-agent-metrics/collector"
+	"github.com/buildkite/buildkite-agent-metrics/token"
 	"github.com/buildkite/buildkite-agent-metrics/version"
 )
 
@@ -18,14 +22,14 @@ var bk backend.Backend
 
 func main() {
 	var (
-		token       = flag.String("token", "", "A Buildkite Agent Registration Token")
-		interval    = flag.Duration("interval", 0, "Update metrics every interval, rather than once")
-		showVersion = flag.Bool("version", false, "Show the version")
-		quiet       = flag.Bool("quiet", false, "Only print errors")
-		debug       = flag.Bool("debug", false, "Show debug output")
-		debugHttp   = flag.Bool("debug-http", false, "Show full http traces")
-		dryRun      = flag.Bool("dry-run", false, "Whether to only print metrics")
-		endpoint    = flag.String("endpoint", "https://agent.buildkite.com/v3", "A custom Buildkite Agent API endpoint")
+		tokenFromFlag = flag.String("token", "", "A Buildkite Agent Registration Token")
+		interval      = flag.Duration("interval", 0, "Update metrics every interval, rather than once")
+		showVersion   = flag.Bool("version", false, "Show the version")
+		quiet         = flag.Bool("quiet", false, "Only print errors")
+		debug         = flag.Bool("debug", false, "Show debug output")
+		debugHttp     = flag.Bool("debug-http", false, "Show full http traces")
+		dryRun        = flag.Bool("dry-run", false, "Whether to only print metrics")
+		endpoint      = flag.String("endpoint", "https://agent.buildkite.com/v3", "A custom Buildkite Agent API endpoint")
 
 		// backend config
 		backendOpt     = flag.String("backend", "cloudwatch", "Specify the backend to use: cloudwatch, statsd, prometheus, stackdriver")
@@ -51,16 +55,23 @@ func main() {
 		os.Exit(0)
 	}
 
-	if *token == "" {
-		if bkToken := os.Getenv("BUILDKITE_AGENT_TOKEN"); bkToken != "" {
-			*token = bkToken
-		} else {
-			fmt.Println("Must provide a token")
-			os.Exit(1)
-		}
+	chain := token.NewProviderChain(
+		token.NewStaticCredentialsProvider(tokenFromFlag),
+		token.NewEnvVar(),
+	)
+
+	sess, err := session.NewSession()
+	if err == nil {
+		chain.Append(token.NewSSM(ssm.New(sess)))
+		chain.Append(token.NewSecretsManager(secretsmanager.New(sess)))
 	}
 
-	var err error
+	token, err := chain.Resolve()
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		os.Exit(1)
+	}
+
 	switch strings.ToLower(*backendOpt) {
 	case "cloudwatch":
 		region := *clwRegion
@@ -95,6 +106,8 @@ func main() {
 			fmt.Printf("Error starting New Relic client: %v\n", err)
 			os.Exit(1)
 		}
+	case "stdout":
+		bk = backend.NewStdoutBackend()
 	default:
 		fmt.Println("Must provide a supported backend: cloudwatch, statsd, prometheus, stackdriver, newrelic")
 		os.Exit(1)
@@ -112,7 +125,7 @@ func main() {
 	c := collector.Collector{
 		UserAgent: userAgent,
 		Endpoint:  *endpoint,
-		Token:     *token,
+		Token:     token,
 		Queues:    []string(queues),
 		Quiet:     *quiet,
 		Debug:     *debug,

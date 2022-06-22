@@ -4,13 +4,16 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"os"
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
 )
 
-// SecretsManagerOpt represents a configuration option for the AWS SecretsManager Buildkite token provider.
-type SecretsManagerOpt func(opts *secretsManagerProvider) error
+const (
+	SecretsManagerKeyEnvVar     = "BUILDKITE_AGENT_SECRETS_MANAGER_SECRET_ID"
+	SecretsManagerJSONKeyEnvVar = "BUILDKITE_AGENT_SECRETS_MANAGER_JSON_KEY"
+)
 
 // SecretsManagerClient represents the minimal interactions required to retrieve a Buildkite API token from
 // AWS Secrets Manager.
@@ -19,55 +22,45 @@ type SecretsManagerClient interface {
 }
 
 type secretsManagerProvider struct {
-	Client   SecretsManagerClient
-	SecretID string
-	JSONKey  string
-}
-
-// WithSecretsManagerJSONSecret instructs SecretsManager Buidlkite token provider that the token is stored within a JSON
-// payload. The key parameter specifies the JSON field holding the secret value within the JSON blob.
-//
-// This configuration option works for both AWS supported secret formats (SecretString and SecretBinary). However, for
-// the later case, the binary payload must be a valid JSON document containing the 'key' field.
-func WithSecretsManagerJSONSecret(key string) SecretsManagerOpt {
-	return func(provider *secretsManagerProvider) error {
-		provider.JSONKey = key
-		return nil
-	}
+	Client SecretsManagerClient
 }
 
 // NewSecretsManager constructs a Buildkite API token provider backed by AWS Secrets Manager.
-func NewSecretsManager(client SecretsManagerClient, secretID string, opts ...SecretsManagerOpt) (Provider, error) {
-	provider := &secretsManagerProvider{
-		Client:   client,
-		SecretID: secretID,
+func NewSecretsManager(client SecretsManagerClient) Provider {
+	return &secretsManagerProvider{
+		Client: client,
 	}
-
-	for _, opt := range opts {
-		err := opt(provider)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	return provider, nil
 }
 
 func (p secretsManagerProvider) Get() (string, error) {
+	secretID := os.Getenv(SecretsManagerKeyEnvVar)
+
+	if secretID == "" {
+		return "", errNotUsable
+	}
+
 	res, err := p.Client.GetSecretValue(&secretsmanager.GetSecretValueInput{
-		SecretId: aws.String(p.SecretID),
+		SecretId: aws.String(secretID),
 	})
 
 	if err != nil {
-		return "", fmt.Errorf("failed to retrieve secret '%s' from SecretsManager: %v", p.SecretID, err)
+		return "", fmt.Errorf("failed to retrieve secret '%s' from SecretsManager: %v", secretID, err)
 	}
 
 	secret, err := p.parseResponse(res)
 	if err != nil {
-		return "", fmt.Errorf("failed to parse SecretsManager's response for '%s': %v", p.SecretID, err)
+		return "", fmt.Errorf("failed to parse SecretsManager's response for '%s': %v", secretID, err)
 	}
 
 	return secret, nil
+}
+
+func (p secretsManagerProvider) IsUsable() bool {
+	return os.Getenv(SecretsManagerKeyEnvVar) != ""
+}
+
+func (p secretsManagerProvider) String() string {
+	return "SecretsManagerProvider"
 }
 
 func (p secretsManagerProvider) parseResponse(res *secretsmanager.GetSecretValueOutput) (string, error) {
@@ -83,8 +76,9 @@ func (p secretsManagerProvider) parseResponse(res *secretsmanager.GetSecretValue
 		}
 	}
 
-	if p.JSONKey != "" {
-		secret, err := extractStringKeyFromJSON(secretBytes, p.JSONKey)
+	jsonKey := os.Getenv(SecretsManagerJSONKeyEnvVar)
+	if jsonKey != "" {
+		secret, err := extractStringKeyFromJSON(secretBytes, jsonKey)
 		if err != nil {
 			return "", err
 		}
