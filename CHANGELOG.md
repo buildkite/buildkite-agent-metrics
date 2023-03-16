@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.5.0](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.5.0) (2023-03-16)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.4.0...v5.5.0)
+
+### Changed
+- Update Go (1.20), Alpine (3.17), and all modules [#131](https://github.com/buildkite/buildkite-agent-metrics/pull/131) (@DrJosh9000)
+
 ## [v5.4.0](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.4.0) (2022-06-10)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.3.0...v5.4.0)
 
