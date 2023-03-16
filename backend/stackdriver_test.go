@@ -6,10 +6,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/protobuf/ptypes/timestamp"
 	"google.golang.org/genproto/googleapis/api/label"
 	"google.golang.org/genproto/googleapis/api/metric"
 	monitoringpb "google.golang.org/genproto/googleapis/monitoring/v3"
+	"google.golang.org/protobuf/types/known/timestamppb"
 )
 
 func Test_createCustomMetricRequest(t *testing.T) {
@@ -49,7 +49,7 @@ func Test_createCustomMetricRequest(t *testing.T) {
 }
 
 func Test_createTimeSeriesValueRequest(t *testing.T) {
-	now := timestamp.Timestamp{
+	now := timestamppb.Timestamp{
 		Seconds: time.Now().Unix(),
 	}
 
@@ -58,7 +58,7 @@ func Test_createTimeSeriesValueRequest(t *testing.T) {
 		metricType string
 		queue      string
 		value      int
-		time       timestamp.Timestamp
+		time       timestamppb.Timestamp
 	}
 	tests := []struct {
 		name string

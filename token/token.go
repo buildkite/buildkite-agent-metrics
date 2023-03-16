@@ -14,7 +14,8 @@ type Provider interface {
 // constructor functions provided by this package.
 //
 // This helper is intended to be used at program startup to load the Provider implementation to be used. Such as:
-//   var provider := token.Must(token.NewSSMProvider())
+//
+//	var provider := token.Must(token.NewSSMProvider())
 func Must(prov Provider, err error) Provider {
 	if err != nil {
 		_, _ = fmt.Fprintf(os.Stderr, "failed to initialize Buildkite token provider: %v", err)
