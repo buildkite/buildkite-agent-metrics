@@ -8,8 +8,8 @@ import (
 	"time"
 
 	"github.com/buildkite/buildkite-agent-metrics/collector"
-	"github.com/golang/protobuf/ptypes/timestamp"
 	"google.golang.org/genproto/googleapis/api/label"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	monitoring "cloud.google.com/go/monitoring/apiv3"
 	"google.golang.org/genproto/googleapis/api/metric"
@@ -51,7 +51,7 @@ func NewStackDriverBackend(gcpProjectID string) (*StackDriverBackend, error) {
 // Collect metrics
 func (sd *StackDriverBackend) Collect(r *collector.Result) error {
 	ctx := context.Background()
-	now := &timestamp.Timestamp{
+	now := &timestamppb.Timestamp{
 		Seconds: time.Now().Unix(),
 	}
 	orgName := dashReplacer.Replace(r.Org)
@@ -120,7 +120,7 @@ func createCustomMetricRequest(projectID *string, metricType *string) *monitorin
 }
 
 // createTimeSeriesValueRequest creates a StackDriver value request for the specified metric
-func createTimeSeriesValueRequest(projectID *string, metricType *string, queue string, value int, time *timestamp.Timestamp) *monitoringpb.CreateTimeSeriesRequest {
+func createTimeSeriesValueRequest(projectID *string, metricType *string, queue string, value int, time *timestamppb.Timestamp) *monitoringpb.CreateTimeSeriesRequest {
 	req := &monitoringpb.CreateTimeSeriesRequest{
 		Name: "projects/" + *projectID,
 		TimeSeries: []*monitoringpb.TimeSeries{{

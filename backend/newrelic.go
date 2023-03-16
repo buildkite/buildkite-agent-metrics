@@ -17,7 +17,8 @@ type NewRelicBackend struct {
 
 // NewNewRelicBackend returns a backend for New Relic
 // Where appName is your desired application name in New Relic
-//   and licenseKey is your New Relic license key
+//
+//	and licenseKey is your New Relic license key
 func NewNewRelicBackend(appName string, licenseKey string) (*NewRelicBackend, error) {
 	config := newrelic.NewConfig(appName, licenseKey)
 	app, err := newrelic.NewApplication(config)

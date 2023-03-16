@@ -91,7 +91,7 @@ func (c *Collector) Collect() (*Result, error) {
 	httpClient := &http.Client{
 		Timeout: 15 * time.Second,
 	}
-	
+
 	if len(c.Queues) == 0 {
 		log.Println("Collecting agent metrics for all queues")
 
