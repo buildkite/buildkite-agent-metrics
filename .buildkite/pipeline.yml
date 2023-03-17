@@ -43,9 +43,12 @@ steps:
     command: ".buildkite/steps/upload-to-s3.sh"
     branches: master
     agents:
-      queue: "deploy"
+      queue: "elastic-runners"
     concurrency: 1
     concurrency_group: "release_buildkite_metrics_s3"
+    plugins:
+      - aws-assume-role-with-web-identity:
+          role-arn: arn:aws:iam::032379705303:role/pipeline-buildkite-agent-metrics
 
   - wait
   - name: ":pipeline:"
