@@ -22,11 +22,13 @@ steps:
           role-arn: arn:aws:iam::445615400570:role/pipeline-buildkite-agent-metrics
       - aws-ssm#v1.0.0:
           parameters:
-            GITHUB_RELEASE_ACCESS_TOKEN: /pipelines/buildkite-agent-metrics/GITHUB_RELEASE_ACCESS_TOKEN
+            GITHUB_RELEASE_ACCESS_TOKEN: /pipelines/buildkite/buildkite-agent-metrics/GITHUB_RELEASE_ACCESS_TOKEN
       - ecr#v2.0.0:
           login: true
           account-ids: "445615400570"
       - docker#v3.5.0:
           image: "445615400570.dkr.ecr.us-east-1.amazonaws.com/deploytools:2020.03"
           propagate-environment: true
+          environment:
+            - GITHUB_RELEASE_ACCESS_TOKEN
 
