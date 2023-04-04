@@ -1,5 +1,6 @@
 steps:
-  - name: ":hammer_and_wrench:"
+  - name: ":test_tube: Test"
+    key: test
     plugins:
       - docker#v2.0.0:
           image: "golang:1.20"
@@ -7,8 +8,8 @@ steps:
           environment:
             - GO111MODULE=on
 
-  - wait
-  - name: ":golang: :pipeline:"
+  - name: ":golang: Compile"
+    key: build
     plugins:
       - golang-cross-compile#v1.3.0:
           build: main.go
@@ -35,11 +36,15 @@ steps:
               goarch: arm64
               gomodule: "on"
 
-  - name: ":lambda:"
+  - name: ":lambda: Build Lambda"
+    key: build-lambda
     command: .buildkite/steps/build-lambda.sh
 
-  - wait
-  - label: ":s3:"
+  - name: ":s3: Upload to S3"
+    key: upload-to-s3
+    depends_on:
+      - test
+      - build-lambda
     command: ".buildkite/steps/upload-to-s3.sh"
     branches: master
     agents:
@@ -50,6 +55,9 @@ steps:
       - aws-assume-role-with-web-identity:
           role-arn: arn:aws:iam::032379705303:role/pipeline-buildkite-agent-metrics
 
-  - wait
   - name: ":pipeline:"
+    key: upload-release-steps
+    depends_on:
+      - build
+      - upload-to-s3
     command: .buildkite/steps/upload-release-steps.sh
