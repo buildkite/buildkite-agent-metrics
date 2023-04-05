@@ -56,6 +56,7 @@ GITHUB_TOKEN="$GITHUB_RELEASE_ACCESS_TOKEN" \
   gh release create \
     --draft \
     --notes "$notes" \
+    --verify-tags \
     "v$version" \
     dist/*
 set -f
