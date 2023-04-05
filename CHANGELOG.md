@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.5.1](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.5.1) (2023-04-05)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.5.0...v5.5.1)
+
+### Changed
+- Update release process to generate checksums [#145](https://github.com/buildkite/buildkite-agent-metrics/pull/145) (@triarius)
+- Allow dependabot to slowly keep gomod up to date [#135](https://github.com/buildkite/buildkite-agent-metrics/pull/135) (@yob)
+- Dependency updates (@dependabot[bot])
+
 ## [v5.5.0](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.5.0) (2023-03-16)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.4.0...v5.5.0)
 
