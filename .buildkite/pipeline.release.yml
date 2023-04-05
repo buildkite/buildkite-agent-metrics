@@ -1,5 +1,5 @@
 steps:
-  - block: ":rocket: Release ${VERSION}?"
+  - block: ":rocket: Release ${BUILDKITE_TAG}?"
 
   - label: ":s3: Upload"
     command: ".buildkite/steps/release-s3-version.sh"
