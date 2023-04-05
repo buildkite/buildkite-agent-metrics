@@ -1,7 +1,7 @@
 # Release Instructions
 
-1. Determine the SemVer version for the new release: `$VERSION`.
-1. Generate a changelog using [ghch](https://github.com/buildkite/ghch) `ghch --format=markdown --next-version=$VERSION`.
+1. Determine the SemVer version for the new release: `$VERSION`. Note: [semver does not include a `v` prefix](https://github.com/semver/semver/blob/master/semver.md#is-v123-a-semantic-version).
+1. Generate a changelog using [ghch](https://github.com/buildkite/ghch) `ghch --format=markdown --next-version=v$VERSION`.
 1. Create a new branch `git fetch origin && git switch -c release/$VERSION`.
 1. Update [CHANGELOG.md](CHANEGLOG.md) with the generated changelog.
 1. Update [`version/version.go`](version/version.go) with the new version.
