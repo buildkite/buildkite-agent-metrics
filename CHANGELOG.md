@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.4.0...v5.5.0)
 
 ### Changed
+- Fixed release process with OIDC [#133](https://github.com/buildkite/buildkite-agent-metrics/pull/133) [#134](https://github.com/buildkite/buildkite-agent-metrics/pull/134) (@yob)
 - Update Go (1.20), Alpine (3.17), and all modules [#131](https://github.com/buildkite/buildkite-agent-metrics/pull/131) (@DrJosh9000)
 
 ## [v5.4.0](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.4.0) (2022-06-10)

@@ -1,0 +1,11 @@
+version: "3.9"
+
+services:
+  agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+      - BUILDKITE_BUILD_NUMBER
+      - BUILDKITE_JOB_ID
+      - GITHUB_RELEASE_ACCESS_TOKEN
