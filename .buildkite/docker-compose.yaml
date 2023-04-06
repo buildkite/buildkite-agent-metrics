@@ -5,6 +5,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    volumes:
+      - ../:/workspace:cached
+    working_dir: /workspace
     environment:
       - BUILDKITE_BUILD_NUMBER
       - BUILDKITE_JOB_ID
