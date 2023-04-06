@@ -10,5 +10,9 @@ services:
     working_dir: /workspace
     environment:
       - BUILDKITE_BUILD_NUMBER
+      - BUILDKITE_BUILD_ID
       - BUILDKITE_JOB_ID
+      - BUILDKITE_BRANCH
+      - BUILDKITE_TAG
+      - BUILDKITE_AGENT_ACCESS_TOKEN
       - GITHUB_RELEASE_ACCESS_TOKEN
