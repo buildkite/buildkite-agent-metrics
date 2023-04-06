@@ -51,6 +51,10 @@ notes=$(
     | tr -d '\n' \
 )
 
+echo --- The following notes will accompany the release:
+echo "$notes"
+
+echo --- :github: Publishing draft release
 set +f
 GITHUB_TOKEN="$GITHUB_RELEASE_ACCESS_TOKEN" \
   gh release create \
