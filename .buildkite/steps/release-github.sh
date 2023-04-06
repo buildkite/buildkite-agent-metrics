@@ -36,11 +36,11 @@ if ! grep "^## \[$escaped_tag\]" CHANGELOG.md; then
   exit 1
 fi
 
-popd dist
+pushd dist
 set +f
 sha256sum ./* > sha256sums.txt
 set -f
-pushd
+popd
 
 # Find lines between headers of the changelogs (inclusive)
 # Delete the lines included from the headers
