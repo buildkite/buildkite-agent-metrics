@@ -44,13 +44,15 @@ sha256sum ./* > sha256sums.txt
 set -f
 popd
 
-# Find lines between headers of the changelogs (inclusive)
-# Delete the lines included from the headers
-# Trim the newlines
+# The three commands below:
+#   Find lines between headers of the changelogs (inclusive)
+#   Delete the lines included from the headers
+#   Trim empty lines from start
+# The commad substituion will then delete the empty lines from the end
 notes=$(
-  sed -n "/\.\.\.${escaped_tag})$/,/^## \[${escaped_last_tag}\]/p" CHANGELOG.md \
+  sed -n "/\.\.\.${escaped_tag})\$/,/^## \[${escaped_last_tag}\]/p" CHANGELOG.md \
     | sed '1d;$d' \
-    | tr -d '\n' \
+    | sed '/./,$!d' \
 )
 
 echo --- The following notes will accompany the release:
