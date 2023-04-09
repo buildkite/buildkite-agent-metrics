@@ -1,8 +1,11 @@
 steps:
   - block: ":rocket: Release ${BUILDKITE_TAG}?"
+    key: block-release
 
   - label: ":s3: Upload"
     command: ".buildkite/steps/release-s3-version.sh"
+    depends_on:
+      - block-release
     agents:
       queue: "elastic-runners"
     concurrency: 1
@@ -13,10 +16,10 @@ steps:
 
   - label: ":github: Release"
     command: ".buildkite/steps/release-github.sh"
+    depends_on:
+      - block-release
     agents:
       queue: "elastic-runners"
-    concurrency: 1
-    concurrency_group: 'release_buildkite_metrics_github'
     plugins:
       - aws-assume-role-with-web-identity:
           role-arn: arn:aws:iam::445615400570:role/pipeline-buildkite-agent-metrics
