@@ -2,6 +2,8 @@
 
 set -eufo pipefail
 
+source .buildkite/lib/release_dry_run.sh
+
 if [[ "$GITHUB_RELEASE_ACCESS_TOKEN" == "" ]]; then
   echo "Error: Missing \$GITHUB_RELEASE_ACCESS_TOKEN" >&2
   exit 1
@@ -20,7 +22,7 @@ echo --- Checking tags
 version=$(awk -F\" '/const Version/ {print $2}' version/version.go)
 tag="v${version#v}"
 
-if [[ $tag != "$BUILDKITE_TAG" ]]; then
+if [[ "$RELEASE_DRY_RUN" != true && $tag != "$BUILDKITE_TAG" ]]; then
   echo "Error: version.go has not been updated to ${BUILDKITE_TAG#v}"
   exit 1
 fi
@@ -31,32 +33,38 @@ last_tag=$(git describe --tags --abbrev=0 --exclude "$tag")
 escaped_tag="${tag//\./\\.}"
 escaped_last_tag="${last_tag//\./\\.}"
 
-if ! grep "^## \[$escaped_tag\]" CHANGELOG.md; then
+if [[ "$RELEASE_DRY_RUN" != true ]] && ! grep "^## \[$escaped_tag\]" CHANGELOG.md; then
   echo "Error: CHANGELOG.md has not been updated for $tag" >&2
   exit 1
 fi
 
-popd dist
+pushd dist
 set +f
-sha256sum ./* > sha256sums.txt
+sha256sum -- * > sha256sums.txt
 set -f
-pushd
+popd
 
-# Find lines between headers of the changelogs (inclusive)
-# Delete the lines included from the headers
-# Trim the newlines
+# The three commands below:
+#   Find lines between headers of the changelogs (inclusive)
+#   Delete the lines included from the headers
+#   Trim empty lines from start
+# The commad substituion will then delete the empty lines from the end
 notes=$(
-  sed -n "/\.\.\.${escaped_tag})$/,/^## \[${escaped_last_tag}\]/p" CHANGELOG.md \
+  sed -n "/\.\.\.${escaped_tag})\$/,/^## \[${escaped_last_tag}\]/p" CHANGELOG.md \
     | sed '1d;$d' \
-    | tr -d '\n' \
+    | sed '/./,$!d' \
 )
 
+echo --- The following notes will accompany the release:
+echo "$notes"
+
+echo --- :github: Publishing draft release
 set +f
 GITHUB_TOKEN="$GITHUB_RELEASE_ACCESS_TOKEN" \
-  gh release create \
+  release_dry_run gh release create \
     --draft \
-    --notes "$notes" \
-    --verify-tags \
+    --notes "'$notes'" \
+    --verify-tag \
     "v$version" \
     dist/*
 set -f
