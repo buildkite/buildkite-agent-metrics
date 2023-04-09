@@ -40,7 +40,7 @@ fi
 
 pushd dist
 set +f
-sha256sum ./* > sha256sums.txt
+sha256sum -- * > sha256sums.txt
 set -f
 popd
 
