@@ -63,7 +63,7 @@ set +f
 GITHUB_TOKEN="$GITHUB_RELEASE_ACCESS_TOKEN" \
   release_dry_run gh release create \
     --draft \
-    --notes "$notes" \
+    --notes "'$notes'" \
     --verify-tags \
     "v$version" \
     dist/*
