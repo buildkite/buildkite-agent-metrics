@@ -239,7 +239,7 @@ Buildkite > (Org, Queue) > TotalAgentsCount
 
 When a queue is specified, only that queue's metrics are published.
 
-Jobs can be in one of the following states:
+We send metrics for Jobs in the following states:
 * **Scheduled**, the job hasn't been assigned to an agent yet. If you have agent capacity, this value should be close to 0.
 * **Waiting**, the job is known to exist but isn't schedulable yet due to dependencies, `wait` statements, etc. This information is mostly useful to an autoscaler, since it represents work that will start soon.
 * **Running**, an agent is actively executing this job.
