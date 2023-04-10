@@ -46,16 +46,13 @@ set -f
 popd &>/dev/null
 
 echo --- The following notes will accompany the release:
-# The three commands below:
+# The sed commands below:
 #   Find lines between headers of the changelogs (inclusive)
 #   Delete the lines included from the headers
-#   Trim empty lines from start
-# The commad substituion will then delete the empty lines from the end
-notes=$(
-  sed -n "/\.\.\.${escaped_tag})\$/,/^## \[${escaped_last_tag}\]/p" CHANGELOG.md \
-    | sed '1d;$d' \
-    | sed '/./,$!d' \
-)
+# The command substituion will then delete the empty lines from the end
+notes=$(sed -n "/^## \[${escaped_tag}\]/,/^## \[${escaped_last_tag}\]/p" CHANGELOG.md | sed '$d')
+
+echo --- The following notes will accompany the release:
 echo "$notes"
 
 echo --- :github: Publishing draft release
@@ -63,7 +60,7 @@ set +f
 GITHUB_TOKEN="$GITHUB_RELEASE_ACCESS_TOKEN" \
   release_dry_run gh release create \
     --draft \
-    --notes "'$notes'" \
+    --notes "$notes" \
     # TODO: uncomment once github-cli in alpine repo hits v2.27+
     # --verify-tag \
     "v$version" \
