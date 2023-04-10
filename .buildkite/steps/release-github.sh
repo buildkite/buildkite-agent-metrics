@@ -60,7 +60,7 @@ set +f
 GITHUB_TOKEN="$GITHUB_RELEASE_ACCESS_TOKEN" \
   release_dry_run gh release create \
     --draft \
-    --notes "'$notes'" \
+    --notes "$notes" \
     # TODO: uncomment once github-cli in alpine repo hits v2.27+
     # --verify-tag \
     "v$version" \
