@@ -38,12 +38,14 @@ if [[ "${RELEASE_DRY_RUN:-false}" != true ]] && ! grep "^## \[$escaped_tag\]" CH
   exit 1
 fi
 
-pushd dist
+echo --- Creating checksum file
+pushd dist &>/dev/null
 set +f
 sha256sum -- * > sha256sums.txt
 set -f
-popd
+popd &>/dev/null
 
+echo --- The following notes will accompany the release:
 # The three commands below:
 #   Find lines between headers of the changelogs (inclusive)
 #   Delete the lines included from the headers
@@ -54,8 +56,6 @@ notes=$(
     | sed '1d;$d' \
     | sed '/./,$!d' \
 )
-
-echo --- The following notes will accompany the release:
 echo "$notes"
 
 echo --- :github: Publishing draft release
