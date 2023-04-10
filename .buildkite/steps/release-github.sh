@@ -56,13 +56,13 @@ echo --- The following notes will accompany the release:
 echo "$notes"
 
 echo --- :github: Publishing draft release
+# TODO: add the following flag once github-cli in alpine repo hits v2.27+
+# --verify-tag \
 set +f
 GITHUB_TOKEN="$GITHUB_RELEASE_ACCESS_TOKEN" \
   release_dry_run gh release create \
     --draft \
     --notes "$notes" \
-    # TODO: uncomment once github-cli in alpine repo hits v2.27+
-    # --verify-tag \
-    "v$version" \
+    "$tag" \
     dist/*
 set -f
