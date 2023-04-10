@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.5.6](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.5.6) (2023-04-10)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.5.5...v5.5.6)
+
+### Changed
+- Remove comments in the middle of a bash command in the release script [#155](https://github.com/buildkite/buildkite-agent-metrics/pull/155) (@triarius)
+
 ## [v5.5.5](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.5.5) (2023-04-10)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.5.4...v5.5.5)
 
