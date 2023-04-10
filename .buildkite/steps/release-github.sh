@@ -22,7 +22,7 @@ echo --- Checking tags
 version=$(awk -F\" '/const Version/ {print $2}' version/version.go)
 tag="v${version#v}"
 
-if [[ "$RELEASE_DRY_RUN" != true && $tag != "$BUILDKITE_TAG" ]]; then
+if [[ "${RELEASE_DRY_RUN:-false}" != true && $tag != "$BUILDKITE_TAG" ]]; then
   echo "Error: version.go has not been updated to ${BUILDKITE_TAG#v}"
   exit 1
 fi
@@ -33,7 +33,7 @@ last_tag=$(git describe --tags --abbrev=0 --exclude "$tag")
 escaped_tag="${tag//\./\\.}"
 escaped_last_tag="${last_tag//\./\\.}"
 
-if [[ "$RELEASE_DRY_RUN" != true ]] && ! grep "^## \[$escaped_tag\]" CHANGELOG.md; then
+if [[ "${RELEASE_DRY_RUN:-false}" != true ]] && ! grep "^## \[$escaped_tag\]" CHANGELOG.md; then
   echo "Error: CHANGELOG.md has not been updated for $tag" >&2
   exit 1
 fi
