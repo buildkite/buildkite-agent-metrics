@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.6.0](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.6.0) (2023-04-11)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.5.6...v5.6.0)
+
+### Changed
+- Bump github.com/aws/aws-sdk-go from 1.44.234 to 1.44.239 [#157](https://github.com/buildkite/buildkite-agent-metrics/pull/157) (@dependabot[bot])
+
+### Fixed
+- Handle API errors when querying queue [#139](https://github.com/buildkite/buildkite-agent-metrics/pull/139) (@dyson)
+
 ## [v5.5.6](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.5.6) (2023-04-10)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.5.5...v5.5.6)
 
