@@ -53,7 +53,7 @@ steps:
     concurrency_group: "release_buildkite_metrics_s3"
     plugins:
       - aws-assume-role-with-web-identity:
-          role-arn: arn:aws:iam::032379705303:role/pipeline-buildkite-agent-metrics
+          role-arn: arn:aws:iam::032379705303:role/pipeline-buildkite-buildkite-agent-metrics
 
   - name: ":pipeline:"
     key: upload-release-steps

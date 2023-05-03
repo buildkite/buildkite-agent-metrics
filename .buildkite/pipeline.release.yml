@@ -12,7 +12,7 @@ steps:
     concurrency_group: 'release_buildkite_metrics_github'
     plugins:
       - aws-assume-role-with-web-identity:
-          role-arn: arn:aws:iam::032379705303:role/pipeline-buildkite-agent-metrics
+          role-arn: arn:aws:iam::032379705303:role/pipeline-buildkite-buildkite-agent-metrics
 
   - label: ":github: Release"
     command: ".buildkite/steps/release-github.sh"
@@ -22,7 +22,7 @@ steps:
       queue: "elastic-runners"
     plugins:
       - aws-assume-role-with-web-identity:
-          role-arn: arn:aws:iam::445615400570:role/pipeline-buildkite-agent-metrics
+          role-arn: arn:aws:iam::445615400570:role/pipeline-buildkite-buildkite-agent-metrics
       - aws-ssm#v1.0.0:
           parameters:
             GITHUB_RELEASE_ACCESS_TOKEN: /pipelines/buildkite/buildkite-agent-metrics/GITHUB_RELEASE_ACCESS_TOKEN
