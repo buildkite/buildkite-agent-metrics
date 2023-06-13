@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-lambda-go v1.41.0
 	github.com/aws/aws-sdk-go v1.44.280
 	github.com/golang/mock v1.6.0
-	github.com/newrelic/go-agent v3.21.1+incompatible
+	github.com/newrelic/go-agent v3.22.1+incompatible
 	github.com/prometheus/client_golang v1.15.1
 	github.com/prometheus/client_model v0.4.0
 	google.golang.org/genproto v0.0.0-20230530153820-e85fd2cbaebc
