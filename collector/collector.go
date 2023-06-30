@@ -34,6 +34,7 @@ type Collector struct {
 	Quiet     bool
 	Debug     bool
 	DebugHttp bool
+	Timeout   int
 }
 
 type Result struct {
@@ -89,7 +90,7 @@ func (c *Collector) Collect() (*Result, error) {
 	}
 
 	httpClient := &http.Client{
-		Timeout: 15 * time.Second,
+		Timeout: time.Duration(c.Timeout) * time.Second,
 	}
 
 	if len(c.Queues) == 0 {
