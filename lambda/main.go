@@ -7,6 +7,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -56,6 +57,7 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 	clwDimensions := os.Getenv("BUILDKITE_CLOUDWATCH_DIMENSIONS")
 	quietString := os.Getenv("BUILDKITE_QUIET")
 	quiet := quietString == "1" || quietString == "true"
+	timeout := os.Getenv("BUILDKITE_AGENT_METRICS_TIMEOUT")
 
 	if quiet {
 		log.SetOutput(ioutil.Discard)
@@ -84,6 +86,16 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 		queues = strings.Split(queue, ",")
 	}
 
+	if timeout == "" {
+		timeout = "15"
+	}
+
+	configuredTimeout, err := strconv.Atoi(timeout)
+
+	if err != nil {
+		return "", err
+	}
+
 	userAgent := fmt.Sprintf("buildkite-agent-metrics/%s buildkite-agent-metrics-lambda", version.Version)
 
 	c := collector.Collector{
@@ -94,6 +106,7 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 		Quiet:     quiet,
 		Debug:     false,
 		DebugHttp: false,
+		Timeout:   configuredTimeout,
 	}
 
 	switch strings.ToLower(backendOpt) {
