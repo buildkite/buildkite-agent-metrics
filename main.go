@@ -26,6 +26,7 @@ func main() {
 		debugHttp   = flag.Bool("debug-http", false, "Show full http traces")
 		dryRun      = flag.Bool("dry-run", false, "Whether to only print metrics")
 		endpoint    = flag.String("endpoint", "https://agent.buildkite.com/v3", "A custom Buildkite Agent API endpoint")
+		timeout     = flag.Int("timeout", 15, "Timeout, in seconds, for HTTP requests to Buildkite API")
 
 		// backend config
 		backendOpt     = flag.String("backend", "cloudwatch", "Specify the backend to use: cloudwatch, statsd, prometheus, stackdriver")
@@ -117,6 +118,7 @@ func main() {
 		Quiet:     *quiet,
 		Debug:     *debug,
 		DebugHttp: *debugHttp,
+		Timeout:   *timeout,
 	}
 
 	f := func() (time.Duration, error) {
