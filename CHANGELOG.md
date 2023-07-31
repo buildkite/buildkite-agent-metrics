@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.7.0](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.7.0) (2023-07-24)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.6.0...v5.7.0)
+
+### Changed
+- Make the timeout configurable [#184](https://github.com/buildkite/buildkite-agent-metrics/pull/184) (@mcncl)
+- Update the role ARN used during releases [#162](https://github.com/buildkite/buildkite-agent-metrics/pull/162) (@yob)
+- Many dependency version bumps (@dependabot[bot])
+
 ## [v5.6.0](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.6.0) (2023-04-11)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.5.6...v5.6.0)
 
