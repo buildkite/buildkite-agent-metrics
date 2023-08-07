@@ -6,7 +6,7 @@ require (
 	cloud.google.com/go/monitoring v1.15.1
 	github.com/DataDog/datadog-go v4.8.3+incompatible
 	github.com/aws/aws-lambda-go v1.41.0
-	github.com/aws/aws-sdk-go v1.44.312
+	github.com/aws/aws-sdk-go v1.44.318
 	github.com/golang/mock v1.6.0
 	github.com/newrelic/go-agent v3.24.0+incompatible
 	github.com/prometheus/client_golang v1.16.0
