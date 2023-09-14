@@ -8,7 +8,6 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -25,6 +24,10 @@ const (
 	BusyAgentPercentage = "BusyAgentPercentage"
 
 	PollDurationHeader = `Buildkite-Agent-Metrics-Poll-Duration`
+)
+
+var (
+	ErrUnauthorized = errors.New("unauthorized")
 )
 
 type Collector struct {
@@ -123,7 +126,7 @@ func (c *Collector) Collect() (*Result, error) {
 			// Authorization error signals token is invalid
 			if res.StatusCode == 401 {
 				log.Printf("DEBUG HTTP 401 returned from uri=%s\n", req.URL)
-				os.Exit(1)
+				return nil, fmt.Errorf("http 401 response received %w", ErrUnauthorized)
 			}
 			return nil, err
 		}
