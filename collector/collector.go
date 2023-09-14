@@ -122,7 +122,7 @@ func (c *Collector) Collect() (*Result, error) {
 		if err != nil {
 			// Authorization error signals token is invalid
 			if res.StatusCode == 401 {
-				log.Printf("DEBUG HTTP 401 returned from uri=%s", req.URL)
+				log.Printf("DEBUG HTTP 401 returned from uri=%s\n", req.URL)
 				os.Exit(1)
 			}
 			return nil, err
