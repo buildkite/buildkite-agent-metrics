@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -119,6 +120,11 @@ func (c *Collector) Collect() (*Result, error) {
 
 		res, err := httpClient.Do(req)
 		if err != nil {
+			// Authorization error signals token is invalid
+			if res.StatusCode == 401 {
+				log.Printf("DEBUG HTTP 401 returned from uri=%s", req.URL)
+				os.Exit(1)
+			}
 			return nil, err
 		}
 		defer res.Body.Close()
