@@ -124,11 +124,13 @@ func (c *Collector) Collect() (*Result, error) {
 		res, err := httpClient.Do(req)
 		if err != nil {
 			// Authorization error signals token is invalid
+			return nil, err
+		} else {
+			// non-2xx status code don't cause errors so we conditionally off to check
+			// for them
 			if res.StatusCode == 401 {
-				log.Printf("DEBUG HTTP 401 returned from uri=%s\n", req.URL)
 				return nil, fmt.Errorf("http 401 response received %w", ErrUnauthorized)
 			}
-			return nil, err
 		}
 		defer res.Body.Close()
 
