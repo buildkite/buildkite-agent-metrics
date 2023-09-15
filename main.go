@@ -127,7 +127,7 @@ func main() {
 
 		result, err := c.Collect()
 		if err != nil {
-			fmt.Printf("Error collecting agent metrics, err: %w\n", err)
+			fmt.Printf("Error collecting agent metrics, err: %s\n", err)
 			if errors.Is(err, collector.ErrUnauthorized) {
 				// Unique exit code to signal HTTP 401
 				os.Exit(4)
