@@ -26,6 +26,10 @@ const (
 	PollDurationHeader = `Buildkite-Agent-Metrics-Poll-Duration`
 )
 
+var (
+	ErrUnauthorized = errors.New("unauthorized")
+)
+
 type Collector struct {
 	Endpoint  string
 	Token     string
@@ -119,9 +123,14 @@ func (c *Collector) Collect() (*Result, error) {
 
 		res, err := httpClient.Do(req)
 		if err != nil {
+			// Authorization error signals token is invalid
 			return nil, err
 		}
 		defer res.Body.Close()
+
+		if res.StatusCode == 401 {
+			return nil, fmt.Errorf("http 401 response received %w", ErrUnauthorized)
+		}
 
 		if c.DebugHttp {
 			if dump, err := httputil.DumpResponse(res, true); err == nil {

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -126,6 +127,11 @@ func main() {
 
 		result, err := c.Collect()
 		if err != nil {
+			fmt.Printf("Error collecting agent metrics, err: %s\n", err)
+			if errors.Is(err, collector.ErrUnauthorized) {
+				// Unique exit code to signal HTTP 401
+				os.Exit(4)
+			}
 			return time.Duration(0), err
 		}
 
