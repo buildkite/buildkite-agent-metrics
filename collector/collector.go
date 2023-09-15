@@ -126,7 +126,7 @@ func (c *Collector) Collect() (*Result, error) {
 			// Authorization error signals token is invalid
 			return nil, err
 		} else {
-			// non-2xx status code don't cause errors so we conditionally off to check
+			// non-2xx status code don't cause errors so we branch off to check
 			// for them
 			if res.StatusCode == 401 {
 				return nil, fmt.Errorf("http 401 response received %w", ErrUnauthorized)
