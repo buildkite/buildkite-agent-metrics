@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.8.0](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.8.0) (2023-09-15)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.7.0...v5.8.0)
+
+### Changed
+- Exit with code 4 on 401 response from the API [#203](https://github.com/buildkite/buildkite-agent-metrics/pull/203) (@NotArpit)
+- Bump github.com/aws/aws-sdk-go to 1.45.6 [#191](https://github.com/buildkite/buildkite-agent-metrics/pull/191) [#194](https://github.com/buildkite/buildkite-agent-metrics/pull/194) [#195](https://github.com/buildkite/buildkite-agent-metrics/pull/195) [#197](https://github.com/buildkite/buildkite-agent-metrics/pull/197) [#198](https://github.com/buildkite/buildkite-agent-metrics/pull/198) [#199](https://github.com/buildkite/buildkite-agent-metrics/pull/199) [#201](https://github.com/buildkite/buildkite-agent-metrics/pull/201) (@dependabot[bot])
+- Bump github.com/newrelic/go-agent to 3.24.1+incompatible [#193](https://github.com/buildkite/buildkite-agent-metrics/pull/193) [#196](https://github.com/buildkite/buildkite-agent-metrics/pull/196) (@dependabot[bot])
+
 ## [v5.7.0](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.7.0) (2023-07-24)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.6.0...v5.7.0)
 
