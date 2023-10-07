@@ -240,6 +240,10 @@ func (c *Collector) Collect() (*Result, error) {
 			}
 			defer res.Body.Close()
 
+			if res.StatusCode == 401 {
+				return nil, fmt.Errorf("http 401 response received %w", ErrUnauthorized)
+			}
+
 			if c.DebugHttp {
 				if dump, err := httputil.DumpResponse(res, true); err == nil {
 					log.Printf("DEBUG response uri=%s\n%s\n", req.URL, dump)
