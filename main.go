@@ -4,7 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -106,7 +106,7 @@ func main() {
 	}
 
 	if *quiet {
-		log.SetOutput(ioutil.Discard)
+		log.SetOutput(io.Discard)
 	}
 
 	userAgent := fmt.Sprintf("buildkite-agent-metrics/%s buildkite-agent-metrics-cli", version.Version)
@@ -117,10 +117,10 @@ func main() {
 	// Queues passed as flags take precedence. But if no queues are passed in we
 	// check env vars. If no env vars are defined we default to ingesting metrics
 	// for all queues.
-	// NOTE: `BUILDKITE_QUEUES` is a comma separated string of queues
+	// NOTE: `BUILDKITE_QUEUE` is a comma separated string of queues
 	// i.e. "default,deploy,test"
 	if len(queues) == 0 {
-		if q, exists := os.LookupEnv(`BUILDKITE_QUEUES`); exists {
+		if q, exists := os.LookupEnv(`BUILDKITE_QUEUE`); exists {
 			queues = strings.Split(q, ",")
 		}
 	}
