@@ -115,7 +115,7 @@ func main() {
 	}
 
 	// Queues passed as flags take precedence. But if no queues are passed in we
-	// check env vars. If no env vars are defined we default of ingesting metrics
+	// check env vars. If no env vars are defined we default to ingesting metrics
 	// for all queues.
 	// NOTE: `BUILDKITE_QUEUES` is a comma separated string of queues
 	// i.e. "default,deploy,test"
