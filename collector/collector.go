@@ -123,7 +123,6 @@ func (c *Collector) Collect() (*Result, error) {
 
 		res, err := httpClient.Do(req)
 		if err != nil {
-			// Authorization error signals token is invalid
 			return nil, err
 		}
 		defer res.Body.Close()
