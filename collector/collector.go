@@ -123,7 +123,6 @@ func (c *Collector) Collect() (*Result, error) {
 
 		res, err := httpClient.Do(req)
 		if err != nil {
-			// Authorization error signals token is invalid
 			return nil, err
 		}
 		defer res.Body.Close()
@@ -239,6 +238,10 @@ func (c *Collector) Collect() (*Result, error) {
 				return nil, err
 			}
 			defer res.Body.Close()
+
+			if res.StatusCode == 401 {
+				return nil, fmt.Errorf("http 401 response received %w", ErrUnauthorized)
+			}
 
 			if c.DebugHttp {
 				if dump, err := httputil.DumpResponse(res, true); err == nil {
