@@ -4,7 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"strings"
@@ -86,6 +86,9 @@ func main() {
 	case "prometheus":
 		bk = backend.NewPrometheusBackend(*prometheusPath, *prometheusAddr)
 	case "stackdriver":
+		if *gcpProjectID == "" {
+			*gcpProjectID = os.Getenv(`GCP_PROJECT_ID`)
+		}
 		bk, err = backend.NewStackDriverBackend(*gcpProjectID)
 		if err != nil {
 			fmt.Printf("Error starting Stackdriver backend, err: %v\n", err)
@@ -103,12 +106,23 @@ func main() {
 	}
 
 	if *quiet {
-		log.SetOutput(ioutil.Discard)
+		log.SetOutput(io.Discard)
 	}
 
 	userAgent := fmt.Sprintf("buildkite-agent-metrics/%s buildkite-agent-metrics-cli", version.Version)
 	if *interval > 0 {
 		userAgent += fmt.Sprintf(" interval=%s", *interval)
+	}
+
+	// Queues passed as flags take precedence. But if no queues are passed in we
+	// check env vars. If no env vars are defined we default to ingesting metrics
+	// for all queues.
+	// NOTE: `BUILDKITE_QUEUE` is a comma separated string of queues
+	// i.e. "default,deploy,test"
+	if len(queues) == 0 {
+		if q, exists := os.LookupEnv(`BUILDKITE_QUEUE`); exists {
+			queues = strings.Split(q, ",")
+		}
 	}
 
 	c := collector.Collector{
