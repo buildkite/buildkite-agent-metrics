@@ -5,8 +5,8 @@ cloud.google.com/go/compute v1.19.3 h1:DcTwsFgGev/wV5+q8o2fzgcHOaac+DKGC91ZlvpsQ
 cloud.google.com/go/compute v1.19.3/go.mod h1:qxvISKp/gYnXkSAD1ppcSOveRAmzxicEv/JlizULFrI=
 cloud.google.com/go/compute/metadata v0.2.3 h1:mg4jlk7mCAj6xXp9UJ4fjI9VUI5rubuGBW5aJ7UnBMY=
 cloud.google.com/go/compute/metadata v0.2.3/go.mod h1:VAV5nSsACxMJvgaAuX6Pk2AawlZn8kiOGuCv6gTkwuA=
-cloud.google.com/go/monitoring v1.16.0 h1:rlndy4K8yknMY9JuGe2aK4SbCh21FXoCdX7SAGHmRgI=
-cloud.google.com/go/monitoring v1.16.0/go.mod h1:Ptp15HgAyM1fNICAojDMoNc/wUmn67mLHQfyqbw+poY=
+cloud.google.com/go/monitoring v1.16.1 h1:CTklIuUkS5nCricGojPwdkSgPsCTX2HmYTxFDg+UvpU=
+cloud.google.com/go/monitoring v1.16.1/go.mod h1:6HsxddR+3y9j+o/cMJH6q/KJ/CBTvM/38L/1m7bTRJ4=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/DataDog/datadog-go v4.8.3+incompatible h1:fNGaYSuObuQb5nzeTQqowRAd9bpDIRRV4/gUtIBjh8Q=
 github.com/DataDog/datadog-go v4.8.3+incompatible/go.mod h1:LButxg5PwREeZtORoXG3tL4fMGNddJ+vMq1mwgfaqoQ=
