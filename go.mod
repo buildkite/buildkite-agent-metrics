@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go v1.45.25
 	github.com/golang/mock v1.6.0
 	github.com/newrelic/go-agent v3.24.1+incompatible
-	github.com/prometheus/client_golang v1.16.0
+	github.com/prometheus/client_golang v1.17.0
 	github.com/prometheus/client_model v0.5.0
 	google.golang.org/genproto v0.0.0-20230530153820-e85fd2cbaebc
 	google.golang.org/genproto/googleapis/api v0.0.0-20230530153820-e85fd2cbaebc
@@ -30,8 +30,8 @@ require (
 	github.com/googleapis/gax-go/v2 v2.12.0 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
-	github.com/prometheus/common v0.42.0 // indirect
-	github.com/prometheus/procfs v0.10.1 // indirect
+	github.com/prometheus/common v0.44.0 // indirect
+	github.com/prometheus/procfs v0.11.1 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	golang.org/x/crypto v0.14.0 // indirect
 	golang.org/x/mod v0.9.0 // indirect
