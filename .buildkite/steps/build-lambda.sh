@@ -1,11 +1,12 @@
-#!/bin/bash
+#!/usr/bin/env sh
+
 set -eu
 
 docker run --rm --volume "$PWD:/code" \
   --workdir /code \
   --rm \
   --env CGO_ENABLED=0 \
-  golang:1.20 \
+  golang:1.21 \
     go build -tags lambda.norpc -o lambda/bootstrap ./lambda
 
 chmod +x lambda/bootstrap
