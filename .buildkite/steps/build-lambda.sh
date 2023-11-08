@@ -2,7 +2,7 @@
 set -eu
 
 docker run --rm --volume "$PWD:/code" \
-  --workdir "/code" \
+  --workdir /code \
   --rm \
   --env CGO_ENABLED=0 \
   golang:1.20 \
