@@ -29,6 +29,8 @@ steps:
 
   - name: ":lambda: Build Lambda"
     key: build-lambda
+    depends_on:
+      - test
     command: .buildkite/steps/build-lambda.sh
 
   - name: ":s3: Upload to S3"
