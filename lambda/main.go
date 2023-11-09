@@ -46,10 +46,8 @@ func main() {
 }
 
 func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
-	var b backend.Backend
-	var provider token.Provider
-	var bkToken string
-	var err error
+	// Where we send metrics
+	var metricsBackend backend.Backend
 
 	awsRegion := os.Getenv("AWS_REGION")
 	backendOpt := os.Getenv("BUILDKITE_BACKEND")
@@ -71,12 +69,12 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 		return "", nil
 	}
 
-	provider, err = initTokenProvider(awsRegion)
+	provider, err := initTokenProvider(awsRegion)
 	if err != nil {
 		return "", err
 	}
 
-	bkToken, err = provider.Get()
+	bkToken, err := provider.Get()
 	if err != nil {
 		return "", err
 	}
@@ -113,14 +111,14 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 	case "statsd":
 		statsdHost := os.Getenv("STATSD_HOST")
 		statsdTags := strings.EqualFold(os.Getenv("STATSD_TAGS"), "true")
-		b, err = backend.NewStatsDBackend(statsdHost, statsdTags)
+		metricsBackend, err = backend.NewStatsDBackend(statsdHost, statsdTags)
 		if err != nil {
 			return "", err
 		}
 	case "newrelic":
 		nrAppName := os.Getenv("NEWRELIC_APP_NAME")
 		nrLicenseKey := os.Getenv("NEWRELIC_LICENSE_KEY")
-		b, err = backend.NewNewRelicBackend(nrAppName, nrLicenseKey)
+		metricsBackend, err = backend.NewNewRelicBackend(nrAppName, nrLicenseKey)
 		if err != nil {
 			fmt.Printf("Error starting New Relic client: %v\n", err)
 			os.Exit(1)
@@ -130,7 +128,7 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		b = backend.NewCloudWatchBackend(awsRegion, dimensions)
+		metricsBackend = backend.NewCloudWatchBackend(awsRegion, dimensions)
 	}
 
 	res, err := c.Collect()
@@ -140,12 +138,11 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 
 	res.Dump()
 
-	err = b.Collect(res)
-	if err != nil {
+	if err := metricsBackend.Collect(res); err != nil {
 		return "", err
 	}
 
-	original, ok := b.(backend.Closer)
+	original, ok := metricsBackend.(backend.Closer)
 	if ok {
 		err := original.Close()
 		if err != nil {

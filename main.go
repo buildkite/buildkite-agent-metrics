@@ -15,7 +15,8 @@ import (
 	"github.com/buildkite/buildkite-agent-metrics/version"
 )
 
-var bk backend.Backend
+// Where we send metrics
+var metricsBackend backend.Backend
 
 func main() {
 	var (
@@ -76,26 +77,26 @@ func main() {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		bk = backend.NewCloudWatchBackend(region, dimensions)
+		metricsBackend = backend.NewCloudWatchBackend(region, dimensions)
 	case "statsd":
-		bk, err = backend.NewStatsDBackend(*statsdHost, *statsdTags)
+		metricsBackend, err = backend.NewStatsDBackend(*statsdHost, *statsdTags)
 		if err != nil {
 			fmt.Printf("Error starting StatsD, err: %v\n", err)
 			os.Exit(1)
 		}
 	case "prometheus":
-		bk = backend.NewPrometheusBackend(*prometheusPath, *prometheusAddr)
+		metricsBackend = backend.NewPrometheusBackend(*prometheusPath, *prometheusAddr)
 	case "stackdriver":
 		if *gcpProjectID == "" {
 			*gcpProjectID = os.Getenv(`GCP_PROJECT_ID`)
 		}
-		bk, err = backend.NewStackDriverBackend(*gcpProjectID)
+		metricsBackend, err = backend.NewStackDriverBackend(*gcpProjectID)
 		if err != nil {
 			fmt.Printf("Error starting Stackdriver backend, err: %v\n", err)
 			os.Exit(1)
 		}
 	case "newrelic":
-		bk, err = backend.NewNewRelicBackend(*nrAppName, *nrLicenseKey)
+		metricsBackend, err = backend.NewNewRelicBackend(*nrAppName, *nrLicenseKey)
 		if err != nil {
 			fmt.Printf("Error starting New Relic client: %v\n", err)
 			os.Exit(1)
@@ -150,8 +151,7 @@ func main() {
 		}
 
 		if !*dryRun {
-			err = bk.Collect(result)
-			if err != nil {
+			if err := metricsBackend.Collect(result); err != nil {
 				return time.Duration(0), err
 			}
 		}
