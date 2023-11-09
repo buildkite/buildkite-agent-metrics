@@ -20,7 +20,6 @@ var metricsBackend backend.Backend
 
 func main() {
 	var (
-		token       = flag.String("token", "", "A Buildkite Agent Registration Token")
 		interval    = flag.Duration("interval", 0, "Update metrics every interval, rather than once")
 		showVersion = flag.Bool("version", false, "Show the version")
 		quiet       = flag.Bool("quiet", false, "Only print errors")
@@ -43,8 +42,9 @@ func main() {
 		nrLicenseKey   = flag.String("newrelic-license-key", "", "New Relic license key for publishing events")
 	)
 
-	// custom config for multiple queues
-	var queues stringSliceFlag
+	// custom config for multiple tokens and queues
+	var tokens, queues stringSliceFlag
+	flag.Var(&tokens, "token", "Buildkite Agent registration tokens. At least one is required. Multiple cluster tokens can be used to gather metrics for multiple clusters.")
 	flag.Var(&queues, "queue", "Specific queues to process")
 
 	flag.Parse()
@@ -54,13 +54,20 @@ func main() {
 		os.Exit(0)
 	}
 
-	if *token == "" {
-		if bkToken := os.Getenv("BUILDKITE_AGENT_TOKEN"); bkToken != "" {
-			*token = bkToken
-		} else {
-			fmt.Println("Must provide a token")
-			os.Exit(1)
+	if len(tokens) == 0 {
+		envTokens := strings.Split(os.Getenv("BUILDKITE_AGENT_TOKEN"), ",")
+		for _, t := range envTokens {
+			t = strings.TrimSpace(t)
+			if t == "" {
+				continue
+			}
+			tokens = append(tokens, t)
 		}
+	}
+
+	if len(tokens) == 0 {
+		fmt.Println("Must provide at least one token with either --token or BUILDKITE_AGENT_TOKEN")
+		os.Exit(1)
 	}
 
 	var err error
@@ -126,41 +133,54 @@ func main() {
 		}
 	}
 
-	c := collector.Collector{
-		UserAgent: userAgent,
-		Endpoint:  *endpoint,
-		Token:     *token,
-		Queues:    []string(queues),
-		Quiet:     *quiet,
-		Debug:     *debug,
-		DebugHttp: *debugHttp,
-		Timeout:   *timeout,
+	collectors := make([]*collector.Collector, 0, len(tokens))
+	for _, token := range tokens {
+		collectors = append(collectors, &collector.Collector{
+			UserAgent: userAgent,
+			Endpoint:  *endpoint,
+			Token:     token,
+			Queues:    []string(queues),
+			Quiet:     *quiet,
+			Debug:     *debug,
+			DebugHttp: *debugHttp,
+			Timeout:   *timeout,
+		})
 	}
 
-	f := func() (time.Duration, error) {
-		t := time.Now()
+	collectFunc := func() (time.Duration, error) {
+		start := time.Now()
 
-		result, err := c.Collect()
-		if err != nil {
-			fmt.Printf("Error collecting agent metrics, err: %s\n", err)
-			if errors.Is(err, collector.ErrUnauthorized) {
-				// Unique exit code to signal HTTP 401
-				os.Exit(4)
+		// minimum result.PollDuration across collectors
+		var pollDuration time.Duration
+
+		for _, c := range collectors {
+			result, err := c.Collect()
+			if err != nil {
+				fmt.Printf("Error collecting agent metrics, err: %s\n", err)
+				if errors.Is(err, collector.ErrUnauthorized) {
+					// Unique exit code to signal HTTP 401
+					os.Exit(4)
+				}
+				return time.Duration(0), err
 			}
-			return time.Duration(0), err
-		}
 
-		if !*dryRun {
+			if *dryRun {
+				continue
+			}
+
 			if err := metricsBackend.Collect(result); err != nil {
 				return time.Duration(0), err
 			}
+			if result.PollDuration > pollDuration {
+				pollDuration = result.PollDuration
+			}
 		}
 
-		log.Printf("Finished in %s", time.Now().Sub(t))
-		return result.PollDuration, nil
+		log.Printf("Finished in %s", time.Since(start))
+		return pollDuration, nil
 	}
 
-	minPollDuration, err := f()
+	minPollDuration, err := collectFunc()
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -178,7 +198,7 @@ func main() {
 			log.Printf("Waiting for %v (minimum of %v)", waitTime, minPollDuration)
 			time.Sleep(waitTime)
 
-			minPollDuration, err = f()
+			minPollDuration, err = collectFunc()
 			if err != nil {
 				fmt.Println(err)
 			}
