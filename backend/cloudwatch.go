@@ -65,7 +65,14 @@ func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 
 	// Set the baseline org dimension
 	dimensions := []*cloudwatch.Dimension{
-		&cloudwatch.Dimension{Name: aws.String("Org"), Value: aws.String(r.Org)},
+		{
+			Name:  aws.String("Org"),
+			Value: aws.String(r.Org),
+		},
+		{
+			Name:  aws.String("Cluster"),
+			Value: aws.String(r.Cluster),
+		},
 	}
 
 	// Add custom dimension if provided
