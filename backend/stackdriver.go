@@ -11,9 +11,9 @@ import (
 	"google.golang.org/genproto/googleapis/api/label"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	monitoring "cloud.google.com/go/monitoring/apiv3"
+	monitoring "cloud.google.com/go/monitoring/apiv3/v2"
+	"cloud.google.com/go/monitoring/apiv3/v2/monitoringpb"
 	"google.golang.org/genproto/googleapis/api/metric"
-	monitoringpb "google.golang.org/genproto/googleapis/monitoring/v3"
 )
 
 const (
