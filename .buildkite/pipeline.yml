@@ -1,7 +1,7 @@
 steps:
   - name: ":test_tube: Test"
     key: test
-    command: go test -v -race .
+    command: go test -v -race ./...
     plugins:
       - docker#v5.9.0:
           image: golang:1.21
