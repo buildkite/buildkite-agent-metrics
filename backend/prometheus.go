@@ -23,21 +23,19 @@ type Prometheus struct {
 	pipelines map[string]*prometheus.GaugeVec
 }
 
-func NewPrometheusBackend(path, addr string) *Prometheus {
-	go func() {
-		http.Handle(path, promhttp.Handler())
-		log.Fatal(http.ListenAndServe(addr, nil))
-	}()
-
-	return newPrometheus()
-}
-
-func newPrometheus() *Prometheus {
+func NewPrometheusBackend() *Prometheus {
 	return &Prometheus{
 		totals:    make(map[string]prometheus.Gauge),
 		queues:    make(map[string]*prometheus.GaugeVec),
 		pipelines: make(map[string]*prometheus.GaugeVec),
 	}
+}
+
+// Serve runs a Prometheus metrics HTTP server.
+func (p *Prometheus) Serve(path, addr string) {
+	m := http.NewServeMux()
+	m.Handle(path, promhttp.Handler())
+	log.Fatal(http.ListenAndServe(addr, m))
 }
 
 func (p *Prometheus) Collect(r *collector.Result) error {

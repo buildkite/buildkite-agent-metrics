@@ -92,7 +92,9 @@ func main() {
 			os.Exit(1)
 		}
 	case "prometheus":
-		metricsBackend = backend.NewPrometheusBackend(*prometheusPath, *prometheusAddr)
+		prom := backend.NewPrometheusBackend()
+		go prom.Serve(*prometheusPath, *prometheusAddr)
+		metricsBackend = prom
 	case "stackdriver":
 		if *gcpProjectID == "" {
 			*gcpProjectID = os.Getenv(`GCP_PROJECT_ID`)
