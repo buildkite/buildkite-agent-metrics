@@ -119,6 +119,7 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 		if err != nil {
 			return "", err
 		}
+
 	case "newrelic":
 		nrAppName := os.Getenv("NEWRELIC_APP_NAME")
 		nrLicenseKey := os.Getenv("NEWRELIC_LICENSE_KEY")
@@ -127,6 +128,7 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 			fmt.Printf("Error starting New Relic client: %v\n", err)
 			os.Exit(1)
 		}
+
 	default:
 		dimensions, err := backend.ParseCloudWatchDimensions(clwDimensions)
 		if err != nil {

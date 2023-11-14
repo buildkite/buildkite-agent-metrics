@@ -30,7 +30,7 @@ func main() {
 		timeout     = flag.Int("timeout", 15, "Timeout, in seconds, for HTTP requests to Buildkite API")
 
 		// backend config
-		backendOpt     = flag.String("backend", "cloudwatch", "Specify the backend to use: cloudwatch, statsd, prometheus, stackdriver")
+		backendOpt     = flag.String("backend", "cloudwatch", "Specify the backend to use: cloudwatch, newrelic, prometheus, stackdriver, statsd")
 		statsdHost     = flag.String("statsd-host", "127.0.0.1:8125", "Specify the StatsD server")
 		statsdTags     = flag.Bool("statsd-tags", false, "Whether your StatsD server supports tagging like Datadog")
 		prometheusAddr = flag.String("prometheus-addr", ":8080", "Prometheus metrics transport bind address")
@@ -85,16 +85,19 @@ func main() {
 			os.Exit(1)
 		}
 		metricsBackend = backend.NewCloudWatchBackend(region, dimensions)
+
 	case "statsd":
 		metricsBackend, err = backend.NewStatsDBackend(*statsdHost, *statsdTags)
 		if err != nil {
 			fmt.Printf("Error starting StatsD, err: %v\n", err)
 			os.Exit(1)
 		}
+
 	case "prometheus":
 		prom := backend.NewPrometheusBackend()
 		go prom.Serve(*prometheusPath, *prometheusAddr)
 		metricsBackend = prom
+
 	case "stackdriver":
 		if *gcpProjectID == "" {
 			*gcpProjectID = os.Getenv(`GCP_PROJECT_ID`)
@@ -104,14 +107,16 @@ func main() {
 			fmt.Printf("Error starting Stackdriver backend, err: %v\n", err)
 			os.Exit(1)
 		}
+
 	case "newrelic":
 		metricsBackend, err = backend.NewNewRelicBackend(*nrAppName, *nrLicenseKey)
 		if err != nil {
 			fmt.Printf("Error starting New Relic client: %v\n", err)
 			os.Exit(1)
 		}
+
 	default:
-		fmt.Println("Must provide a supported backend: cloudwatch, statsd, prometheus, stackdriver, newrelic")
+		fmt.Println("Must provide a supported backend: cloudwatch, newrelic, prometheus, stackdriver, statsd")
 		os.Exit(1)
 	}
 
