@@ -18,14 +18,14 @@ var (
 )
 
 type Prometheus struct {
-	totals    map[string]prometheus.Gauge
+	totals    map[string]*prometheus.GaugeVec
 	queues    map[string]*prometheus.GaugeVec
 	pipelines map[string]*prometheus.GaugeVec
 }
 
 func NewPrometheusBackend() *Prometheus {
 	return &Prometheus{
-		totals:    make(map[string]prometheus.Gauge),
+		totals:    make(map[string]*prometheus.GaugeVec),
 		queues:    make(map[string]*prometheus.GaugeVec),
 		pipelines: make(map[string]*prometheus.GaugeVec),
 	}
@@ -48,14 +48,14 @@ func (p *Prometheus) Collect(r *collector.Result) error {
 	for name, value := range r.Totals {
 		gauge, ok := p.totals[name]
 		if !ok {
-			gauge = prometheus.NewGauge(prometheus.GaugeOpts{
+			gauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 				Name: fmt.Sprintf("buildkite_total_%s", camelToUnderscore(name)),
 				Help: fmt.Sprintf("Buildkite Total: %s", name),
-			})
+			}, []string{"cluster"})
 			prometheus.MustRegister(gauge)
 			p.totals[name] = gauge
 		}
-		gauge.Set(float64(value))
+		gauge.WithLabelValues(r.Cluster).Set(float64(value))
 	}
 
 	for queue, counts := range r.Queues {
@@ -65,11 +65,11 @@ func (p *Prometheus) Collect(r *collector.Result) error {
 				gauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 					Name: fmt.Sprintf("buildkite_queues_%s", camelToUnderscore(name)),
 					Help: fmt.Sprintf("Buildkite Queues: %s", name),
-				}, []string{"queue"})
+				}, []string{"cluster", "queue"})
 				prometheus.MustRegister(gauge)
 				p.queues[name] = gauge
 			}
-			gauge.WithLabelValues(queue).Set(float64(value))
+			gauge.WithLabelValues(r.Cluster, queue).Set(float64(value))
 		}
 	}
 
