@@ -1,43 +1,36 @@
 steps:
   - name: ":test_tube: Test"
     key: test
+    command: go test -v -race .
     plugins:
-      - docker#v2.0.0:
-          image: "golang:1.20"
-          command: ["go", "test", "-v", "-race", "."]
-          environment:
-            - GO111MODULE=on
+      - docker#v5.9.0:
+          image: golang:1.21
 
-  - name: ":golang: Compile"
-    key: build
-    plugins:
-      - golang-cross-compile#v1.3.0:
-          build: main.go
-          import: github.com/buildkite/buildkite-agent-metrics
-          targets:
-            - version: "1.20.2"
-              goos: linux
-              goarch: amd64
-              gomodule: "on"
-            - version: "1.20.2"
-              goos: linux
-              goarch: arm64
-              gomodule: "on"
-            - version: "1.20.2"
-              goos: windows
-              goarch: amd64
-              gomodule: "on"
-            - version: "1.20.2"
-              goos: darwin
-              goarch: amd64
-              gomodule: "on"
-            - version: "1.20.2"
-              goos: darwin
-              goarch: arm64
-              gomodule: "on"
+  - group: ":hammer_and_wrench: Binary builds"
+    steps:
+    - name: ":{{matrix.os}}: Build {{matrix.os}} {{matrix.arch}} binary"
+      command: .buildkite/steps/build-binary.sh {{matrix.os}} {{matrix.arch}}
+      key: build-binary
+      depends_on:
+        - test
+      plugins:
+        - docker#v5.9.0:
+            image: golang:1.21
+            mount-buildkite-agent: true
+      matrix:
+        setup:
+          os:
+            - darwin
+            - linux
+            - windows
+          arch:
+            - amd64
+            - arm64
 
   - name: ":lambda: Build Lambda"
     key: build-lambda
+    depends_on:
+      - test
     command: .buildkite/steps/build-lambda.sh
 
   - name: ":s3: Upload to S3"
@@ -58,6 +51,6 @@ steps:
   - name: ":pipeline:"
     key: upload-release-steps
     depends_on:
-      - build
+      - build-binary
       - upload-to-s3
     command: .buildkite/steps/upload-release-steps.sh

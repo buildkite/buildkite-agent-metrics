@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
 	"strconv"
@@ -60,7 +60,7 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 	timeout := os.Getenv("BUILDKITE_AGENT_METRICS_TIMEOUT")
 
 	if quiet {
-		log.SetOutput(ioutil.Discard)
+		log.SetOutput(io.Discard)
 	}
 
 	t := time.Now()

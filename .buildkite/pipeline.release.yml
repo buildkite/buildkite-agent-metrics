@@ -26,6 +26,6 @@ steps:
       - aws-ssm#v1.0.0:
           parameters:
             GITHUB_RELEASE_ACCESS_TOKEN: /pipelines/buildkite/buildkite-agent-metrics/GITHUB_RELEASE_ACCESS_TOKEN
-      - docker-compose#v4.11.0:
+      - docker-compose#v4.14.0:
           config: .buildkite/docker-compose.yaml
           run: agent
