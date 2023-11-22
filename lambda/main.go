@@ -46,10 +46,8 @@ func main() {
 }
 
 func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
-	var b backend.Backend
-	var provider token.Provider
-	var bkToken string
-	var err error
+	// Where we send metrics
+	var metricsBackend backend.Backend
 
 	awsRegion := os.Getenv("AWS_REGION")
 	backendOpt := os.Getenv("BUILDKITE_BACKEND")
@@ -63,23 +61,24 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 		log.SetOutput(io.Discard)
 	}
 
-	t := time.Now()
+	startTime := time.Now()
 
-	if !nextPollTime.IsZero() && nextPollTime.After(t) {
+	if !nextPollTime.IsZero() && nextPollTime.After(startTime) {
 		log.Printf("Skipping polling, next poll time is in %v",
-			nextPollTime.Sub(t))
+			nextPollTime.Sub(startTime))
 		return "", nil
 	}
 
-	provider, err = initTokenProvider(awsRegion)
+	provider, err := initTokenProvider(awsRegion)
 	if err != nil {
 		return "", err
 	}
 
-	bkToken, err = provider.Get()
+	bkToken, err := provider.Get()
 	if err != nil {
 		return "", err
 	}
+	tokens := strings.Split(bkToken, ",")
 
 	queues := []string{}
 	if queue != "" {
@@ -98,54 +97,67 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 
 	userAgent := fmt.Sprintf("buildkite-agent-metrics/%s buildkite-agent-metrics-lambda", version.Version)
 
-	c := collector.Collector{
-		UserAgent: userAgent,
-		Endpoint:  "https://agent.buildkite.com/v3",
-		Token:     bkToken,
-		Queues:    queues,
-		Quiet:     quiet,
-		Debug:     false,
-		DebugHttp: false,
-		Timeout:   configuredTimeout,
+	collectors := make([]*collector.Collector, 0, len(tokens))
+	for _, token := range tokens {
+		collectors = append(collectors, &collector.Collector{
+			UserAgent: userAgent,
+			Endpoint:  "https://agent.buildkite.com/v3",
+			Token:     token,
+			Queues:    queues,
+			Quiet:     quiet,
+			Debug:     false,
+			DebugHttp: false,
+			Timeout:   configuredTimeout,
+		})
 	}
 
 	switch strings.ToLower(backendOpt) {
 	case "statsd":
 		statsdHost := os.Getenv("STATSD_HOST")
 		statsdTags := strings.EqualFold(os.Getenv("STATSD_TAGS"), "true")
-		b, err = backend.NewStatsDBackend(statsdHost, statsdTags)
+		metricsBackend, err = backend.NewStatsDBackend(statsdHost, statsdTags)
 		if err != nil {
 			return "", err
 		}
+
 	case "newrelic":
 		nrAppName := os.Getenv("NEWRELIC_APP_NAME")
 		nrLicenseKey := os.Getenv("NEWRELIC_LICENSE_KEY")
-		b, err = backend.NewNewRelicBackend(nrAppName, nrLicenseKey)
+		metricsBackend, err = backend.NewNewRelicBackend(nrAppName, nrLicenseKey)
 		if err != nil {
 			fmt.Printf("Error starting New Relic client: %v\n", err)
 			os.Exit(1)
 		}
+
 	default:
 		dimensions, err := backend.ParseCloudWatchDimensions(clwDimensions)
 		if err != nil {
 			return "", err
 		}
-		b = backend.NewCloudWatchBackend(awsRegion, dimensions)
+		metricsBackend = backend.NewCloudWatchBackend(awsRegion, dimensions)
 	}
 
-	res, err := c.Collect()
-	if err != nil {
-		return "", err
+	// minimum res.PollDuration across collectors
+	var pollDuration time.Duration
+
+	for _, c := range collectors {
+		res, err := c.Collect()
+		if err != nil {
+			return "", err
+		}
+
+		if res.PollDuration > pollDuration {
+			pollDuration = res.PollDuration
+		}
+
+		res.Dump()
+
+		if err := metricsBackend.Collect(res); err != nil {
+			return "", err
+		}
 	}
 
-	res.Dump()
-
-	err = b.Collect(res)
-	if err != nil {
-		return "", err
-	}
-
-	original, ok := b.(backend.Closer)
+	original, ok := metricsBackend.(backend.Closer)
 	if ok {
 		err := original.Close()
 		if err != nil {
@@ -153,10 +165,10 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 		}
 	}
 
-	log.Printf("Finished in %s", time.Now().Sub(t))
+	log.Printf("Finished in %s", time.Since(startTime))
 
 	// Store the next acceptable poll time in global state
-	nextPollTime = time.Now().Add(res.PollDuration)
+	nextPollTime = time.Now().Add(pollDuration)
 
 	return "", nil
 }

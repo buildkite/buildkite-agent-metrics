@@ -1,19 +1,23 @@
 package backend
 
 import (
-	"reflect"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 )
 
 func TestToCustomEvent(t *testing.T) {
 	tcs := []struct {
-		queueName string                 // input queue
-		metrics   map[string]int         // input metrics
-		expected  map[string]interface{} // output shaped data
+		desc        string
+		clusterName string
+		queueName   string         // input queue
+		metrics     map[string]int // input metrics
+		want        map[string]any // output shaped data
 	}{
-		// test 1 partial data
 		{
-			queueName: "partial-data-test",
+			desc:        "partial data",
+			clusterName: "test-cluster",
+			queueName:   "partial-data-test",
 			metrics: map[string]int{
 				"BusyAgentCount":      0,
 				"BusyAgentPercentage": 0,
@@ -21,7 +25,8 @@ func TestToCustomEvent(t *testing.T) {
 				"TotalAgentCount":     3,
 				"RunningJobsCount":    0,
 			},
-			expected: map[string]interface{}{
+			want: map[string]any{
+				"Cluster":             "test-cluster",
 				"Queue":               "partial-data-test",
 				"BusyAgentCount":      0,
 				"BusyAgentPercentage": 0,
@@ -30,9 +35,10 @@ func TestToCustomEvent(t *testing.T) {
 				"RunningJobsCount":    0,
 			},
 		},
-		// test 2 complete data
 		{
-			queueName: "complete-data-test",
+			desc:        "complete data",
+			clusterName: "test-cluster",
+			queueName:   "complete-data-test",
 			metrics: map[string]int{
 				"BusyAgentCount":      2,
 				"BusyAgentPercentage": 20,
@@ -42,7 +48,8 @@ func TestToCustomEvent(t *testing.T) {
 				"ScheduledJobsCount":  0,
 				"WaitingJobsCount":    0,
 			},
-			expected: map[string]interface{}{
+			want: map[string]any{
+				"Cluster":             "test-cluster",
 				"Queue":               "complete-data-test",
 				"BusyAgentCount":      2,
 				"BusyAgentPercentage": 20,
@@ -55,12 +62,13 @@ func TestToCustomEvent(t *testing.T) {
 		},
 	}
 
-	for n, tc := range tcs {
-		got := toCustomEvent(tc.queueName, tc.metrics)
-
-		if !reflect.DeepEqual(got, tc.expected) {
-			t.Errorf("toCustomEvent test #%d failed, result %+v did not equal expected %+v", n, got, tc.expected)
-		}
+	for _, tc := range tcs {
+		t.Run(tc.desc, func(t *testing.T) {
+			got := toCustomEvent(tc.clusterName, tc.queueName, tc.metrics)
+			if diff := cmp.Diff(got, tc.want); diff != "" {
+				t.Errorf("toCustomEvent output diff (-got +want):\n%s", diff)
+			}
+		})
 	}
 
 }

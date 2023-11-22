@@ -40,8 +40,8 @@ func NewNewRelicBackend(appName string, licenseKey string) (*NewRelicBackend, er
 // Collect metrics
 func (nr *NewRelicBackend) Collect(r *collector.Result) error {
 	// Publish event for each queue
-	for name, c := range r.Queues {
-		data := toCustomEvent(name, c)
+	for queue, metrics := range r.Queues {
+		data := toCustomEvent(r.Cluster, queue, metrics)
 		err := nr.client.RecordCustomEvent("BuildkiteQueueMetrics", data)
 		if err != nil {
 			return err
@@ -54,9 +54,10 @@ func (nr *NewRelicBackend) Collect(r *collector.Result) error {
 }
 
 // toCustomEvent converts a map of metrics to a valid New Relic event body
-func toCustomEvent(queueName string, queueMetrics map[string]int) map[string]interface{} {
-	eventData := map[string]interface{}{
-		"Queue": queueName,
+func toCustomEvent(clusterName, queueName string, queueMetrics map[string]int) map[string]any {
+	eventData := map[string]any{
+		"Cluster": clusterName,
+		"Queue":   queueName,
 	}
 
 	for k, v := range queueMetrics {

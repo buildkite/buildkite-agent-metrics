@@ -202,7 +202,7 @@ func TestCollectorWithSomeJobsAndAgentsForAllQueues(t *testing.T) {
 		{"Queue.deploy", res.Queues["deploy"], IdleAgentCount, 0},
 	}
 
-	for queue, _ := range res.Queues {
+	for queue := range res.Queues {
 		switch queue {
 		case "default", "deploy":
 			continue

@@ -11,16 +11,18 @@ import (
 	"google.golang.org/genproto/googleapis/api/label"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	monitoring "cloud.google.com/go/monitoring/apiv3"
+	monitoring "cloud.google.com/go/monitoring/apiv3/v2"
+	"cloud.google.com/go/monitoring/apiv3/v2/monitoringpb"
 	"google.golang.org/genproto/googleapis/api/metric"
-	monitoringpb "google.golang.org/genproto/googleapis/monitoring/v3"
 )
 
 const (
-	metricName        = "custom.googleapis.com/buildkite/%s/%s"
-	queueLabelKey     = "Queue"
-	queueDescription  = "Queue Descriptor"
-	totalMetricsQueue = "Total"
+	metricTypeFmt      = "custom.googleapis.com/buildkite/%s/%s"
+	clusterLabelKey    = "Cluster"
+	clusterDescription = "Name of the Buildkite Cluster, or empty"
+	queueLabelKey      = "Queue"
+	queueDescription   = "Name of the Queue"
+	totalMetricsQueue  = "Total"
 )
 
 // Stackdriver does not allow dashes in metric names
@@ -55,10 +57,14 @@ func (sd *StackDriverBackend) Collect(r *collector.Result) error {
 		Seconds: time.Now().Unix(),
 	}
 	orgName := dashReplacer.Replace(r.Org)
+	metricTypeFunc := func(name string) string {
+		return fmt.Sprintf(metricTypeFmt, orgName, name)
+	}
+
 	for name, value := range r.Totals {
 		mt, present := sd.metricTypes[name]
 		if !present {
-			mt = fmt.Sprintf(metricName, orgName, name)
+			mt = metricTypeFunc(name)
 			metricReq := createCustomMetricRequest(&sd.projectID, &mt)
 			_, err := sd.client.CreateMetricDescriptor(ctx, metricReq)
 			if err != nil {
@@ -69,7 +75,7 @@ func (sd *StackDriverBackend) Collect(r *collector.Result) error {
 			log.Printf("[Collect] created custom metric [%s]", mt)
 			sd.metricTypes[name] = mt
 		}
-		req := createTimeSeriesValueRequest(&sd.projectID, &mt, totalMetricsQueue, value, now)
+		req := createTimeSeriesValueRequest(&sd.projectID, &mt, r.Cluster, totalMetricsQueue, value, now)
 		err := sd.client.CreateTimeSeries(ctx, req)
 		if err != nil {
 			retErr := fmt.Errorf("[Collect] could not write metric [%s] value [%d], %v ", mt, value, err)
@@ -80,8 +86,8 @@ func (sd *StackDriverBackend) Collect(r *collector.Result) error {
 
 	for queue, counts := range r.Queues {
 		for name, value := range counts {
-			mt := fmt.Sprintf(metricName, orgName, name)
-			req := createTimeSeriesValueRequest(&sd.projectID, &mt, queue, value, now)
+			mt := metricTypeFunc(name)
+			req := createTimeSeriesValueRequest(&sd.projectID, &mt, r.Cluster, queue, value, now)
 			err := sd.client.CreateTimeSeries(ctx, req)
 			if err != nil {
 				retErr := fmt.Errorf("[Collect] could not write metric [%s] value [%d], %v ", mt, value, err)
@@ -96,12 +102,20 @@ func (sd *StackDriverBackend) Collect(r *collector.Result) error {
 
 // createCustomMetricRequest creates a custom metric request as specified by the metric type.
 func createCustomMetricRequest(projectID *string, metricType *string) *monitoringpb.CreateMetricDescriptorRequest {
-	l := &label.LabelDescriptor{
+	clusterLabel := &label.LabelDescriptor{
+		Key:         clusterLabelKey,
+		ValueType:   label.LabelDescriptor_STRING,
+		Description: clusterDescription,
+	}
+	queueLabel := &label.LabelDescriptor{
 		Key:         queueLabelKey,
 		ValueType:   label.LabelDescriptor_STRING,
 		Description: queueDescription,
 	}
-	labels := []*label.LabelDescriptor{l}
+	labels := []*label.LabelDescriptor{
+		clusterLabel,
+		queueLabel,
+	}
 	md := &metric.MetricDescriptor{
 		Name:        *metricType,
 		Type:        *metricType,
@@ -120,13 +134,16 @@ func createCustomMetricRequest(projectID *string, metricType *string) *monitorin
 }
 
 // createTimeSeriesValueRequest creates a StackDriver value request for the specified metric
-func createTimeSeriesValueRequest(projectID *string, metricType *string, queue string, value int, time *timestamppb.Timestamp) *monitoringpb.CreateTimeSeriesRequest {
+func createTimeSeriesValueRequest(projectID *string, metricType *string, cluster, queue string, value int, time *timestamppb.Timestamp) *monitoringpb.CreateTimeSeriesRequest {
 	req := &monitoringpb.CreateTimeSeriesRequest{
 		Name: "projects/" + *projectID,
 		TimeSeries: []*monitoringpb.TimeSeries{{
 			Metric: &metric.Metric{
-				Type:   *metricType,
-				Labels: map[string]string{queueLabelKey: queue},
+				Type: *metricType,
+				Labels: map[string]string{
+					clusterLabelKey: cluster,
+					queueLabelKey:   queue,
+				},
 			},
 			Points: []*monitoringpb.Point{{
 				Interval: &monitoringpb.TimeInterval{

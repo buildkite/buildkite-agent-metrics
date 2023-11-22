@@ -45,11 +45,16 @@ type Result struct {
 	Totals       map[string]int
 	Queues       map[string]map[string]int
 	Org          string
+	Cluster      string
 	PollDuration time.Duration
 }
 
 type organizationResponse struct {
 	Slug string `json:"slug"`
+}
+
+type clusterResponse struct {
+	Name string `json:"name"`
 }
 
 type metricsAgentsResponse struct {
@@ -69,6 +74,7 @@ type queueMetricsResponse struct {
 	Agents       metricsAgentsResponse `json:"agents"`
 	Jobs         metricsJobsResponse   `json:"jobs"`
 	Organization organizationResponse  `json:"organization"`
+	Cluster      clusterResponse       `json:"cluster"`
 }
 
 type allMetricsAgentsResponse struct {
@@ -85,6 +91,7 @@ type allMetricsResponse struct {
 	Agents       allMetricsAgentsResponse `json:"agents"`
 	Jobs         allMetricsJobsResponse   `json:"jobs"`
 	Organization organizationResponse     `json:"organization"`
+	Cluster      clusterResponse          `json:"cluster"`
 }
 
 func (c *Collector) Collect() (*Result, error) {
@@ -195,8 +202,9 @@ func (c *Collector) collectAllQueues(httpClient *http.Client, result *Result) er
 		return fmt.Errorf("No organization slug was found in the metrics response")
 	}
 
-	log.Printf("Found organization %q", allMetrics.Organization.Slug)
+	log.Printf("Found organization %q, cluster %q", allMetrics.Organization.Slug, allMetrics.Cluster.Name)
 	result.Org = allMetrics.Organization.Slug
+	result.Cluster = allMetrics.Cluster.Name
 
 	result.Totals[ScheduledJobsCount] = allMetrics.Jobs.Scheduled
 	result.Totals[RunningJobsCount] = allMetrics.Jobs.Running
@@ -299,8 +307,9 @@ func (c *Collector) collectQueue(httpClient *http.Client, result *Result, queue 
 		return fmt.Errorf("No organization slug was found in the metrics response")
 	}
 
-	log.Printf("Found organization %q", queueMetrics.Organization.Slug)
+	log.Printf("Found organization %q, cluster %q", queueMetrics.Organization.Slug, queueMetrics.Cluster.Name)
 	result.Org = queueMetrics.Organization.Slug
+	result.Cluster = queueMetrics.Cluster.Name
 
 	result.Queues[queue] = map[string]int{
 		ScheduledJobsCount:  queueMetrics.Jobs.Scheduled,

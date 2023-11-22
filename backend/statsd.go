@@ -1,6 +1,8 @@
 package backend
 
 import (
+	"fmt"
+
 	"github.com/DataDog/datadog-go/statsd"
 	"github.com/buildkite/buildkite-agent-metrics/collector"
 )
@@ -12,44 +14,84 @@ type StatsD struct {
 }
 
 func NewStatsDBackend(host string, tagsSupported bool) (*StatsD, error) {
-	c, err := statsd.NewBuffered(host, 100)
+	client, err := statsd.NewBuffered(host, 100)
 	if err != nil {
 		return nil, err
 	}
 	// prefix every metric with the app name
-	c.Namespace = "buildkite."
+	client.Namespace = "buildkite."
 	return &StatsD{
-		client:        c,
+		client:        client,
 		tagsSupported: tagsSupported,
 	}, nil
 }
 
 func (cb *StatsD) Collect(r *collector.Result) error {
+	collectFunc := cb.collectWithoutTags
+	if cb.tagsSupported {
+		collectFunc = cb.collectWithTags
+	}
+
+	if err := collectFunc(r); err != nil {
+		return err
+	}
+
+	return cb.client.Flush()
+}
+
+// collectWithTags tags clusters and queues.
+func (cb *StatsD) collectWithTags(r *collector.Result) error {
+	commonTags := make([]string, 0, 2)
+	prefix := ""
+	if r.Cluster != "" {
+		commonTags = append(commonTags, "cluster:"+r.Cluster)
+		prefix = "clusters."
+	}
+
 	for name, value := range r.Totals {
-		if err := cb.client.Gauge(name, float64(value), []string{}, 1.0); err != nil {
+		if err := cb.client.Gauge(prefix+name, float64(value), commonTags, 1.0); err != nil {
 			return err
 		}
 	}
 
 	for queue, counts := range r.Queues {
+		tags := append(commonTags, "queue:"+queue)
+
 		for name, value := range counts {
-			var finalName string
-			tags := []string{}
-			if cb.tagsSupported {
-				finalName = "queues." + name
-				tags = []string{"queue:" + queue}
-			} else {
-				finalName = "queues." + queue + "." + name
-			}
-			if err := cb.client.Gauge(finalName, float64(value), tags, 1.0); err != nil {
+			if err := cb.client.Gauge(prefix+"queues."+name, float64(value), tags, 1.0); err != nil {
 				return err
 			}
 		}
 	}
 
-	if err := cb.client.Flush(); err != nil {
-		return err
+	return cb.client.Flush()
+}
+
+// collectWithoutTags embeds clusters and queues into metric names.
+func (cb *StatsD) collectWithoutTags(r *collector.Result) error {
+	prefix := ""
+	if r.Cluster != "" {
+		prefix = fmt.Sprintf("clusters.%s.", r.Cluster)
 	}
 
-	return nil
+	for name, value := range r.Totals {
+		if err := cb.client.Gauge(prefix+name, float64(value), nil, 1.0); err != nil {
+			return err
+		}
+	}
+
+	for queue, counts := range r.Queues {
+		prefix := fmt.Sprintf("queues.%s.", queue)
+		if r.Cluster != "" {
+			prefix = fmt.Sprintf("clusters.%s.queues.%s.", r.Cluster, queue)
+		}
+
+		for name, value := range counts {
+			if err := cb.client.Gauge(prefix+name, float64(value), nil, 1.0); err != nil {
+				return err
+			}
+		}
+	}
+
+	return cb.client.Flush()
 }
