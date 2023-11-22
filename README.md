@@ -80,7 +80,7 @@ aws lambda create-function \
   --function-name buildkite-agent-metrics \
   --memory 128 \
   --role arn:aws:iam::account-id:role/execution_role \
-  --runtime go1.x \
+  --runtime provided.al2 \
   --zip-file fileb://handler.zip \
   --handler handler
 ```
