@@ -10,7 +10,7 @@ Either download the latest binary from
 [Github Releases](https://github.com/buildkite/buildkite-agent-metrics/releases) or install with:
 
 ```bash
-go get github.com/buildkite/buildkite-agent-metrics
+go install github.com/buildkite/buildkite-agent-metrics@latest
 ```
 
 ## Running
