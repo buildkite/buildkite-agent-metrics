@@ -93,7 +93,8 @@ supported.
 #### Option 3 - Retrieve token from AWS Secrets Manager
 
 - `BUILDKITE_AGENT_SECRETS_MANAGER_SECRET_ID`: The id of the secret which
-  contains the token value in AWS Secrets Manager.
+  contains the token value in AWS Secrets Manager. You can supply
+  multiple secrets comma-separated.
 - (Optional) `BUILDKITE_AGENT_SECRETS_MANAGER_JSON_KEY`: The JSON key containing
   the token value in the secret JSON blob.
 
