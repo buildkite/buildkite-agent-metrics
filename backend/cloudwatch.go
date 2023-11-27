@@ -69,10 +69,14 @@ func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 			Name:  aws.String("Org"),
 			Value: aws.String(r.Org),
 		},
-		{
+	}
+
+	// Add cluster dimension if a cluster token was used
+	if r.Cluster != "" {
+		dimensions = append(dimensions, &cloudwatch.Dimension{
 			Name:  aws.String("Cluster"),
 			Value: aws.String(r.Cluster),
-		},
+		})
 	}
 
 	// Add custom dimension if provided

@@ -56,8 +56,11 @@ func (nr *NewRelicBackend) Collect(r *collector.Result) error {
 // toCustomEvent converts a map of metrics to a valid New Relic event body
 func toCustomEvent(clusterName, queueName string, queueMetrics map[string]int) map[string]any {
 	eventData := map[string]any{
-		"Cluster": clusterName,
-		"Queue":   queueName,
+		"Queue": queueName,
+	}
+
+	if clusterName != "" {
+		eventData["Cluster"] = clusterName
 	}
 
 	for k, v := range queueMetrics {
