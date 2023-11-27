@@ -4,6 +4,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.9.1](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.1) (2023-11-27)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.0...v5.9.1)
+
+### Changed
+- Support for multiple secrets manager secrets command seperated [#233](https://github.com/buildkite/buildkite-agent-metrics/pull/233) (@lucylura)
+
+### Fixed
+- Ignore Cluster label/dimension/tag for empty unclustered queues. This may fix continuity errors when clusters are not used [#234](https://github.com/buildkite/buildkite-agent-metrics/pull/234) (@triarius)
+
+### Internal
+- Document SSM Parameters names may be comma separated [#235](https://github.com/buildkite/buildkite-agent-metrics/pull/235) (@triarius)
+
+### Dependencies
+- build(deps): bump github.com/aws/aws-sdk-go from 1.47.3 to 1.48.3 [#232](https://github.com/buildkite/buildkite-agent-metrics/pull/232) (@dependabot[bot])
+
 ## [v5.9.0](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.0) (2023-11-22)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.8.0...v5.9.0)
 
