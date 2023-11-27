@@ -85,7 +85,7 @@ Agent API token:
 #### Option 2 - Retrieve token from AWS Systems Manager
 
 - `BUILDKITE_AGENT_TOKEN_SSM_KEY` : The parameter name which contains the token
-  value in AWS Systems Manager.
+  value in AWS Systems Manager. You can supply multiple names comma-separated.
 
 **Note**: Parameters stored as `String` and `SecureString` are currently
 supported.
@@ -94,7 +94,7 @@ supported.
 
 - `BUILDKITE_AGENT_SECRETS_MANAGER_SECRET_ID`: The id of the secret which
   contains the token value in AWS Secrets Manager. You can supply
-  multiple secrets comma-separated.
+  multiple ids comma-separated.
 - (Optional) `BUILDKITE_AGENT_SECRETS_MANAGER_JSON_KEY`: The JSON key containing
   the token value in the secret JSON blob.
 
