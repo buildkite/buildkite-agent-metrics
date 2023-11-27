@@ -69,16 +69,19 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 		return "", nil
 	}
 
-	provider, err := initTokenProvider(awsRegion)
+	providers, err := initTokenProvider(awsRegion)
 	if err != nil {
 		return "", err
 	}
 
-	bkToken, err := provider.Get()
-	if err != nil {
-		return "", err
+	tokens := make([]string, 0)
+	for _, provider := range providers {
+		bkToken, err := provider.Get()
+		if err != nil {
+			return "", err
+		}
+		tokens = append(tokens, bkToken)
 	}
-	tokens := strings.Split(bkToken, ",")
 
 	queues := []string{}
 	if queue != "" {
@@ -173,7 +176,7 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 	return "", nil
 }
 
-func initTokenProvider(awsRegion string) (token.Provider, error) {
+func initTokenProvider(awsRegion string) ([]token.Provider, error) {
 	mutuallyExclusiveEnvVars := []string{
 		BKAgentTokenEnvVar,
 		BKAgentTokenSSMKeyEnvVar,
@@ -184,8 +187,16 @@ func initTokenProvider(awsRegion string) (token.Provider, error) {
 		return nil, err
 	}
 
-	if bkToken := os.Getenv(BKAgentTokenEnvVar); bkToken != "" {
-		return token.NewInMemory(bkToken)
+	providers := make([]token.Provider, 0)
+	if bkTokenEnvVar := os.Getenv(BKAgentTokenEnvVar); bkTokenEnvVar != "" {
+		bkTokens := strings.Split(bkTokenEnvVar, ",")
+		for _, bkToken := range bkTokens {
+			provider, err := token.NewInMemory(bkToken)
+			if err != nil {
+				return nil, err
+			}
+			providers = append(providers, provider)
+		}
 	}
 
 	if ssmKey := os.Getenv(BKAgentTokenSSMKeyEnvVar); ssmKey != "" {
@@ -194,7 +205,11 @@ func initTokenProvider(awsRegion string) (token.Provider, error) {
 			return nil, err
 		}
 		client := ssm.New(sess)
-		return token.NewSSM(client, ssmKey)
+		provider, err := token.NewSSM(client, ssmKey)
+		if err != nil {
+			return nil, err
+		}
+		providers = append(providers, provider)
 	}
 
 	if secretsManagerSecretID := os.Getenv(BKAgentTokenSecretsManagerSecretIDEnvVar); secretsManagerSecretID != "" {
@@ -205,10 +220,22 @@ func initTokenProvider(awsRegion string) (token.Provider, error) {
 		}
 		client := secretsmanager.New(sess)
 		if jsonKey == "" {
-			return token.NewSecretsManager(client, secretsManagerSecretID)
+			secretIDs := strings.Split(secretsManagerSecretID, ",")
+			for _, secretID := range secretIDs {
+				secretManager, err := token.NewSecretsManager(client, secretID)
+				if err != nil {
+					return nil, err
+				}
+				providers = append(providers, secretManager)
+			}
 		} else {
-			return token.NewSecretsManager(client, secretsManagerSecretID, token.WithSecretsManagerJSONSecret(jsonKey))
+			secretManager, err := token.NewSecretsManager(client, secretsManagerSecretID, token.WithSecretsManagerJSONSecret(jsonKey))
+			if err != nil {
+				return nil, err
+			}
+			providers = append(providers, secretManager)
 		}
+		return providers, nil
 	}
 
 	return nil, fmt.Errorf("failed to initialize Buildkite token provider: one of the [%s] environment variables "+
