@@ -39,37 +39,53 @@ func (p *Prometheus) Serve(path, addr string) {
 }
 
 func (p *Prometheus) Collect(r *collector.Result) error {
-
 	// Clear the gauges to prevent stale values from persisting forever.
 	for _, gauge := range p.queues {
 		gauge.Reset()
 	}
 
 	for name, value := range r.Totals {
+		labelNames := []string{}
+		if r.Cluster != "" {
+			labelNames = append(labelNames, "cluster")
+		}
 		gauge, ok := p.totals[name]
 		if !ok {
 			gauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 				Name: fmt.Sprintf("buildkite_total_%s", camelToUnderscore(name)),
 				Help: fmt.Sprintf("Buildkite Total: %s", name),
-			}, []string{"cluster"})
+			}, labelNames)
 			prometheus.MustRegister(gauge)
 			p.totals[name] = gauge
 		}
-		gauge.WithLabelValues(r.Cluster).Set(float64(value))
+
+		if r.Cluster != "" {
+			gauge.WithLabelValues(r.Cluster).Set(float64(value))
+		} else {
+			gauge.WithLabelValues().Set(float64(value))
+		}
 	}
 
 	for queue, counts := range r.Queues {
 		for name, value := range counts {
 			gauge, ok := p.queues[name]
 			if !ok {
+				labelNames := []string{"queue"}
+				if r.Cluster != "" {
+					labelNames = append(labelNames, "cluster")
+				}
 				gauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 					Name: fmt.Sprintf("buildkite_queues_%s", camelToUnderscore(name)),
 					Help: fmt.Sprintf("Buildkite Queues: %s", name),
-				}, []string{"cluster", "queue"})
+				}, labelNames)
 				prometheus.MustRegister(gauge)
 				p.queues[name] = gauge
 			}
-			gauge.WithLabelValues(r.Cluster, queue).Set(float64(value))
+			if r.Cluster != "" {
+				gauge.WithLabelValues(queue, r.Cluster).Set(float64(value))
+			} else {
+				gauge.WithLabelValues(queue).Set(float64(value))
+			}
 		}
 	}
 
