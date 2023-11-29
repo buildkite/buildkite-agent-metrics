@@ -57,6 +57,12 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 	quiet := quietString == "1" || quietString == "true"
 	timeout := os.Getenv("BUILDKITE_AGENT_METRICS_TIMEOUT")
 
+	debugEnvVar := os.Getenv("BUILDKITE_AGENT_METRICS_DEBUG")
+	debug := debugEnvVar == "1" || debugEnvVar == "true"
+
+	debugHTTPEnvVar := os.Getenv("BUILDKITE_AGENT_METRICS_DEBUG_HTTP")
+	debugHTTP := debugHTTPEnvVar == "1" || debugHTTPEnvVar == "true"
+
 	if quiet {
 		log.SetOutput(io.Discard)
 	}
@@ -108,8 +114,8 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 			Token:     token,
 			Queues:    queues,
 			Quiet:     quiet,
-			Debug:     false,
-			DebugHttp: false,
+			Debug:     debug,
+			DebugHttp: debugHTTP,
 			Timeout:   configuredTimeout,
 		})
 	}
