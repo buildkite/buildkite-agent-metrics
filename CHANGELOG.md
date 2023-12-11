@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.9.2](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.2) (2023-12-12)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.1...v5.9.2)
+
+### Fixed
+- Fix non-Secrets Manager token providers [#243](https://github.com/buildkite/buildkite-agent-metrics/pull/243) (@DrJosh9000)
+
+### Changed
+- Allow env vars to control debug logging for the lambda [#238](https://github.com/buildkite/buildkite-agent-metrics/pull/238) (@triarius)
+
+### Dependencies
+- Bump github.com/aws/aws-sdk-go from 1.48.3 to 1.48.4 to 1.48.16 [#237](https://github.com/buildkite/buildkite-agent-metrics/pull/237), [#241](https://github.com/buildkite/buildkite-agent-metrics/pull/241) (@dependabot[bot])
+
 ## [v5.9.1](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.1) (2023-11-27)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.0...v5.9.1)
 
