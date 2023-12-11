@@ -183,17 +183,16 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 }
 
 func initTokenProvider(awsRegion string) ([]token.Provider, error) {
-	mutuallyExclusiveEnvVars := []string{
+	err := checkMutuallyExclusiveEnvVars(
 		BKAgentTokenEnvVar,
 		BKAgentTokenSSMKeyEnvVar,
 		BKAgentTokenSecretsManagerSecretIDEnvVar,
-	}
-
-	if err := checkMutuallyExclusiveEnvVars(mutuallyExclusiveEnvVars...); err != nil {
+	)
+	if err != nil {
 		return nil, err
 	}
 
-	providers := make([]token.Provider, 0)
+	var providers []token.Provider
 	if bkTokenEnvVar := os.Getenv(BKAgentTokenEnvVar); bkTokenEnvVar != "" {
 		bkTokens := strings.Split(bkTokenEnvVar, ",")
 		for _, bkToken := range bkTokens {
@@ -241,11 +240,17 @@ func initTokenProvider(awsRegion string) ([]token.Provider, error) {
 			}
 			providers = append(providers, secretManager)
 		}
-		return providers, nil
 	}
 
-	return nil, fmt.Errorf("failed to initialize Buildkite token provider: one of the [%s] environment variables "+
-		"must be provided", strings.Join(mutuallyExclusiveEnvVars, ","))
+	if len(providers) == 0 {
+		// This should be very unlikely or even impossible (famous last words):
+		// - There was exactly one of the mutually-exclusive env vars
+		// - If a token provider above failed to use its value, it should error
+		// - Otherwise, each if-branch appends to providers, so...
+		return nil, fmt.Errorf("no Buildkite token providers could be created")
+	}
+
+	return providers, nil
 }
 
 func checkMutuallyExclusiveEnvVars(varNames ...string) error {
@@ -256,8 +261,14 @@ func checkMutuallyExclusiveEnvVars(varNames ...string) error {
 			foundVars = append(foundVars, value)
 		}
 	}
-	if len(foundVars) > 1 {
+	switch len(foundVars) {
+	case 0:
+		return fmt.Errorf("one of the environment variables [%s] must be provided", strings.Join(varNames, ","))
+
+	case 1:
+		return nil // that's what we want
+
+	default:
 		return fmt.Errorf("the environment variables [%s] are mutually exclusive", strings.Join(foundVars, ","))
 	}
-	return nil
 }
