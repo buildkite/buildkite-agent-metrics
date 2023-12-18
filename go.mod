@@ -3,7 +3,7 @@ module github.com/buildkite/buildkite-agent-metrics
 go 1.20
 
 require (
-	cloud.google.com/go/monitoring v1.16.3
+	cloud.google.com/go/monitoring v1.17.0
 	github.com/DataDog/datadog-go v4.8.3+incompatible
 	github.com/aws/aws-lambda-go v1.41.0
 	github.com/aws/aws-sdk-go v1.48.16
