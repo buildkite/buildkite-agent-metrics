@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/DataDog/datadog-go/statsd"
-	"github.com/buildkite/buildkite-agent-metrics/collector"
+	"github.com/buildkite/buildkite-agent-metrics/v5/collector"
 )
 
 // StatsD sends metrics to StatsD (Datadog spec)

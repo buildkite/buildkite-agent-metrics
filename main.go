@@ -10,9 +10,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/buildkite/buildkite-agent-metrics/backend"
-	"github.com/buildkite/buildkite-agent-metrics/collector"
-	"github.com/buildkite/buildkite-agent-metrics/version"
+	"github.com/buildkite/buildkite-agent-metrics/v5/backend"
+	"github.com/buildkite/buildkite-agent-metrics/v5/collector"
+	"github.com/buildkite/buildkite-agent-metrics/v5/version"
 )
 
 // Where we send metrics

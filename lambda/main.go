@@ -17,10 +17,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/aws/aws-sdk-go/service/ssm"
 
-	"github.com/buildkite/buildkite-agent-metrics/backend"
-	"github.com/buildkite/buildkite-agent-metrics/collector"
-	"github.com/buildkite/buildkite-agent-metrics/token"
-	"github.com/buildkite/buildkite-agent-metrics/version"
+	"github.com/buildkite/buildkite-agent-metrics/v5/backend"
+	"github.com/buildkite/buildkite-agent-metrics/v5/collector"
+	"github.com/buildkite/buildkite-agent-metrics/v5/token"
+	"github.com/buildkite/buildkite-agent-metrics/v5/version"
 )
 
 const (
