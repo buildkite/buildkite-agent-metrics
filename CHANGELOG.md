@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.9.3](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.3) (2023-12-19)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.2...v5.9.3)
+
+### Changed
+- Add v5 to module path [#248](https://github.com/buildkite/buildkite-agent-metrics/pull/248) (@DrJosh9000)
+
+### Dependencies
+- build(deps): bump golang.org/x/crypto from 0.14.0 to 0.17.0 [#246](https://github.com/buildkite/buildkite-agent-metrics/pull/246) (@dependabot[bot])
+- build(deps): bump cloud.google.com/go/monitoring from 1.16.3 to 1.17.0 [#245](https://github.com/buildkite/buildkite-agent-metrics/pull/245) (@dependabot[bot])
+- build(deps): bump github.com/aws/aws-lambda-go from 1.41.0 to 1.42.0 [#244](https://github.com/buildkite/buildkite-agent-metrics/pull/244) (@dependabot[bot])
+
 ## [v5.9.2](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.2) (2023-12-12)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.1...v5.9.2)
 
