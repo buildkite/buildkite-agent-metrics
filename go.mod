@@ -1,4 +1,4 @@
-module github.com/buildkite/buildkite-agent-metrics
+module github.com/buildkite/buildkite-agent-metrics/v5
 
 go 1.20
 

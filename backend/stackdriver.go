@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/buildkite/buildkite-agent-metrics/collector"
+	"github.com/buildkite/buildkite-agent-metrics/v5/collector"
 	"google.golang.org/genproto/googleapis/api/label"
 	"google.golang.org/protobuf/types/known/timestamppb"
 

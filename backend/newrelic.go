@@ -4,7 +4,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/buildkite/buildkite-agent-metrics/collector"
+	"github.com/buildkite/buildkite-agent-metrics/v5/collector"
 	newrelic "github.com/newrelic/go-agent"
 )
 
