@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/http/httptrace"
 	"net/http/httputil"
 	"net/url"
 	"strconv"
@@ -142,6 +143,16 @@ func (c *Collector) collectAllQueues(httpClient *http.Client, result *Result) er
 	req.Header.Set("Authorization", fmt.Sprintf("Token %s", c.Token))
 
 	if c.DebugHttp {
+		trace := &httptrace.ClientTrace{
+			DNSStart: func(dnsInfo httptrace.DNSStartInfo) {
+				fmt.Printf("dns start: %v\n", time.Now())
+			},
+			DNSDone: func(dnsDoneInfo httptrace.DNSDoneInfo) {
+				fmt.Printf("dns end: %v\n", time.Now())
+			},
+		}
+
+		req = req.WithContext(httptrace.WithClientTrace(req.Context(), trace))
 		if dump, err := httputil.DumpRequest(req, true); err == nil {
 			log.Printf("DEBUG request uri=%s\n%s\n", req.URL, dump)
 		}
@@ -258,6 +269,16 @@ func (c *Collector) collectQueue(httpClient *http.Client, result *Result, queue 
 	req.Header.Set("Authorization", fmt.Sprintf("Token %s", c.Token))
 
 	if c.DebugHttp {
+		trace := &httptrace.ClientTrace{
+			DNSStart: func(dnsInfo httptrace.DNSStartInfo) {
+				fmt.Printf("dns start: %v\n", time.Now())
+			},
+			DNSDone: func(dnsDoneInfo httptrace.DNSDoneInfo) {
+				fmt.Printf("dns end: %v\n", time.Now())
+			},
+		}
+
+		req = req.WithContext(httptrace.WithClientTrace(req.Context(), trace))
 		if dump, err := httputil.DumpRequest(req, true); err == nil {
 			log.Printf("DEBUG request uri=%s\n%s\n", req.URL, dump)
 		}
