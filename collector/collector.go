@@ -1,6 +1,7 @@
 package collector
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -144,11 +145,29 @@ func (c *Collector) collectAllQueues(httpClient *http.Client, result *Result) er
 
 	if c.DebugHttp {
 		trace := &httptrace.ClientTrace{
-			DNSStart: func(dnsInfo httptrace.DNSStartInfo) {
+			DNSStart: func(_ httptrace.DNSStartInfo) {
 				fmt.Printf("dns start: %v\n", time.Now())
 			},
-			DNSDone: func(dnsDoneInfo httptrace.DNSDoneInfo) {
-				fmt.Printf("dns end: %v\n", time.Now())
+			DNSDone: func(_ httptrace.DNSDoneInfo) {
+				fmt.Printf("dns done: %v\n", time.Now())
+			},
+			ConnectStart: func(_, _ string) {
+				fmt.Printf("connection start: %v\n", time.Now())
+			},
+			ConnectDone: func(_, _ string, _ error) {
+				fmt.Printf("connection done: %v\n", time.Now())
+			},
+			TLSHandshakeStart: func() {
+				fmt.Printf("TLS Handshake start: %v\n", time.Now())
+			},
+			TLSHandshakeDone: func(_ tls.ConnectionState, _ error) {
+				fmt.Printf("TLS Handshake done: %v\n", time.Now())
+			},
+			WroteHeaders: func() {
+				fmt.Printf("wrote headers: %v\n", time.Now())
+			},
+			WroteRequest: func(_ httptrace.WroteRequestInfo) {
+				fmt.Printf("wrote request: %v\n", time.Now())
 			},
 		}
 
@@ -270,11 +289,29 @@ func (c *Collector) collectQueue(httpClient *http.Client, result *Result, queue 
 
 	if c.DebugHttp {
 		trace := &httptrace.ClientTrace{
-			DNSStart: func(dnsInfo httptrace.DNSStartInfo) {
+			DNSStart: func(_ httptrace.DNSStartInfo) {
 				fmt.Printf("dns start: %v\n", time.Now())
 			},
-			DNSDone: func(dnsDoneInfo httptrace.DNSDoneInfo) {
-				fmt.Printf("dns end: %v\n", time.Now())
+			DNSDone: func(_ httptrace.DNSDoneInfo) {
+				fmt.Printf("dns done: %v\n", time.Now())
+			},
+			ConnectStart: func(_, _ string) {
+				fmt.Printf("connection start: %v\n", time.Now())
+			},
+			ConnectDone: func(_, _ string, _ error) {
+				fmt.Printf("connection done: %v\n", time.Now())
+			},
+			TLSHandshakeStart: func() {
+				fmt.Printf("TLS Handshake start: %v\n", time.Now())
+			},
+			TLSHandshakeDone: func(_ tls.ConnectionState, _ error) {
+				fmt.Printf("TLS Handshake done: %v\n", time.Now())
+			},
+			WroteHeaders: func() {
+				fmt.Printf("wrote headers: %v\n", time.Now())
+			},
+			WroteRequest: func(_ httptrace.WroteRequestInfo) {
+				fmt.Printf("wrote request: %v\n", time.Now())
 			},
 		}
 
