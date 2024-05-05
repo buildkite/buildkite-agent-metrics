@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.9.4](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.4) (2024-05-06)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.3...v5.9.4)
+
+### Changed
+- Log DNS resolution times when debug http is enabled [#278](https://github.com/buildkite/buildkite-agent-metrics/pull/278) (@patrobinson)
+
+### Dependencies
+- build(deps): bump golang.org/x/net from 0.20.0 to 0.23.0 [#275](https://github.com/buildkite/buildkite-agent-metrics/pull/275) (@dependabot[bot])
+- build(deps): bump github.com/prometheus/client_golang from 1.17.0 to 1.19.0 [#269](https://github.com/buildkite/buildkite-agent-metrics/pull/269) (@dependabot[bot])
+- build(deps): bump github.com/aws/aws-sdk-go from 1.51.1 to 1.51.21 [#274](https://github.com/buildkite/buildkite-agent-metrics/pull/274) (@dependabot[bot])
+- build(deps): bump github.com/prometheus/client_model from 0.5.0 to 0.6.0 [#267](https://github.com/buildkite/buildkite-agent-metrics/pull/267) (@dependabot[bot])
+- build(deps): bump github.com/aws/aws-sdk-go from 1.50.35 to 1.51.1 [#268](https://github.com/buildkite/buildkite-agent-metrics/pull/268) (@dependabot[bot])
+- build(deps): bump github.com/aws/aws-lambda-go from 1.42.0 to 1.46.0 [#259](https://github.com/buildkite/buildkite-agent-metrics/pull/259) (@dependabot[bot])
+- build(deps): bump github.com/aws/aws-sdk-go from 1.48.16 to 1.50.35 [#265](https://github.com/buildkite/buildkite-agent-metrics/pull/265) (@dependabot[bot])
+- build(deps): bump google.golang.org/protobuf from 1.31.0 to 1.33.0 [#266](https://github.com/buildkite/buildkite-agent-metrics/pull/266) (@dependabot[bot])
+
 ## [v5.9.3](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.3) (2023-12-19)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.2...v5.9.3)
 
