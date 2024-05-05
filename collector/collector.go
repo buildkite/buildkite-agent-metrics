@@ -1,11 +1,13 @@
 package collector
 
 import (
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"log"
 	"net/http"
+	"net/http/httptrace"
 	"net/http/httputil"
 	"net/url"
 	"strconv"
@@ -142,6 +144,34 @@ func (c *Collector) collectAllQueues(httpClient *http.Client, result *Result) er
 	req.Header.Set("Authorization", fmt.Sprintf("Token %s", c.Token))
 
 	if c.DebugHttp {
+		trace := &httptrace.ClientTrace{
+			DNSStart: func(_ httptrace.DNSStartInfo) {
+				fmt.Printf("dns start: %v\n", time.Now())
+			},
+			DNSDone: func(_ httptrace.DNSDoneInfo) {
+				fmt.Printf("dns done: %v\n", time.Now())
+			},
+			ConnectStart: func(_, _ string) {
+				fmt.Printf("connection start: %v\n", time.Now())
+			},
+			ConnectDone: func(_, _ string, _ error) {
+				fmt.Printf("connection done: %v\n", time.Now())
+			},
+			TLSHandshakeStart: func() {
+				fmt.Printf("TLS Handshake start: %v\n", time.Now())
+			},
+			TLSHandshakeDone: func(_ tls.ConnectionState, _ error) {
+				fmt.Printf("TLS Handshake done: %v\n", time.Now())
+			},
+			WroteHeaders: func() {
+				fmt.Printf("wrote headers: %v\n", time.Now())
+			},
+			WroteRequest: func(_ httptrace.WroteRequestInfo) {
+				fmt.Printf("wrote request: %v\n", time.Now())
+			},
+		}
+
+		req = req.WithContext(httptrace.WithClientTrace(req.Context(), trace))
 		if dump, err := httputil.DumpRequest(req, true); err == nil {
 			log.Printf("DEBUG request uri=%s\n%s\n", req.URL, dump)
 		}
@@ -258,6 +288,34 @@ func (c *Collector) collectQueue(httpClient *http.Client, result *Result, queue 
 	req.Header.Set("Authorization", fmt.Sprintf("Token %s", c.Token))
 
 	if c.DebugHttp {
+		trace := &httptrace.ClientTrace{
+			DNSStart: func(_ httptrace.DNSStartInfo) {
+				fmt.Printf("dns start: %v\n", time.Now())
+			},
+			DNSDone: func(_ httptrace.DNSDoneInfo) {
+				fmt.Printf("dns done: %v\n", time.Now())
+			},
+			ConnectStart: func(_, _ string) {
+				fmt.Printf("connection start: %v\n", time.Now())
+			},
+			ConnectDone: func(_, _ string, _ error) {
+				fmt.Printf("connection done: %v\n", time.Now())
+			},
+			TLSHandshakeStart: func() {
+				fmt.Printf("TLS Handshake start: %v\n", time.Now())
+			},
+			TLSHandshakeDone: func(_ tls.ConnectionState, _ error) {
+				fmt.Printf("TLS Handshake done: %v\n", time.Now())
+			},
+			WroteHeaders: func() {
+				fmt.Printf("wrote headers: %v\n", time.Now())
+			},
+			WroteRequest: func(_ httptrace.WroteRequestInfo) {
+				fmt.Printf("wrote request: %v\n", time.Now())
+			},
+		}
+
+		req = req.WithContext(httptrace.WithClientTrace(req.Context(), trace))
 		if dump, err := httputil.DumpRequest(req, true); err == nil {
 			log.Printf("DEBUG request uri=%s\n%s\n", req.URL, dump)
 		}
