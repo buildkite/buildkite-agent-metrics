@@ -74,10 +74,11 @@ func main() {
 	switch strings.ToLower(*backendOpt) {
 	case "cloudwatch":
 		region := *clwRegion
-		if envRegion := os.Getenv(`AWS_REGION`); region == "" && envRegion != "" {
-			region = envRegion
-		} else {
-			region = `us-east-1`
+		if region == "" {
+			region = os.Getenv("AWS_REGION")
+		}
+		if region == "" {
+			region = "us-east-1"
 		}
 		dimensions, err := backend.ParseCloudWatchDimensions(*clwDimensions)
 		if err != nil {
