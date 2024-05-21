@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptrace"
 	"net/http/httputil"
+	"net/textproto"
 	"net/url"
 	"strconv"
 	"strings"
@@ -145,6 +146,27 @@ func (c *Collector) collectAllQueues(httpClient *http.Client, result *Result) er
 
 	if c.DebugHttp {
 		trace := &httptrace.ClientTrace{
+			GetConn: func(hostPort string) {
+				fmt.Printf("getting connection to %s: %v\n", hostPort, time.Now())
+			},
+			GotConn: func(info httptrace.GotConnInfo) {
+				fmt.Printf("got connection [reused?: %t, idle?: %t (time: %v)]: %v\n",
+					info.Reused, info.WasIdle, info.IdleTime, time.Now())
+			},
+			PutIdleConn: func(err error) {
+				if err == nil {
+					fmt.Printf("connection successfully put idle: %v\n", time.Now())
+				} else {
+					fmt.Printf("Failed to put connection idle with error - %v: %v\n", err, time.Now())
+				}
+			},
+			GotFirstResponseByte: func() {
+				fmt.Printf("received first response byte: %v\n", time.Now())
+			},
+			Got1xxResponse: func(code int, header textproto.MIMEHeader) error {
+				fmt.Printf("received %d with header %v: %v\n", code, header, time.Now())
+				return err
+			},
 			DNSStart: func(_ httptrace.DNSStartInfo) {
 				fmt.Printf("dns start: %v\n", time.Now())
 			},
@@ -173,7 +195,20 @@ func (c *Collector) collectAllQueues(httpClient *http.Client, result *Result) er
 
 		req = req.WithContext(httptrace.WithClientTrace(req.Context(), trace))
 		if dump, err := httputil.DumpRequest(req, true); err == nil {
-			log.Printf("DEBUG request uri=%s\n%s\n", req.URL, dump)
+			redactedRequestDump := make([]string, 0)
+
+			// Redact Authorization header
+			for _, elem := range strings.Split(string(dump[:]), "\r\n") {
+				if strings.Join(strings.Fields(elem), "") != "" {
+					if strings.HasPrefix(elem, "Authorization") {
+						redactedRequestDump = append(redactedRequestDump, "Authorization: <Redacted>")
+					} else {
+						redactedRequestDump = append(redactedRequestDump, elem)
+					}
+				}
+			}
+
+			log.Printf("DEBUG request uri=%s\n%s\n", req.URL, strings.Join(redactedRequestDump, "\n"))
 		}
 	}
 
