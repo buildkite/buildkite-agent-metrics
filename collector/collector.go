@@ -6,10 +6,13 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"maps"
 	"net/http"
 	"net/http/httptrace"
 	"net/http/httputil"
+	"net/textproto"
 	"net/url"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -28,9 +31,9 @@ const (
 	PollDurationHeader = `Buildkite-Agent-Metrics-Poll-Duration`
 )
 
-var (
-	ErrUnauthorized = errors.New("unauthorized")
-)
+var ErrUnauthorized = errors.New("unauthorized")
+
+var traceLog = log.New(os.Stderr, "TRACE", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile|log.Lmsgprefix)
 
 type Collector struct {
 	Endpoint  string
@@ -144,37 +147,7 @@ func (c *Collector) collectAllQueues(httpClient *http.Client, result *Result) er
 	req.Header.Set("Authorization", fmt.Sprintf("Token %s", c.Token))
 
 	if c.DebugHttp {
-		trace := &httptrace.ClientTrace{
-			DNSStart: func(_ httptrace.DNSStartInfo) {
-				fmt.Printf("dns start: %v\n", time.Now())
-			},
-			DNSDone: func(_ httptrace.DNSDoneInfo) {
-				fmt.Printf("dns done: %v\n", time.Now())
-			},
-			ConnectStart: func(_, _ string) {
-				fmt.Printf("connection start: %v\n", time.Now())
-			},
-			ConnectDone: func(_, _ string, _ error) {
-				fmt.Printf("connection done: %v\n", time.Now())
-			},
-			TLSHandshakeStart: func() {
-				fmt.Printf("TLS Handshake start: %v\n", time.Now())
-			},
-			TLSHandshakeDone: func(_ tls.ConnectionState, _ error) {
-				fmt.Printf("TLS Handshake done: %v\n", time.Now())
-			},
-			WroteHeaders: func() {
-				fmt.Printf("wrote headers: %v\n", time.Now())
-			},
-			WroteRequest: func(_ httptrace.WroteRequestInfo) {
-				fmt.Printf("wrote request: %v\n", time.Now())
-			},
-		}
-
-		req = req.WithContext(httptrace.WithClientTrace(req.Context(), trace))
-		if dump, err := httputil.DumpRequest(req, true); err == nil {
-			log.Printf("DEBUG request uri=%s\n%s\n", req.URL, dump)
-		}
+		req = traceHTTPRequest(req)
 	}
 
 	res, err := httpClient.Do(req)
@@ -189,7 +162,7 @@ func (c *Collector) collectAllQueues(httpClient *http.Client, result *Result) er
 
 	if c.DebugHttp {
 		if dump, err := httputil.DumpResponse(res, true); err == nil {
-			log.Printf("DEBUG response uri=%s\n%s\n", req.URL, dump)
+			traceLog.Printf("response uri=%s\n%s", req.URL, dump)
 		}
 	}
 
@@ -288,37 +261,7 @@ func (c *Collector) collectQueue(httpClient *http.Client, result *Result, queue 
 	req.Header.Set("Authorization", fmt.Sprintf("Token %s", c.Token))
 
 	if c.DebugHttp {
-		trace := &httptrace.ClientTrace{
-			DNSStart: func(_ httptrace.DNSStartInfo) {
-				fmt.Printf("dns start: %v\n", time.Now())
-			},
-			DNSDone: func(_ httptrace.DNSDoneInfo) {
-				fmt.Printf("dns done: %v\n", time.Now())
-			},
-			ConnectStart: func(_, _ string) {
-				fmt.Printf("connection start: %v\n", time.Now())
-			},
-			ConnectDone: func(_, _ string, _ error) {
-				fmt.Printf("connection done: %v\n", time.Now())
-			},
-			TLSHandshakeStart: func() {
-				fmt.Printf("TLS Handshake start: %v\n", time.Now())
-			},
-			TLSHandshakeDone: func(_ tls.ConnectionState, _ error) {
-				fmt.Printf("TLS Handshake done: %v\n", time.Now())
-			},
-			WroteHeaders: func() {
-				fmt.Printf("wrote headers: %v\n", time.Now())
-			},
-			WroteRequest: func(_ httptrace.WroteRequestInfo) {
-				fmt.Printf("wrote request: %v\n", time.Now())
-			},
-		}
-
-		req = req.WithContext(httptrace.WithClientTrace(req.Context(), trace))
-		if dump, err := httputil.DumpRequest(req, true); err == nil {
-			log.Printf("DEBUG request uri=%s\n%s\n", req.URL, dump)
-		}
+		req = traceHTTPRequest(req)
 	}
 
 	res, err := httpClient.Do(req)
@@ -333,7 +276,7 @@ func (c *Collector) collectQueue(httpClient *http.Client, result *Result, queue 
 
 	if c.DebugHttp {
 		if dump, err := httputil.DumpResponse(res, true); err == nil {
-			log.Printf("DEBUG response uri=%s\n%s\n", req.URL, dump)
+			traceLog.Printf("response uri=%s\n%s", req.URL, dump)
 		}
 	}
 
@@ -399,4 +342,70 @@ func (r Result) Dump() {
 			log.Printf("Buildkite > Org=%s > Queue=%s > %s=%d", r.Org, name, k, v)
 		}
 	}
+}
+
+func traceHTTPRequest(req *http.Request) *http.Request {
+	trace := &httptrace.ClientTrace{
+		GetConn: func(hostPort string) {
+			traceLog.Printf("getting connection to %s\n", hostPort)
+		},
+		GotConn: func(info httptrace.GotConnInfo) {
+			traceLog.Printf("got connection [reused?: %t, idle?: %t (time: %v)]", info.Reused, info.WasIdle, info.IdleTime)
+		},
+		PutIdleConn: func(err error) {
+			if err != nil {
+				traceLog.Printf("Failed to put connection idle with error - %v", err)
+				return
+			}
+			traceLog.Printf("connection successfully put idle")
+		},
+		GotFirstResponseByte: func() {
+			traceLog.Printf("received first response byte")
+		},
+		Got1xxResponse: func(code int, header textproto.MIMEHeader) error {
+			traceLog.Printf("received %d with header %v", code, header)
+			return nil
+		},
+		DNSStart: func(_ httptrace.DNSStartInfo) {
+			traceLog.Print("dns start")
+		},
+		DNSDone: func(_ httptrace.DNSDoneInfo) {
+			traceLog.Print("dns done")
+		},
+		ConnectStart: func(_, _ string) {
+			traceLog.Print("connection start")
+		},
+		ConnectDone: func(_, _ string, _ error) {
+			traceLog.Print("connection done")
+		},
+		TLSHandshakeStart: func() {
+			traceLog.Print("TLS Handshake start")
+		},
+		TLSHandshakeDone: func(_ tls.ConnectionState, _ error) {
+			traceLog.Print("TLS Handshake done")
+		},
+		WroteHeaders: func() {
+			traceLog.Print("wrote headers")
+		},
+		WroteRequest: func(_ httptrace.WroteRequestInfo) {
+			traceLog.Print("wrote request")
+		},
+	}
+
+	req = req.WithContext(httptrace.WithClientTrace(req.Context(), trace))
+
+	// Don't leak the token in the logs. Temporarily replace the Header
+	// with a clone in order to redact the token.
+	origHeader := req.Header
+	defer func() { req.Header = origHeader }()
+	req.Header = maps.Clone(origHeader)
+	req.Header.Set("Authorization", "Token <redacted>")
+
+	dump, err := httputil.DumpRequest(req, true)
+	if err != nil {
+		traceLog.Printf("Couldn't dump request: %v", err)
+		return req
+	}
+	traceLog.Printf("request uri=%s\n%s", req.URL, dump)
+	return req
 }
