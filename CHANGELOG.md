@@ -4,6 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.9.5](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.5) (2024-05-27)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.4...v5.9.5)
+
+### Changed
+- Adding more debug traces for HTTP and enhance security [#283](https://github.com/buildkite/buildkite-agent-metrics/pull/283) (@CheeseStick)
+- Fix CloudWatch region defaulting [#282](https://github.com/buildkite/buildkite-agent-metrics/pull/282) (@DrJosh9000)
+
+### Dependencies
+- build(deps): bump cloud.google.com/go/monitoring from 1.17.0 to 1.19.0 [#280](https://github.com/buildkite/buildkite-agent-metrics/pull/280) (@dependabot[bot])
+- build(deps): bump github.com/prometheus/client_model from 0.6.0 to 0.6.1 [#276](https://github.com/buildkite/buildkite-agent-metrics/pull/276) (@dependabot[bot])
+
 ## [v5.9.4](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.4) (2024-05-06)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.3...v5.9.4)
 
