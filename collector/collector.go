@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"maps"
 	"net/http"
 	"net/http/httptrace"
 	"net/http/httputil"
@@ -154,11 +155,11 @@ func (c *Collector) collectAllQueues(httpClient *http.Client, result *Result) er
 					info.Reused, info.WasIdle, info.IdleTime, time.Now())
 			},
 			PutIdleConn: func(err error) {
-				if err == nil {
-					fmt.Printf("connection successfully put idle: %v\n", time.Now())
-				} else {
+				if err != nil {
 					fmt.Printf("Failed to put connection idle with error - %v: %v\n", err, time.Now())
+					return
 				}
+				fmt.Printf("connection successfully put idle: %v\n", time.Now())
 			},
 			GotFirstResponseByte: func() {
 				fmt.Printf("received first response byte: %v\n", time.Now())
@@ -194,22 +195,19 @@ func (c *Collector) collectAllQueues(httpClient *http.Client, result *Result) er
 		}
 
 		req = req.WithContext(httptrace.WithClientTrace(req.Context(), trace))
-		if dump, err := httputil.DumpRequest(req, true); err == nil {
-			redactedRequestDump := make([]string, 0)
 
-			// Redact Authorization header
-			for _, elem := range strings.Split(string(dump[:]), "\r\n") {
-				if strings.Join(strings.Fields(elem), "") != "" {
-					if strings.HasPrefix(elem, "Authorization") {
-						redactedRequestDump = append(redactedRequestDump, "Authorization: <Redacted>")
-					} else {
-						redactedRequestDump = append(redactedRequestDump, elem)
-					}
-				}
-			}
+		// Don't leak the token in the logs. Temporarily replace the Header
+		// with a clone in order to redact the token.
+		origHeader := req.Header
+		req.Header = maps.Clone(origHeader)
+		req.Header.Set("Authorization", "Token <redacted>")
 
-			log.Printf("DEBUG request uri=%s\n%s\n", req.URL, strings.Join(redactedRequestDump, "\n"))
+		dump, err := httputil.DumpRequest(req, true)
+		if err != nil {
+			fmt.Printf("Couldn't dump request: %v\n", err)
 		}
+		fmt.Printf("DEBUG request uri=%s\n%s\n", req.URL, dump)
+		req.Header = origHeader
 	}
 
 	res, err := httpClient.Do(req)
