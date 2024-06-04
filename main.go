@@ -141,9 +141,12 @@ func main() {
 		}
 	}
 
+	httpClient := collector.NewHTTPClient(*timeout)
+
 	collectors := make([]*collector.Collector, 0, len(tokens))
 	for _, token := range tokens {
 		collectors = append(collectors, &collector.Collector{
+			Client:    httpClient,
 			UserAgent: userAgent,
 			Endpoint:  *endpoint,
 			Token:     token,
@@ -151,7 +154,6 @@ func main() {
 			Quiet:     *quiet,
 			Debug:     *debug,
 			DebugHttp: *debugHttp,
-			Timeout:   *timeout,
 		})
 	}
 

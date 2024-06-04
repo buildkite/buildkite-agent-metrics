@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"log"
 	"maps"
+	"net"
 	"net/http"
 	"net/http/httptrace"
 	"net/http/httputil"
@@ -36,6 +37,7 @@ var ErrUnauthorized = errors.New("unauthorized")
 var traceLog = log.New(os.Stderr, "TRACE", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile|log.Lmsgprefix)
 
 type Collector struct {
+	Client    *http.Client
 	Endpoint  string
 	Token     string
 	UserAgent string
@@ -43,7 +45,6 @@ type Collector struct {
 	Quiet     bool
 	Debug     bool
 	DebugHttp bool
-	Timeout   int
 }
 
 type Result struct {
@@ -105,17 +106,13 @@ func (c *Collector) Collect() (*Result, error) {
 		Queues: map[string]map[string]int{},
 	}
 
-	httpClient := &http.Client{
-		Timeout: time.Duration(c.Timeout) * time.Second,
-	}
-
 	if len(c.Queues) == 0 {
-		if err := c.collectAllQueues(httpClient, result); err != nil {
+		if err := c.collectAllQueues(result); err != nil {
 			return nil, err
 		}
 	} else {
 		for _, queue := range c.Queues {
-			if err := c.collectQueue(httpClient, result, queue); err != nil {
+			if err := c.collectQueue(result, queue); err != nil {
 				return nil, err
 			}
 		}
@@ -128,7 +125,7 @@ func (c *Collector) Collect() (*Result, error) {
 	return result, nil
 }
 
-func (c *Collector) collectAllQueues(httpClient *http.Client, result *Result) error {
+func (c *Collector) collectAllQueues(result *Result) error {
 	log.Println("Collecting agent metrics for all queues")
 
 	endpoint, err := url.Parse(c.Endpoint)
@@ -150,7 +147,7 @@ func (c *Collector) collectAllQueues(httpClient *http.Client, result *Result) er
 		req = traceHTTPRequest(req)
 	}
 
-	res, err := httpClient.Do(req)
+	res, err := c.Client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -241,7 +238,7 @@ func (c *Collector) collectAllQueues(httpClient *http.Client, result *Result) er
 	return nil
 }
 
-func (c *Collector) collectQueue(httpClient *http.Client, result *Result, queue string) error {
+func (c *Collector) collectQueue(result *Result, queue string) error {
 	log.Printf("Collecting agent metrics for queue '%s'", queue)
 
 	endpoint, err := url.Parse(c.Endpoint)
@@ -264,7 +261,7 @@ func (c *Collector) collectQueue(httpClient *http.Client, result *Result, queue 
 		req = traceHTTPRequest(req)
 	}
 
-	res, err := httpClient.Do(req)
+	res, err := c.Client.Do(req)
 	if err != nil {
 		return err
 	}
@@ -408,4 +405,20 @@ func traceHTTPRequest(req *http.Request) *http.Request {
 	}
 	traceLog.Printf("request uri=%s\n%s", req.URL, dump)
 	return req
+}
+
+func NewHTTPClient(timeout int) *http.Client {
+
+	connectionTimeout := time.Duration(timeout) * time.Second
+
+	return &http.Client{
+		Timeout: connectionTimeout,
+		Transport: &http.Transport{
+			Dial: (&net.Dialer{
+				Timeout:   connectionTimeout,
+				KeepAlive: connectionTimeout,
+			}).Dial,
+			TLSHandshakeTimeout: connectionTimeout,
+		},
+	}
 }

@@ -104,11 +104,14 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 		return "", err
 	}
 
+	httpClient := collector.NewHTTPClient(configuredTimeout)
+
 	userAgent := fmt.Sprintf("buildkite-agent-metrics/%s buildkite-agent-metrics-lambda", version.Version)
 
 	collectors := make([]*collector.Collector, 0, len(tokens))
 	for _, token := range tokens {
 		collectors = append(collectors, &collector.Collector{
+			Client:    httpClient,
 			UserAgent: userAgent,
 			Endpoint:  "https://agent.buildkite.com/v3",
 			Token:     token,
@@ -116,7 +119,6 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 			Quiet:     quiet,
 			Debug:     debug,
 			DebugHttp: debugHTTP,
-			Timeout:   configuredTimeout,
 		})
 	}
 
