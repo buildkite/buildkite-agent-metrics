@@ -56,6 +56,7 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 	quietString := os.Getenv("BUILDKITE_QUIET")
 	quiet := quietString == "1" || quietString == "true"
 	timeout := os.Getenv("BUILDKITE_AGENT_METRICS_TIMEOUT")
+	maxIdleConns := os.Getenv("BUILDKITE_AGENT_METRICS_MAX_IDLE_CONNS")
 
 	debugEnvVar := os.Getenv("BUILDKITE_AGENT_METRICS_DEBUG")
 	debug := debugEnvVar == "1" || debugEnvVar == "true"
@@ -98,13 +99,21 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 		timeout = "15"
 	}
 
-	configuredTimeout, err := strconv.Atoi(timeout)
+	if maxIdleConns == "" {
+		maxIdleConns = "0" // default to unlimited
+	}
 
+	configuredTimeout, err := strconv.Atoi(timeout)
 	if err != nil {
 		return "", err
 	}
 
-	httpClient := collector.NewHTTPClient(configuredTimeout)
+	configuredMaxIdleConns, err := strconv.Atoi(maxIdleConns)
+	if err != nil {
+		return "", err
+	}
+
+	httpClient := collector.NewHTTPClient(configuredTimeout, configuredMaxIdleConns)
 
 	userAgent := fmt.Sprintf("buildkite-agent-metrics/%s buildkite-agent-metrics-lambda", version.Version)
 

@@ -407,18 +407,25 @@ func traceHTTPRequest(req *http.Request) *http.Request {
 	return req
 }
 
-func NewHTTPClient(timeout int) *http.Client {
+func NewHTTPClient(timeout, maxIdleConns int) *http.Client {
 
 	connectionTimeout := time.Duration(timeout) * time.Second
 
 	return &http.Client{
 		Timeout: connectionTimeout,
 		Transport: &http.Transport{
+			MaxIdleConns:          maxIdleConns,
+			IdleConnTimeout:       connectionTimeout,
+			ResponseHeaderTimeout: connectionTimeout,
+			DisableKeepAlives:     false,
 			Dial: (&net.Dialer{
 				Timeout:   connectionTimeout,
 				KeepAlive: connectionTimeout,
 			}).Dial,
 			TLSHandshakeTimeout: connectionTimeout,
+		},
+		CheckRedirect: func(req *http.Request, via []*http.Request) error {
+			return http.ErrUseLastResponse
 		},
 	}
 }
