@@ -73,6 +73,12 @@ It requires a `provided.al2` environment and respects the following env vars:
    `Key=Value,Other=Value` containing the Cloudwatch dimensions to index metrics
    under.
 
+To adjust timeouts, and connection pooling in the HTTP client use the following env vars:
+
+- `BUILDKITE_AGENT_METRICS_TIMEOUT` : Timeout, in seconds, TLS handshake and idle connections, for HTTP requests, to Buildkite API (default 15).
+- `BUILDKITE_AGENT_METRICS_MAX_IDLE_CONNS` : Maximum number of idle (keep-alive) HTTP connections 
+   for Buildkite Agent API. Zero means no limit, -1 disables pooling (default 100).
+
 Additionally, one of the following groups of environment variables must be set
 in order to define how the Lambda function should obtain the required Buildkite
 Agent API token:
@@ -140,43 +146,47 @@ docker run --rm buildkite-agent-metrics -token abc123 -interval 30s -queue my-qu
 $ buildkite-agent-metrics --help
 Usage of buildkite-agent-metrics:
   -backend string
-    	Specify the backend to use: cloudwatch, statsd, prometheus, stackdriver (default "cloudwatch")
+        Specify the backend to use: cloudwatch, newrelic, prometheus, stackdriver, statsd (default "cloudwatch")
   -cloudwatch-dimensions string
-    	Cloudwatch dimensions to index metrics under, in the form of Key=Value, Other=Value
+        Cloudwatch dimensions to index metrics under, in the form of Key=Value, Other=Value
   -cloudwatch-region string
-    	AWS Region to connect to, defaults to $AWS_REGION or us-east-1
+        AWS Region to connect to, defaults to $AWS_REGION or us-east-1
   -debug
-    	Show debug output
+        Show debug output
   -debug-http
-    	Show full http traces
+        Show full http traces
   -dry-run
-    	Whether to only print metrics
+        Whether to only print metrics
   -endpoint string
-    	A custom Buildkite Agent API endpoint (default "https://agent.buildkite.com/v3")
+        A custom Buildkite Agent API endpoint (default "https://agent.buildkite.com/v3")
   -interval duration
-    	Update metrics every interval, rather than once
+        Update metrics every interval, rather than once
+  -max-idle-conns int
+        Maximum number of idle (keep-alive) HTTP connections for Buildkite Agent API. Zero means no limit, -1 disables connection reuse. (default 100)
   -newrelic-app-name string
-    	New Relic application name for metric events
+        New Relic application name for metric events
   -newrelic-license-key string
-    	New Relic license key for publishing events
+        New Relic license key for publishing events
   -prometheus-addr string
-    	Prometheus metrics transport bind address (default ":8080")
+        Prometheus metrics transport bind address (default ":8080")
   -prometheus-path string
-    	Prometheus metrics transport path (default "/metrics")
+        Prometheus metrics transport path (default "/metrics")
   -queue value
-    	Specific queues to process
+        Specific queues to process
   -quiet
-    	Only print errors
+        Only print errors
   -stackdriver-projectid string
-    	Specify Stackdriver Project ID
+        Specify Stackdriver Project ID
   -statsd-host string
-    	Specify the StatsD server (default "127.0.0.1:8125")
+        Specify the StatsD server (default "127.0.0.1:8125")
   -statsd-tags
-    	Whether your StatsD server supports tagging like Datadog
-  -token string
-    	A Buildkite Agent Registration Token
+        Whether your StatsD server supports tagging like Datadog
+  -timeout int
+        Timeout, in seconds, for HTTP requests to Buildkite API (default 15)
+  -token value
+        Buildkite Agent registration tokens. At least one is required. Multiple cluster tokens can be used to gather metrics for multiple clusters.
   -version
-    	Show the version
+        Show the version
 ```
 
 ### Backends

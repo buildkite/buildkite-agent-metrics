@@ -56,6 +56,7 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 	quietString := os.Getenv("BUILDKITE_QUIET")
 	quiet := quietString == "1" || quietString == "true"
 	timeout := os.Getenv("BUILDKITE_AGENT_METRICS_TIMEOUT")
+	maxIdleConns := os.Getenv("BUILDKITE_AGENT_METRICS_MAX_IDLE_CONNS")
 
 	debugEnvVar := os.Getenv("BUILDKITE_AGENT_METRICS_DEBUG")
 	debug := debugEnvVar == "1" || debugEnvVar == "true"
@@ -94,17 +95,17 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 		queues = strings.Split(queue, ",")
 	}
 
-	if timeout == "" {
-		timeout = "15"
-	}
-
-	configuredTimeout, err := strconv.Atoi(timeout)
-
+	configuredTimeout, err := toIntWithDefault(timeout, 15)
 	if err != nil {
 		return "", err
 	}
 
-	httpClient := collector.NewHTTPClient(configuredTimeout)
+	configuredMaxIdleConns, err := toIntWithDefault(maxIdleConns, 100) // Default to 100 in line with http.DefaultTransport
+	if err != nil {
+		return "", err
+	}
+
+	httpClient := collector.NewHTTPClient(configuredTimeout, configuredMaxIdleConns)
 
 	userAgent := fmt.Sprintf("buildkite-agent-metrics/%s buildkite-agent-metrics-lambda", version.Version)
 
@@ -273,4 +274,12 @@ func checkMutuallyExclusiveEnvVars(varNames ...string) error {
 	default:
 		return fmt.Errorf("the environment variables [%s] are mutually exclusive", strings.Join(foundVars, ","))
 	}
+}
+
+func toIntWithDefault(val string, defaultVal int) (int, error) {
+	if val == "" {
+		return defaultVal, nil
+	}
+
+	return strconv.Atoi(val)
 }

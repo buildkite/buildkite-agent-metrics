@@ -20,14 +20,15 @@ var metricsBackend backend.Backend
 
 func main() {
 	var (
-		interval    = flag.Duration("interval", 0, "Update metrics every interval, rather than once")
-		showVersion = flag.Bool("version", false, "Show the version")
-		quiet       = flag.Bool("quiet", false, "Only print errors")
-		debug       = flag.Bool("debug", false, "Show debug output")
-		debugHttp   = flag.Bool("debug-http", false, "Show full http traces")
-		dryRun      = flag.Bool("dry-run", false, "Whether to only print metrics")
-		endpoint    = flag.String("endpoint", "https://agent.buildkite.com/v3", "A custom Buildkite Agent API endpoint")
-		timeout     = flag.Int("timeout", 15, "Timeout, in seconds, for HTTP requests to Buildkite API")
+		interval     = flag.Duration("interval", 0, "Update metrics every interval, rather than once")
+		showVersion  = flag.Bool("version", false, "Show the version")
+		quiet        = flag.Bool("quiet", false, "Only print errors")
+		debug        = flag.Bool("debug", false, "Show debug output")
+		debugHttp    = flag.Bool("debug-http", false, "Show full http traces")
+		dryRun       = flag.Bool("dry-run", false, "Whether to only print metrics")
+		endpoint     = flag.String("endpoint", "https://agent.buildkite.com/v3", "A custom Buildkite Agent API endpoint")
+		timeout      = flag.Int("timeout", 15, "Timeout, in seconds, TLS handshake and idle connections, for HTTP requests, to Buildkite API")
+		maxIdleConns = flag.Int("max-idle-conns", 100, "Maximum number of idle (keep-alive) HTTP connections for Buildkite Agent API. Zero means no limit, -1 disables connection reuse.")
 
 		// backend config
 		backendOpt     = flag.String("backend", "cloudwatch", "Specify the backend to use: cloudwatch, newrelic, prometheus, stackdriver, statsd")
@@ -141,7 +142,7 @@ func main() {
 		}
 	}
 
-	httpClient := collector.NewHTTPClient(*timeout)
+	httpClient := collector.NewHTTPClient(*timeout, *maxIdleConns)
 
 	collectors := make([]*collector.Collector, 0, len(tokens))
 	for _, token := range tokens {
