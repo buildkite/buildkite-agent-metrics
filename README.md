@@ -77,7 +77,7 @@ To adjust timeouts, and connection pooling in the HTTP client use the following 
 
 - `BUILDKITE_AGENT_METRICS_TIMEOUT` : Timeout, in seconds, TLS handshake and idle connections, for HTTP requests, to Buildkite API (default 15).
 - `BUILDKITE_AGENT_METRICS_MAX_IDLE_CONNS` : Maximum number of idle (keep-alive) HTTP connections 
-   for Buildkite Agent API. Zero means no limit, -1 disables pooling (default 0).
+   for Buildkite Agent API. Zero means no limit, -1 disables pooling (default 100).
 
 Additionally, one of the following groups of environment variables must be set
 in order to define how the Lambda function should obtain the required Buildkite
@@ -162,7 +162,7 @@ Usage of buildkite-agent-metrics:
   -interval duration
         Update metrics every interval, rather than once
   -max-idle-conns int
-        Maximum number of idle (keep-alive) HTTP connections for Buildkite Agent API. Zero means no limit, -1 disables pooling.
+        Maximum number of idle (keep-alive) HTTP connections for Buildkite Agent API. Zero means no limit, -1 disables connection reuse. (default 100)
   -newrelic-app-name string
         New Relic application name for metric events
   -newrelic-license-key string

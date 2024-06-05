@@ -28,7 +28,7 @@ func main() {
 		dryRun       = flag.Bool("dry-run", false, "Whether to only print metrics")
 		endpoint     = flag.String("endpoint", "https://agent.buildkite.com/v3", "A custom Buildkite Agent API endpoint")
 		timeout      = flag.Int("timeout", 15, "Timeout, in seconds, TLS handshake and idle connections, for HTTP requests, to Buildkite API")
-		maxIdleConns = flag.Int("max-idle-conns", 0, "Maximum number of idle (keep-alive) HTTP connections for Buildkite Agent API. Zero means no limit, -1 disables pooling.")
+		maxIdleConns = flag.Int("max-idle-conns", 100, "Maximum number of idle (keep-alive) HTTP connections for Buildkite Agent API. Zero means no limit, -1 disables connection reuse.")
 
 		// backend config
 		backendOpt     = flag.String("backend", "cloudwatch", "Specify the backend to use: cloudwatch, newrelic, prometheus, stackdriver, statsd")

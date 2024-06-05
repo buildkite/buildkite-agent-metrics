@@ -100,7 +100,7 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 	}
 
 	if maxIdleConns == "" {
-		maxIdleConns = "0" // default to unlimited
+		maxIdleConns = "100" // Default to 100 in line with http.DefaultTransport
 	}
 
 	configuredTimeout, err := strconv.Atoi(timeout)
