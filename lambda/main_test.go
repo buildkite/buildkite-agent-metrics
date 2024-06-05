@@ -32,10 +32,10 @@ func Test_toIntWithDefault(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			if got, err := toIntWithDefault(tt.args.value, tt.args.defaults); (err != nil) != tt.wantErr {
-				t.Errorf("toIntWithDefault() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("toIntWithDefault(%q, %d) error = %v, wantErr %v", tt.args.value, tt.args.defaults, err, tt.wantErr)
 			} else {
 				if got != tt.want {
-					t.Errorf("toIntWithDefault() = %v, want %v", got, tt.want)
+					t.Errorf("toIntWithDefault(%q, %d) = %v, want %v", tt.args.value, tt.args.defaults, got, tt.want)
 				}
 			}
 		})
