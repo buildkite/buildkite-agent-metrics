@@ -95,20 +95,12 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 		queues = strings.Split(queue, ",")
 	}
 
-	if timeout == "" {
-		timeout = "15"
-	}
-
-	if maxIdleConns == "" {
-		maxIdleConns = "100" // Default to 100 in line with http.DefaultTransport
-	}
-
-	configuredTimeout, err := strconv.Atoi(timeout)
+	configuredTimeout, err := toIntWithDefault(timeout, 15)
 	if err != nil {
 		return "", err
 	}
 
-	configuredMaxIdleConns, err := strconv.Atoi(maxIdleConns)
+	configuredMaxIdleConns, err := toIntWithDefault(maxIdleConns, 100) // Default to 100 in line with http.DefaultTransport
 	if err != nil {
 		return "", err
 	}
@@ -282,4 +274,12 @@ func checkMutuallyExclusiveEnvVars(varNames ...string) error {
 	default:
 		return fmt.Errorf("the environment variables [%s] are mutually exclusive", strings.Join(foundVars, ","))
 	}
+}
+
+func toIntWithDefault(val string, defaultVal int) (int, error) {
+	if val == "" {
+		return defaultVal, nil
+	}
+
+	return strconv.Atoi(val)
 }
