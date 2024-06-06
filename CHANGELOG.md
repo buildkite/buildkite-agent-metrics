@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.9.6](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.6) (2024-06-05)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.5...v5.9.6)
+
+### Changed
+- This change enables configuration of http connection pooling [#286](https://github.com/buildkite/buildkite-agent-metrics/pull/286) (@wolfeidau)
+- This change will ensure a single HTTP client is created [#285](https://github.com/buildkite/buildkite-agent-metrics/pull/285) (@wolfeidau)
+
 ## [v5.9.5](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.5) (2024-05-27)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.4...v5.9.5)
 
