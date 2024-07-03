@@ -45,10 +45,7 @@ func (p *Prometheus) Collect(r *collector.Result) error {
 	}
 
 	for name, value := range r.Totals {
-		labelNames := []string{}
-		if r.Cluster != "" {
-			labelNames = append(labelNames, "cluster")
-		}
+		labelNames := []string{"cluster"}
 		gauge, ok := p.totals[name]
 		if !ok {
 			gauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
@@ -59,21 +56,15 @@ func (p *Prometheus) Collect(r *collector.Result) error {
 			p.totals[name] = gauge
 		}
 
-		if r.Cluster != "" {
-			gauge.WithLabelValues(r.Cluster).Set(float64(value))
-		} else {
-			gauge.WithLabelValues().Set(float64(value))
-		}
+		// note that r.Cluster will be empty for unclustered agents, this label will be dropped by promethues
+		gauge.WithLabelValues(r.Cluster).Set(float64(value))
 	}
 
 	for queue, counts := range r.Queues {
 		for name, value := range counts {
 			gauge, ok := p.queues[name]
 			if !ok {
-				labelNames := []string{"queue"}
-				if r.Cluster != "" {
-					labelNames = append(labelNames, "cluster")
-				}
+				labelNames := []string{"queue", "cluster"}
 				gauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 					Name: fmt.Sprintf("buildkite_queues_%s", camelToUnderscore(name)),
 					Help: fmt.Sprintf("Buildkite Queues: %s", name),
@@ -81,11 +72,9 @@ func (p *Prometheus) Collect(r *collector.Result) error {
 				prometheus.MustRegister(gauge)
 				p.queues[name] = gauge
 			}
-			if r.Cluster != "" {
-				gauge.WithLabelValues(queue, r.Cluster).Set(float64(value))
-			} else {
-				gauge.WithLabelValues(queue).Set(float64(value))
-			}
+
+			// note that r.Cluster will be empty for unclustered agents, this label will be dropped by promethues
+			gauge.WithLabelValues(queue, r.Cluster).Set(float64(value))
 		}
 	}
 
