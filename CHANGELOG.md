@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.9.7](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.7) (2024-07-04)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.6...v5.9.7)
+
+### Fixed
+- fix for prometheus backend panic'ing when using unclustered agents [#288](https://github.com/buildkite/buildkite-agent-metrics/pull/288) (@wolfeidau)
+
+### Dependencies
+- Update the lambda dockerfile to use al2023 [#291](https://github.com/buildkite/buildkite-agent-metrics/pull/291) (@wolfeidau)
+
+### Internal
+- Allow dependabot to keep our dockerfiles up to date [#289](https://github.com/buildkite/buildkite-agent-metrics/pull/289) (@wolfeidau)
+
 ## [v5.9.6](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.6) (2024-06-05)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.5...v5.9.6)
 
