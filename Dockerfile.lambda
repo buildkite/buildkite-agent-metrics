@@ -1,6 +1,6 @@
-FROM public.ecr.aws/lambda/provided:al2
+FROM public.ecr.aws/lambda/provided:al2023@sha256:aff4e78700670b95765d5a42a3c318e72bac2500cdc57db4d0e53bdb4536fb4e
 
-RUN yum install -y unzip wget && \
+RUN dnf install -y unzip wget && \
     wget "https://github.com/buildkite/buildkite-agent-metrics/releases/latest/download/handler.zip" && \
     unzip handler.zip && rm -f handler.zip
 
