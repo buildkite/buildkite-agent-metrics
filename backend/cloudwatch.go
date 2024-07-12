@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/cloudwatch"
-	"github.com/buildkite/buildkite-agent-metrics/collector"
+	"github.com/buildkite/buildkite-agent-metrics/v5/collector"
 )
 
 // CloudWatchDimension is a dimension to add to metrics
@@ -69,7 +69,18 @@ func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 
 	// Set the baseline org dimension
 	dimensions := []*cloudwatch.Dimension{
-		&cloudwatch.Dimension{Name: aws.String("Org"), Value: aws.String(r.Org)},
+		{
+			Name:  aws.String("Org"),
+			Value: aws.String(r.Org),
+		},
+	}
+
+	// Add cluster dimension if a cluster token was used
+	if r.Cluster != "" {
+		dimensions = append(dimensions, &cloudwatch.Dimension{
+			Name:  aws.String("Cluster"),
+			Value: aws.String(r.Cluster),
+		})
 	}
 
 	// Add custom dimension if provided

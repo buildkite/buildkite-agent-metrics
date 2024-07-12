@@ -4,9 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
@@ -16,10 +17,10 @@ import (
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/aws/aws-sdk-go/service/ssm"
 
-	"github.com/buildkite/buildkite-agent-metrics/backend"
-	"github.com/buildkite/buildkite-agent-metrics/collector"
-	"github.com/buildkite/buildkite-agent-metrics/token"
-	"github.com/buildkite/buildkite-agent-metrics/version"
+	"github.com/buildkite/buildkite-agent-metrics/v5/backend"
+	"github.com/buildkite/buildkite-agent-metrics/v5/collector"
+	"github.com/buildkite/buildkite-agent-metrics/v5/token"
+	"github.com/buildkite/buildkite-agent-metrics/v5/version"
 )
 
 const (
@@ -46,40 +47,50 @@ func main() {
 }
 
 func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
-	var b backend.Backend
-	var provider token.Provider
-	var bkToken string
-	var err error
+	// Where we send metrics
+	var metricsBackend backend.Backend
 
 	awsRegion := os.Getenv("AWS_REGION")
 	backendOpt := os.Getenv("BUILDKITE_BACKEND")
 	queue := os.Getenv("BUILDKITE_QUEUE")
 	clwDimensions := os.Getenv("BUILDKITE_CLOUDWATCH_DIMENSIONS")
 	quietString := os.Getenv("BUILDKITE_QUIET")
-	enableHighResolutionString := os.Getenv("BUILDKITE_CLOUDWATCH_HIGH_RESOLUTION")
 	quiet := quietString == "1" || quietString == "true"
+	enableHighResolutionString := os.Getenv("BUILDKITE_CLOUDWATCH_HIGH_RESOLUTION")
 	enableHighResolution := enableHighResolutionString == "1" || enableHighResolutionString == "true"
+	timeout := os.Getenv("BUILDKITE_AGENT_METRICS_TIMEOUT")
+	maxIdleConns := os.Getenv("BUILDKITE_AGENT_METRICS_MAX_IDLE_CONNS")
+
+	debugEnvVar := os.Getenv("BUILDKITE_AGENT_METRICS_DEBUG")
+	debug := debugEnvVar == "1" || debugEnvVar == "true"
+
+	debugHTTPEnvVar := os.Getenv("BUILDKITE_AGENT_METRICS_DEBUG_HTTP")
+	debugHTTP := debugHTTPEnvVar == "1" || debugHTTPEnvVar == "true"
 
 	if quiet {
-		log.SetOutput(ioutil.Discard)
+		log.SetOutput(io.Discard)
 	}
 
-	t := time.Now()
+	startTime := time.Now()
 
-	if !nextPollTime.IsZero() && nextPollTime.After(t) {
+	if !nextPollTime.IsZero() && nextPollTime.After(startTime) {
 		log.Printf("Skipping polling, next poll time is in %v",
-			nextPollTime.Sub(t))
+			nextPollTime.Sub(startTime))
 		return "", nil
 	}
 
-	provider, err = initTokenProvider(awsRegion)
+	providers, err := initTokenProvider(awsRegion)
 	if err != nil {
 		return "", err
 	}
 
-	bkToken, err = provider.Get()
-	if err != nil {
-		return "", err
+	tokens := make([]string, 0)
+	for _, provider := range providers {
+		bkToken, err := provider.Get()
+		if err != nil {
+			return "", err
+		}
+		tokens = append(tokens, bkToken)
 	}
 
 	queues := []string{}
@@ -87,55 +98,81 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 		queues = strings.Split(queue, ",")
 	}
 
+	configuredTimeout, err := toIntWithDefault(timeout, 15)
+	if err != nil {
+		return "", err
+	}
+
+	configuredMaxIdleConns, err := toIntWithDefault(maxIdleConns, 100) // Default to 100 in line with http.DefaultTransport
+	if err != nil {
+		return "", err
+	}
+
+	httpClient := collector.NewHTTPClient(configuredTimeout, configuredMaxIdleConns)
+
 	userAgent := fmt.Sprintf("buildkite-agent-metrics/%s buildkite-agent-metrics-lambda", version.Version)
 
-	c := collector.Collector{
-		UserAgent: userAgent,
-		Endpoint:  "https://agent.buildkite.com/v3",
-		Token:     bkToken,
-		Queues:    queues,
-		Quiet:     quiet,
-		Debug:     false,
-		DebugHttp: false,
+	collectors := make([]*collector.Collector, 0, len(tokens))
+	for _, token := range tokens {
+		collectors = append(collectors, &collector.Collector{
+			Client:    httpClient,
+			UserAgent: userAgent,
+			Endpoint:  "https://agent.buildkite.com/v3",
+			Token:     token,
+			Queues:    queues,
+			Quiet:     quiet,
+			Debug:     debug,
+			DebugHttp: debugHTTP,
+		})
 	}
 
 	switch strings.ToLower(backendOpt) {
 	case "statsd":
 		statsdHost := os.Getenv("STATSD_HOST")
 		statsdTags := strings.EqualFold(os.Getenv("STATSD_TAGS"), "true")
-		b, err = backend.NewStatsDBackend(statsdHost, statsdTags)
+		metricsBackend, err = backend.NewStatsDBackend(statsdHost, statsdTags)
 		if err != nil {
 			return "", err
 		}
+
 	case "newrelic":
 		nrAppName := os.Getenv("NEWRELIC_APP_NAME")
 		nrLicenseKey := os.Getenv("NEWRELIC_LICENSE_KEY")
-		b, err = backend.NewNewRelicBackend(nrAppName, nrLicenseKey)
+		metricsBackend, err = backend.NewNewRelicBackend(nrAppName, nrLicenseKey)
 		if err != nil {
 			fmt.Printf("Error starting New Relic client: %v\n", err)
 			os.Exit(1)
 		}
+
 	default:
 		dimensions, err := backend.ParseCloudWatchDimensions(clwDimensions)
 		if err != nil {
 			return "", err
 		}
-		b = backend.NewCloudWatchBackend(awsRegion, dimensions, int64(time.Since(lastPollTime).Seconds()), enableHighResolution)
+		metricsBackend = backend.NewCloudWatchBackend(awsRegion, dimensions, int64(time.Since(lastPollTime).Seconds()), enableHighResolution)
 	}
 
-	res, err := c.Collect()
-	if err != nil {
-		return "", err
+	// minimum res.PollDuration across collectors
+	var pollDuration time.Duration
+
+	for _, c := range collectors {
+		res, err := c.Collect()
+		if err != nil {
+			return "", err
+		}
+
+		if res.PollDuration > pollDuration {
+			pollDuration = res.PollDuration
+		}
+
+		res.Dump()
+
+		if err := metricsBackend.Collect(res); err != nil {
+			return "", err
+		}
 	}
 
-	res.Dump()
-
-	err = b.Collect(res)
-	if err != nil {
-		return "", err
-	}
-
-	original, ok := b.(backend.Closer)
+	original, ok := metricsBackend.(backend.Closer)
 	if ok {
 		err := original.Close()
 		if err != nil {
@@ -144,27 +181,34 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 	}
 
 	lastPollTime = time.Now()
-	log.Printf("Finished in %s", lastPollTime.Sub(t))
+	log.Printf("Finished in %s", time.Since(startTime))
 
 	// Store the next acceptable poll time in global state
-	nextPollTime = lastPollTime.Add(res.PollDuration)
+	nextPollTime = time.Now().Add(pollDuration)
 
 	return "", nil
 }
 
-func initTokenProvider(awsRegion string) (token.Provider, error) {
-	mutuallyExclusiveEnvVars := []string{
+func initTokenProvider(awsRegion string) ([]token.Provider, error) {
+	err := checkMutuallyExclusiveEnvVars(
 		BKAgentTokenEnvVar,
 		BKAgentTokenSSMKeyEnvVar,
 		BKAgentTokenSecretsManagerSecretIDEnvVar,
-	}
-
-	if err := checkMutuallyExclusiveEnvVars(mutuallyExclusiveEnvVars...); err != nil {
+	)
+	if err != nil {
 		return nil, err
 	}
 
-	if bkToken := os.Getenv(BKAgentTokenEnvVar); bkToken != "" {
-		return token.NewInMemory(bkToken)
+	var providers []token.Provider
+	if bkTokenEnvVar := os.Getenv(BKAgentTokenEnvVar); bkTokenEnvVar != "" {
+		bkTokens := strings.Split(bkTokenEnvVar, ",")
+		for _, bkToken := range bkTokens {
+			provider, err := token.NewInMemory(bkToken)
+			if err != nil {
+				return nil, err
+			}
+			providers = append(providers, provider)
+		}
 	}
 
 	if ssmKey := os.Getenv(BKAgentTokenSSMKeyEnvVar); ssmKey != "" {
@@ -173,7 +217,11 @@ func initTokenProvider(awsRegion string) (token.Provider, error) {
 			return nil, err
 		}
 		client := ssm.New(sess)
-		return token.NewSSM(client, ssmKey)
+		provider, err := token.NewSSM(client, ssmKey)
+		if err != nil {
+			return nil, err
+		}
+		providers = append(providers, provider)
 	}
 
 	if secretsManagerSecretID := os.Getenv(BKAgentTokenSecretsManagerSecretIDEnvVar); secretsManagerSecretID != "" {
@@ -184,14 +232,32 @@ func initTokenProvider(awsRegion string) (token.Provider, error) {
 		}
 		client := secretsmanager.New(sess)
 		if jsonKey == "" {
-			return token.NewSecretsManager(client, secretsManagerSecretID)
+			secretIDs := strings.Split(secretsManagerSecretID, ",")
+			for _, secretID := range secretIDs {
+				secretManager, err := token.NewSecretsManager(client, secretID)
+				if err != nil {
+					return nil, err
+				}
+				providers = append(providers, secretManager)
+			}
 		} else {
-			return token.NewSecretsManager(client, secretsManagerSecretID, token.WithSecretsManagerJSONSecret(jsonKey))
+			secretManager, err := token.NewSecretsManager(client, secretsManagerSecretID, token.WithSecretsManagerJSONSecret(jsonKey))
+			if err != nil {
+				return nil, err
+			}
+			providers = append(providers, secretManager)
 		}
 	}
 
-	return nil, fmt.Errorf("failed to initialize Buildkite token provider: one of the [%s] environment variables "+
-		"must be provided", strings.Join(mutuallyExclusiveEnvVars, ","))
+	if len(providers) == 0 {
+		// This should be very unlikely or even impossible (famous last words):
+		// - There was exactly one of the mutually-exclusive env vars
+		// - If a token provider above failed to use its value, it should error
+		// - Otherwise, each if-branch appends to providers, so...
+		return nil, fmt.Errorf("no Buildkite token providers could be created")
+	}
+
+	return providers, nil
 }
 
 func checkMutuallyExclusiveEnvVars(varNames ...string) error {
@@ -202,8 +268,22 @@ func checkMutuallyExclusiveEnvVars(varNames ...string) error {
 			foundVars = append(foundVars, value)
 		}
 	}
-	if len(foundVars) > 1 {
+	switch len(foundVars) {
+	case 0:
+		return fmt.Errorf("one of the environment variables [%s] must be provided", strings.Join(varNames, ","))
+
+	case 1:
+		return nil // that's what we want
+
+	default:
 		return fmt.Errorf("the environment variables [%s] are mutually exclusive", strings.Join(foundVars, ","))
 	}
-	return nil
+}
+
+func toIntWithDefault(val string, defaultVal int) (int, error) {
+	if val == "" {
+		return defaultVal, nil
+	}
+
+	return strconv.Atoi(val)
 }

@@ -7,7 +7,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/buildkite/buildkite-agent-metrics/collector"
+	"github.com/buildkite/buildkite-agent-metrics/v5/collector"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -18,60 +18,63 @@ var (
 )
 
 type Prometheus struct {
-	totals    map[string]prometheus.Gauge
+	totals    map[string]*prometheus.GaugeVec
 	queues    map[string]*prometheus.GaugeVec
 	pipelines map[string]*prometheus.GaugeVec
 }
 
-func NewPrometheusBackend(path, addr string) *Prometheus {
-	go func() {
-		http.Handle(path, promhttp.Handler())
-		log.Fatal(http.ListenAndServe(addr, nil))
-	}()
-
-	return newPrometheus()
-}
-
-func newPrometheus() *Prometheus {
+func NewPrometheusBackend() *Prometheus {
 	return &Prometheus{
-		totals:    make(map[string]prometheus.Gauge),
+		totals:    make(map[string]*prometheus.GaugeVec),
 		queues:    make(map[string]*prometheus.GaugeVec),
 		pipelines: make(map[string]*prometheus.GaugeVec),
 	}
 }
 
-func (p *Prometheus) Collect(r *collector.Result) error {
+// Serve runs a Prometheus metrics HTTP server.
+func (p *Prometheus) Serve(path, addr string) {
+	m := http.NewServeMux()
+	m.Handle(path, promhttp.Handler())
+	log.Fatal(http.ListenAndServe(addr, m))
+}
 
+func (p *Prometheus) Collect(r *collector.Result) error {
 	// Clear the gauges to prevent stale values from persisting forever.
 	for _, gauge := range p.queues {
 		gauge.Reset()
 	}
 
 	for name, value := range r.Totals {
+		labelNames := []string{"cluster"}
 		gauge, ok := p.totals[name]
 		if !ok {
-			gauge = prometheus.NewGauge(prometheus.GaugeOpts{
+			gauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 				Name: fmt.Sprintf("buildkite_total_%s", camelToUnderscore(name)),
 				Help: fmt.Sprintf("Buildkite Total: %s", name),
-			})
+			}, labelNames)
 			prometheus.MustRegister(gauge)
 			p.totals[name] = gauge
 		}
-		gauge.Set(float64(value))
+
+		// note that r.Cluster will be empty for unclustered agents, this label will be dropped by promethues
+		gauge.WithLabelValues(r.Cluster).Set(float64(value))
 	}
 
 	for queue, counts := range r.Queues {
 		for name, value := range counts {
 			gauge, ok := p.queues[name]
 			if !ok {
+				labelNames := []string{"queue", "cluster"}
 				gauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 					Name: fmt.Sprintf("buildkite_queues_%s", camelToUnderscore(name)),
 					Help: fmt.Sprintf("Buildkite Queues: %s", name),
-				}, []string{"queue"})
+				}, labelNames)
 				prometheus.MustRegister(gauge)
 				p.queues[name] = gauge
 			}
-			gauge.WithLabelValues(queue).Set(float64(value))
+
+			// note that r.Cluster will be empty for unclustered agents, this label will be dropped by promethues
+			gauge.WithLabelValues(queue, r.Cluster).Set(float64(value))
 		}
 	}
 

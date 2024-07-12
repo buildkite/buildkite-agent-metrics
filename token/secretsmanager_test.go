@@ -7,7 +7,7 @@ import (
 
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
-	"github.com/buildkite/buildkite-agent-metrics/token/mock"
+	"github.com/buildkite/buildkite-agent-metrics/v5/token/mock"
 	"github.com/golang/mock/gomock"
 )
 

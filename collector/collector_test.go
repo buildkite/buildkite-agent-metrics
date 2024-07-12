@@ -24,6 +24,7 @@ func TestCollectorWithEmptyResponseForAllQueues(t *testing.T) {
 		}
 	}))
 	c := &Collector{
+		Client:    &http.Client{},
 		Endpoint:  s.URL,
 		Token:     "abc123",
 		UserAgent: "some-client/1.2.3",
@@ -86,6 +87,7 @@ func TestCollectorWithNoJobsForAllQueues(t *testing.T) {
 		}
 	}))
 	c := &Collector{
+		Client:    &http.Client{},
 		Endpoint:  s.URL,
 		Token:     "abc123",
 		UserAgent: "some-client/1.2.3",
@@ -165,6 +167,7 @@ func TestCollectorWithSomeJobsAndAgentsForAllQueues(t *testing.T) {
 		}
 	}))
 	c := &Collector{
+		Client:    &http.Client{},
 		Endpoint:  s.URL,
 		Token:     "abc123",
 		UserAgent: "some-client/1.2.3",
@@ -202,7 +205,7 @@ func TestCollectorWithSomeJobsAndAgentsForAllQueues(t *testing.T) {
 		{"Queue.deploy", res.Queues["deploy"], IdleAgentCount, 0},
 	}
 
-	for queue, _ := range res.Queues {
+	for queue := range res.Queues {
 		switch queue {
 		case "default", "deploy":
 			continue
@@ -244,6 +247,7 @@ func TestCollectorWithSomeJobsAndAgentsForAQueue(t *testing.T) {
 		}
 	}))
 	c := &Collector{
+		Client:    &http.Client{},
 		Endpoint:  s.URL,
 		Token:     "abc123",
 		UserAgent: "some-client/1.2.3",

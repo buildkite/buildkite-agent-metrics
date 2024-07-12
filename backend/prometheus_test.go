@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/buildkite/buildkite-agent-metrics/collector"
+	"github.com/buildkite/buildkite-agent-metrics/v5/collector"
+	"github.com/google/go-cmp/cmp"
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
 )
 
 const (
-	wantHaveFmt        = "want %v, have %v"
 	runningBuildsCount = iota
 	scheduledBuildsCount
 	runningJobsCount
@@ -35,7 +35,8 @@ func newTestResult(t *testing.T) *collector.Result {
 	}
 
 	res := &collector.Result{
-		Totals: totals,
+		Totals:  totals,
+		Cluster: "test_cluster",
 		Queues: map[string]map[string]int{
 			"default": totals,
 			"deploy":  totals,
@@ -44,6 +45,8 @@ func newTestResult(t *testing.T) *collector.Result {
 	return res
 }
 
+// gatherMetrics runs the Prometheus gatherer, and returns the metric families
+// grouped by name.
 func gatherMetrics(t *testing.T) map[string]*dto.MetricFamily {
 	t.Helper()
 
@@ -54,115 +57,169 @@ func gatherMetrics(t *testing.T) map[string]*dto.MetricFamily {
 	r := prometheus.NewRegistry()
 	prometheus.DefaultRegisterer = r
 
-	p := newPrometheus()
+	p := NewPrometheusBackend()
 	p.Collect(newTestResult(t))
 
-	if mfs, err := r.Gather(); err != nil {
-		t.Fatal(err)
+	mfs, err := r.Gather()
+	if err != nil {
+		t.Fatalf("prometheus.Registry.Gather() = %v", err)
 		return nil
-	} else {
-		mfsm := make(map[string]*dto.MetricFamily)
-		for _, mf := range mfs {
-			mfsm[*mf.Name] = mf
-		}
-		return mfsm
 	}
+
+	mfsm := make(map[string]*dto.MetricFamily)
+	for _, mf := range mfs {
+		mfsm[*mf.Name] = mf
+	}
+	return mfsm
 }
 
 func TestCollect(t *testing.T) {
-	mfs := gatherMetrics(t)
+	metricFamilies := gatherMetrics(t)
 
-	if want, have := 16, len(mfs); want != have {
-		t.Errorf("wanted %d Prometheus metrics, have: %d", want, have)
+	if got, want := len(metricFamilies), 16; got != want {
+		t.Errorf("len(metricFamilies) = %d, want %d", got, want)
+	}
+
+	type promMetric struct {
+		Labels map[string]string
+		Value  float64
 	}
 
 	tcs := []struct {
-		Group      string
-		PromName   string
-		PromHelp   string
-		PromLabels []string
-		PromValue  float64
-		PromType   dto.MetricType
+		group       string
+		metricName  string
+		wantHelp    string
+		wantType    dto.MetricType
+		wantMetrics []promMetric
 	}{
 		{
-			"Total",
-			"buildkite_total_running_jobs_count",
-			"Buildkite Total: RunningJobsCount",
-			[]string{},
-			runningJobsCount,
-			dto.MetricType_GAUGE,
+			group:      "Total",
+			metricName: "buildkite_total_running_jobs_count",
+			wantHelp:   "Buildkite Total: RunningJobsCount",
+			wantType:   dto.MetricType_GAUGE,
+			wantMetrics: []promMetric{
+				{
+					Labels: map[string]string{"cluster": "test_cluster"},
+					Value:  runningJobsCount,
+				},
+			},
 		},
 		{
-			"Total",
-			"buildkite_total_scheduled_jobs_count",
-			"Buildkite Total: ScheduledJobsCount",
-			[]string{},
-			scheduledJobsCount,
-			dto.MetricType_GAUGE,
+			group:      "Total",
+			metricName: "buildkite_total_scheduled_jobs_count",
+			wantHelp:   "Buildkite Total: ScheduledJobsCount",
+			wantType:   dto.MetricType_GAUGE,
+			wantMetrics: []promMetric{
+				{
+					Labels: map[string]string{"cluster": "test_cluster"},
+					Value:  scheduledJobsCount,
+				},
+			},
 		},
 		{
-			"Queues",
-			"buildkite_queues_scheduled_builds_count",
-			"Buildkite Queues: ScheduledBuildsCount",
-			[]string{"default", "deploy"},
-			scheduledBuildsCount,
-			dto.MetricType_GAUGE,
+			group:      "Queues",
+			metricName: "buildkite_queues_scheduled_builds_count",
+			wantHelp:   "Buildkite Queues: ScheduledBuildsCount",
+			wantType:   dto.MetricType_GAUGE,
+			wantMetrics: []promMetric{
+				{
+					Labels: map[string]string{
+						"cluster": "test_cluster",
+						"queue":   "default",
+					},
+					Value: scheduledBuildsCount,
+				},
+				{
+					Labels: map[string]string{
+						"cluster": "test_cluster",
+						"queue":   "deploy",
+					},
+					Value: scheduledBuildsCount,
+				},
+			},
 		},
 		{
-			"Queues",
-			"buildkite_queues_idle_agent_count",
-			"Buildkite Queues: IdleAgentCount",
-			[]string{"default", "deploy"},
-			idleAgentCount,
-			dto.MetricType_GAUGE,
+			group:      "Queues",
+			metricName: "buildkite_queues_idle_agent_count",
+			wantHelp:   "Buildkite Queues: IdleAgentCount",
+			wantType:   dto.MetricType_GAUGE,
+			wantMetrics: []promMetric{
+				{
+					Labels: map[string]string{
+						"cluster": "test_cluster",
+						"queue":   "default",
+					},
+					Value: idleAgentCount,
+				},
+				{
+					Labels: map[string]string{
+						"cluster": "test_cluster",
+						"queue":   "deploy",
+					},
+					Value: idleAgentCount,
+				},
+			},
 		},
 	}
 
 	for _, tc := range tcs {
-		t.Run(fmt.Sprintf("%s/%s", tc.Group, tc.PromName), func(t *testing.T) {
-			mf, ok := mfs[tc.PromName]
+		t.Run(fmt.Sprintf("%s/%s", tc.group, tc.metricName), func(t *testing.T) {
+			mf, ok := metricFamilies[tc.metricName]
 			if !ok {
-				t.Errorf("no metric found for name %s", tc.PromName)
+				t.Errorf("no metric found for name %s", tc.metricName)
 			}
 
-			if want, have := tc.PromHelp, mf.GetHelp(); want != have {
-				t.Errorf(wantHaveFmt, want, have)
+			if got, want := mf.GetHelp(), tc.wantHelp; got != want {
+				t.Errorf("mf.GetHelp() = %q, want %q", got, want)
 			}
 
-			if want, have := tc.PromType, mf.GetType(); want != have {
-				t.Errorf(wantHaveFmt, want, have)
+			if got, want := mf.GetType(), tc.wantType; got != want {
+				t.Errorf("mf.GetType() = %q, want %q", got, want)
 			}
 
+			// Convert the metric family into an easier-to-diff form.
 			ms := mf.GetMetric()
-			for i, m := range ms {
-				if want, have := tc.PromValue, m.GetGauge().GetValue(); want != have {
-					t.Errorf(wantHaveFmt, want, have)
+			var gotMetrics []promMetric
+			for _, m := range ms {
+				gotMetric := promMetric{
+					Value:  m.Gauge.GetValue(),
+					Labels: make(map[string]string),
 				}
-
-				if len(tc.PromLabels) > 0 {
-					if want, have := tc.PromLabels[i], m.Label[0].GetValue(); want != have {
-						t.Errorf(wantHaveFmt, want, have)
-					}
+				for _, label := range m.Label {
+					gotMetric.Labels[label.GetName()] = label.GetValue()
 				}
+				gotMetrics = append(gotMetrics, gotMetric)
 			}
 
+			if diff := cmp.Diff(gotMetrics, tc.wantMetrics); diff != "" {
+				t.Errorf("metrics diff (-got +want):\n%s", diff)
+			}
 		})
 	}
 }
 
 func TestCamelToUnderscore(t *testing.T) {
 	tcs := []struct {
-		Camel      string
-		Underscore string
+		input string
+		want  string
 	}{
-		{"TotalAgentCount", "total_agent_count"},
-		{"Total@#4JobsCount", "total@#4_jobs_count"},
-		{"BuildkiteQueuesIdleAgentCount1_11", "buildkite_queues_idle_agent_count1_11"},
+		{
+			input: "TotalAgentCount",
+			want:  "total_agent_count",
+		},
+		{
+			input: "Total@#4JobsCount",
+			want:  "total@#4_jobs_count",
+		},
+		{
+			input: "BuildkiteQueuesIdleAgentCount1_11",
+			want:  "buildkite_queues_idle_agent_count1_11",
+		},
 	}
 
 	for _, tc := range tcs {
-		if want, have := tc.Underscore, camelToUnderscore(tc.Camel); want != have {
-			t.Errorf(wantHaveFmt, want, have)
+		if got := camelToUnderscore(tc.input); got != tc.want {
+			t.Errorf("camelToUnderscore(%q) = %q, want %q", tc.input, got, tc.want)
 		}
 	}
 }

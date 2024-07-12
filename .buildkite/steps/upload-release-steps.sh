@@ -1,21 +1,8 @@
 #!/bin/bash
 set -euo pipefail
 
-export VERSION=$(awk -F\" '/const Version/ {print $2}' version/version.go)
-
-if [[ "$BUILDKITE_BRANCH" != "master" ]] ; then
-  echo "Skipping non-master branch $BUILDKITE_BRANCH"
-  exit 0
-fi
-
-git fetch --prune origin "+refs/tags/*:refs/tags/*"
-
-echo "Checking if $VERSION is a tag..."
-
-# If there is already a release (which means a tag), we want to avoid trying to create
-# another one, as this will fail and cause partial broken releases
-if git rev-parse -q --verify "refs/tags/v${VERSION}" ; then
-  echo "Tag refs/tags/v${VERSION} already exists"
+if [[ "${RELEASE_DRY_RUN:-false}" != "true" && "$BUILDKITE_BRANCH" != "${BUILDKITE_TAG:-}" ]]; then
+  echo "Skipping release for a non-tag build on $BUILDKITE_BRANCH" >&2
   exit 0
 fi
 
