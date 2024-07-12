@@ -56,7 +56,9 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 	queue := os.Getenv("BUILDKITE_QUEUE")
 	clwDimensions := os.Getenv("BUILDKITE_CLOUDWATCH_DIMENSIONS")
 	quietString := os.Getenv("BUILDKITE_QUIET")
+	enableHighResolutionString := os.Getenv("BUILDKITE_CLOUDWATCH_HIGH_RESOLUTION")
 	quiet := quietString == "1" || quietString == "true"
+	enableHighResolution := enableHighResolutionString == "1" || enableHighResolutionString == "true"
 
 	if quiet {
 		log.SetOutput(ioutil.Discard)
@@ -118,7 +120,7 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		b = backend.NewCloudWatchBackend(awsRegion, dimensions, int64(time.Since(lastPollTime).Seconds()))
+		b = backend.NewCloudWatchBackend(awsRegion, dimensions, int64(time.Since(lastPollTime).Seconds()), enableHighResolution)
 	}
 
 	res, err := c.Collect()

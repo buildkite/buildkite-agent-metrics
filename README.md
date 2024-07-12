@@ -47,10 +47,11 @@ It's entrypoint is `handler`, it requires a `go1.x` environment and respects the
  - `BUILDKITE_QUEUE` : A comma separated list of Buildkite queues to process (e.g. `backend-deploy,ui-deploy`).
  - `BUILDKITE_QUIET` : A boolean specifying that only `ERROR` log lines must be printed. (e.g. `1`, `true`).
  - `BUILDKITE_CLOUDWATCH_DIMENSIONS` : A comma separated list in the form of Key=Value, Other=Value containing the Cloudwatch dimensions to index metrics under.
+ - `BUILDKITE_CLOUDWATCH_HIGH_RESOLUTION` : Whether to enable [High-Resolution Metrics](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html#high-resolution-metrics) which incurs additional charges.
 
 Additionally, one of the following groups of environment variables must be set in order to define how the Lambda function
 should obtain the required Buildkite Agent API token:
- 
+
 ##### Option 1 - Provide the token as plain-text
    
 - `BUILDKITE_AGENT_TOKEN` : The Buildkite Agent API token to use.
@@ -121,6 +122,8 @@ Usage of buildkite-agent-metrics:
     	A custom Buildkite Agent API endpoint (default "https://agent.buildkite.com/v3")
   -interval duration
     	Update metrics every interval, rather than once
+  -cloudwatch-high-resolution
+      If `-interval` is less than 60 seconds send metrics to CloudWatch as [High-Resolution Metrics](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html#high-resolution-metrics) which incurs additional charges.
   -newrelic-app-name string
     	New Relic application name for metric events
   -newrelic-license-key string
@@ -152,8 +155,6 @@ By default metrics will be submitted to CloudWatch but the backend can be switch
 The Cloudwatch backend supports the following arguments:
 
 * `-cloudwatch-dimensions`: A optional custom dimension in the form of `Key=Value, Key=Value`
-
-If `-interval` is less than 60 seconds the metrics will be sent to CloudWatch as [High-Resolution Metrics](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html#high-resolution-metrics).
 
 The StatsD backend supports the following arguments:
 

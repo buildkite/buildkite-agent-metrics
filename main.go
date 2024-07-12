@@ -35,6 +35,7 @@ func main() {
 		prometheusPath = flag.String("prometheus-path", "/metrics", "Prometheus metrics transport path")
 		clwRegion      = flag.String("cloudwatch-region", "", "AWS Region to connect to, defaults to $AWS_REGION or us-east-1")
 		clwDimensions  = flag.String("cloudwatch-dimensions", "", "Cloudwatch dimensions to index metrics under, in the form of Key=Value, Other=Value")
+		clwHighResolution = flag.Bool("cloudwatch-high-resolution", false, "Send metrics at a high-resolution, which incurs extra costs")
 		gcpProjectID   = flag.String("stackdriver-projectid", "", "Specify Stackdriver Project ID")
 		nrAppName      = flag.String("newrelic-app-name", "", "New Relic application name for metric events")
 		nrLicenseKey   = flag.String("newrelic-license-key", "", "New Relic license key for publishing events")
@@ -74,7 +75,7 @@ func main() {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		bk = backend.NewCloudWatchBackend(region, dimensions, int64(interval.Seconds()))
+		bk = backend.NewCloudWatchBackend(region, dimensions, int64(interval.Seconds()), *clwHighResolution)
 	case "statsd":
 		bk, err = backend.NewStatsDBackend(*statsdHost, *statsdTags)
 		if err != nil {
