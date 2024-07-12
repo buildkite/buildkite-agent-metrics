@@ -74,7 +74,7 @@ func main() {
 			fmt.Println(err)
 			os.Exit(1)
 		}
-		bk = backend.NewCloudWatchBackend(region, dimensions)
+		bk = backend.NewCloudWatchBackend(region, dimensions, int64(interval.Seconds()))
 	case "statsd":
 		bk, err = backend.NewStatsDBackend(*statsdHost, *statsdTags)
 		if err != nil {

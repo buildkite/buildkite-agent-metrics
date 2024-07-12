@@ -31,6 +31,7 @@ const (
 
 var (
 	nextPollTime time.Time
+	lastPollTime time.Time
 )
 
 func main() {
@@ -117,7 +118,7 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		b = backend.NewCloudWatchBackend(awsRegion, dimensions)
+		b = backend.NewCloudWatchBackend(awsRegion, dimensions, int64(time.Since(lastPollTime).Seconds()))
 	}
 
 	res, err := c.Collect()
@@ -140,10 +141,11 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 		}
 	}
 
-	log.Printf("Finished in %s", time.Now().Sub(t))
+	lastPollTime = time.Now()
+	log.Printf("Finished in %s", lastPollTime.Sub(t))
 
 	// Store the next acceptable poll time in global state
-	nextPollTime = time.Now().Add(res.PollDuration)
+	nextPollTime = lastPollTime.Add(res.PollDuration)
 
 	return "", nil
 }

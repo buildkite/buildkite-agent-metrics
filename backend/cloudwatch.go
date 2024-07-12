@@ -42,13 +42,15 @@ func ParseCloudWatchDimensions(ds string) ([]CloudWatchDimension, error) {
 type CloudWatchBackend struct {
 	region     string
 	dimensions []CloudWatchDimension
+	interval int64
 }
 
 // NewCloudWatchBackend returns a new CloudWatchBackend with optional dimensions
-func NewCloudWatchBackend(region string, dimensions []CloudWatchDimension) *CloudWatchBackend {
+func NewCloudWatchBackend(region string, dimensions []CloudWatchDimension, interval int64) *CloudWatchBackend {
 	return &CloudWatchBackend{
 		region:     region,
 		dimensions: dimensions,
+		interval: interval,
 	}
 }
 
@@ -62,7 +64,6 @@ func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 
 	svc := cloudwatch.New(sess)
 	metrics := []*cloudwatch.MetricDatum{}
-	duration := r.PollDuration.Milliseconds() / 1000
 
 	// Set the baseline org dimension
 	dimensions := []*cloudwatch.Dimension{
@@ -79,7 +80,7 @@ func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 	}
 
 	// Add total metrics
-	metrics = append(metrics, cloudwatchMetrics(r.Totals, nil, duration)...)
+	metrics = append(metrics, cloudwatchMetrics(r.Totals, nil, cb.interval)...)
 
 	for name, c := range r.Queues {
 		queueDimensions := dimensions
@@ -90,7 +91,7 @@ func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 		)
 
 		// Add per-queue metrics
-		metrics = append(metrics, cloudwatchMetrics(c, queueDimensions, duration)...)
+		metrics = append(metrics, cloudwatchMetrics(c, queueDimensions, cb.interval)...)
 	}
 
 	log.Printf("Extracted %d cloudwatch metrics from results", len(metrics))
@@ -120,6 +121,7 @@ func cloudwatchMetrics(counts map[string]int, dimensions []*cloudwatch.Dimension
 	} else {
 		duration = 60
 	}
+
 	for k, v := range counts {
 		m = append(m, &cloudwatch.MetricDatum{
 			MetricName:        aws.String(k),
