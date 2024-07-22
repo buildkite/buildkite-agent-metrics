@@ -72,6 +72,7 @@ It requires a `provided.al2` environment and respects the following env vars:
 - `BUILDKITE_CLOUDWATCH_DIMENSIONS` : A comma separated list in the form of
    `Key=Value,Other=Value` containing the Cloudwatch dimensions to index metrics
    under.
+ - `BUILDKITE_CLOUDWATCH_HIGH_RESOLUTION` : Whether to enable [High-Resolution Metrics](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html#high-resolution-metrics) which incurs additional charges.
 
 To adjust timeouts, and connection pooling in the HTTP client use the following env vars:
 
@@ -160,7 +161,9 @@ Usage of buildkite-agent-metrics:
   -endpoint string
         A custom Buildkite Agent API endpoint (default "https://agent.buildkite.com/v3")
   -interval duration
-        Update metrics every interval, rather than once
+    	  Update metrics every interval, rather than once
+  -cloudwatch-high-resolution
+        If `-interval` is less than 60 seconds send metrics to CloudWatch as [High-Resolution Metrics](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html#high-resolution-metrics) which incurs additional charges.
   -max-idle-conns int
         Maximum number of idle (keep-alive) HTTP connections for Buildkite Agent API. Zero means no limit, -1 disables connection reuse. (default 100)
   -newrelic-app-name string

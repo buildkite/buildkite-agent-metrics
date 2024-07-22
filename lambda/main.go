@@ -32,6 +32,7 @@ const (
 
 var (
 	nextPollTime time.Time
+	lastPollTime time.Time
 )
 
 func main() {
@@ -55,6 +56,8 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 	clwDimensions := os.Getenv("BUILDKITE_CLOUDWATCH_DIMENSIONS")
 	quietString := os.Getenv("BUILDKITE_QUIET")
 	quiet := quietString == "1" || quietString == "true"
+	enableHighResolutionString := os.Getenv("BUILDKITE_CLOUDWATCH_HIGH_RESOLUTION")
+	enableHighResolution := enableHighResolutionString == "1" || enableHighResolutionString == "true"
 	timeout := os.Getenv("BUILDKITE_AGENT_METRICS_TIMEOUT")
 	maxIdleConns := os.Getenv("BUILDKITE_AGENT_METRICS_MAX_IDLE_CONNS")
 
@@ -146,7 +149,7 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		metricsBackend = backend.NewCloudWatchBackend(awsRegion, dimensions)
+		metricsBackend = backend.NewCloudWatchBackend(awsRegion, dimensions, int64(time.Since(lastPollTime).Seconds()), enableHighResolution)
 	}
 
 	// minimum res.PollDuration across collectors
@@ -177,6 +180,7 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 		}
 	}
 
+	lastPollTime = time.Now()
 	log.Printf("Finished in %s", time.Since(startTime))
 
 	// Store the next acceptable poll time in global state

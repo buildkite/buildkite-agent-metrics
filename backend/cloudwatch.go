@@ -42,13 +42,17 @@ func ParseCloudWatchDimensions(ds string) ([]CloudWatchDimension, error) {
 type CloudWatchBackend struct {
 	region     string
 	dimensions []CloudWatchDimension
+	interval int64
+	enableHighResolution bool
 }
 
 // NewCloudWatchBackend returns a new CloudWatchBackend with optional dimensions
-func NewCloudWatchBackend(region string, dimensions []CloudWatchDimension) *CloudWatchBackend {
+func NewCloudWatchBackend(region string, dimensions []CloudWatchDimension, interval int64, enableHighResolution bool) *CloudWatchBackend {
 	return &CloudWatchBackend{
 		region:     region,
 		dimensions: dimensions,
+		interval: interval,
+		enableHighResolution: enableHighResolution,
 	}
 }
 
@@ -89,7 +93,7 @@ func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 	}
 
 	// Add total metrics
-	metrics = append(metrics, cloudwatchMetrics(r.Totals, nil)...)
+	metrics = append(metrics, cb.cloudwatchMetrics(r.Totals, nil)...)
 
 	for name, c := range r.Queues {
 		queueDimensions := dimensions
@@ -100,7 +104,7 @@ func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 		)
 
 		// Add per-queue metrics
-		metrics = append(metrics, cloudwatchMetrics(c, queueDimensions)...)
+		metrics = append(metrics, cb.cloudwatchMetrics(c, queueDimensions)...)
 	}
 
 	log.Printf("Extracted %d cloudwatch metrics from results", len(metrics))
@@ -120,15 +124,25 @@ func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 	return nil
 }
 
-func cloudwatchMetrics(counts map[string]int, dimensions []*cloudwatch.Dimension) []*cloudwatch.MetricDatum {
+func (cb *CloudWatchBackend) cloudwatchMetrics(counts map[string]int, dimensions []*cloudwatch.Dimension) []*cloudwatch.MetricDatum {
 	m := []*cloudwatch.MetricDatum{}
+
+	var duration int64
+	if cb.interval < 60 && cb.enableHighResolution {
+		// PutMetricData supports either normal (60s) or high frequency (1s)
+		// metrics - other values result in an error.
+		duration = 1
+	} else {
+		duration = 60
+	}
 
 	for k, v := range counts {
 		m = append(m, &cloudwatch.MetricDatum{
-			MetricName: aws.String(k),
-			Dimensions: dimensions,
-			Value:      aws.Float64(float64(v)),
-			Unit:       aws.String("Count"),
+			MetricName:        aws.String(k),
+			Dimensions:        dimensions,
+			Value:             aws.Float64(float64(v)),
+			Unit:              aws.String("Count"),
+			StorageResolution: &duration,
 		})
 	}
 
