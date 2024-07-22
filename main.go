@@ -19,6 +19,8 @@ import (
 var metricsBackend backend.Backend
 
 func main() {
+	log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
+
 	var (
 		interval     = flag.Duration("interval", 0, "Update metrics every interval, rather than once")
 		showVersion  = flag.Bool("version", false, "Show the version")
