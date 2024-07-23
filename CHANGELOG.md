@@ -4,6 +4,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.9.8](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.8) (2024-07-22)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.7...v5.9.8)
+
+### Fixed
+- fix to remove reset in prometheus backend [#296](https://github.com/buildkite/buildkite-agent-metrics/pull/296) (@wolfeidau)
+
+### Changed
+- Specify storage resolution [#125](https://github.com/buildkite/buildkite-agent-metrics/pull/125) (@patrobinson)
+
 ## [v5.9.7](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.7) (2024-07-04)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.6...v5.9.7)
 
