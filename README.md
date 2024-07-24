@@ -68,17 +68,22 @@ It requires a `provided.al2` environment and respects the following env vars:
 - `BUILDKITE_QUEUE` : A comma separated list of Buildkite queues to process
   (e.g. `backend-deploy,ui-deploy`).
 - `BUILDKITE_QUIET` : A boolean specifying that only `ERROR` log lines must be
-   printed. (e.g. `1`, `true`).
+   printed. This accepts either `1` or `true` to enable.
 - `BUILDKITE_CLOUDWATCH_DIMENSIONS` : A comma separated list in the form of
    `Key=Value,Other=Value` containing the Cloudwatch dimensions to index metrics
    under.
- - `BUILDKITE_CLOUDWATCH_HIGH_RESOLUTION` : Whether to enable [High-Resolution Metrics](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html#high-resolution-metrics) which incurs additional charges.
+ - `BUILDKITE_CLOUDWATCH_HIGH_RESOLUTION` : Whether to enable [High-Resolution Metrics](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html#high-resolution-metrics) which incurs additional charges. This accepts either `1` or `true` to enable.
 
 To adjust timeouts, and connection pooling in the HTTP client use the following env vars:
 
 - `BUILDKITE_AGENT_METRICS_TIMEOUT` : Timeout, in seconds, TLS handshake and idle connections, for HTTP requests, to Buildkite API (default 15).
 - `BUILDKITE_AGENT_METRICS_MAX_IDLE_CONNS` : Maximum number of idle (keep-alive) HTTP connections 
    for Buildkite Agent API. Zero means no limit, -1 disables pooling (default 100).
+
+To assist with debugging the following env vars are provided:
+
+- `BUILDKITE_AGENT_METRICS_DEBUG` : A boolean which enables debug logging. This accepts either `1` or `true` to enable.
+- `BUILDKITE_AGENT_METRICS_DEBUG_HTTP` : A boolean which enables printing of the HTTP responses. This accepts either `1` or `true` to enable.
 
 Additionally, one of the following groups of environment variables must be set
 in order to define how the Lambda function should obtain the required Buildkite
