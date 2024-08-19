@@ -1,4 +1,4 @@
-FROM public.ecr.aws/lambda/provided:al2023@sha256:aa5d31fd2b3f8e8fcf07ea89f021be8e9964891730af462a86f1769ecd6caf83
+FROM public.ecr.aws/lambda/provided:al2023@sha256:d72c31c61ca25464ab1e991b585b8bd53c5b40144f8fd6fd40fcfc84415abd19
 
 RUN dnf install -y unzip wget && \
     wget "https://github.com/buildkite/buildkite-agent-metrics/releases/latest/download/handler.zip" && \
