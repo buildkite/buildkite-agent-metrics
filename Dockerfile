@@ -1,4 +1,4 @@
-FROM public.ecr.aws/docker/library/golang:1.23.0@sha256:613a108a4a4b1dfb6923305db791a19d088f77632317cfc3446825c54fb862cd as builder
+FROM public.ecr.aws/docker/library/golang:1.23.1@sha256:4a3c2bcd243d3dbb7b15237eecb0792db3614900037998c2cd6a579c46888c1e as builder
 WORKDIR /go/src/github.com/buildkite/buildkite-agent-metrics/
 COPY . .
 RUN GO111MODULE=on GOOS=linux GOARCH=amd64 CGO_ENABLED=0 go build -o buildkite-agent-metrics .
