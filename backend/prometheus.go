@@ -48,19 +48,18 @@ func (p *Prometheus) Serve(path, addr string) {
 // Note: This is called once per agent token per interval
 func (p *Prometheus) Collect(r *collector.Result) error {
 	for name, value := range r.Totals {
-		labelNames := []string{"cluster"}
 		gauge, ok := p.totals[name]
 		if !ok { // first time this metric has been seen so create a new gauge
 			gauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 				Name: fmt.Sprintf("buildkite_total_%s", camelToUnderscore(name)),
 				Help: fmt.Sprintf("Buildkite Total: %s", name),
-			}, labelNames)
+			}, []string{"cluster"})
 			prometheus.MustRegister(gauge)
 			p.totals[name] = gauge
 		}
 
 		// note that r.Cluster will be empty for unclustered agents, this label will be dropped by prometheus
-		gauge.WithLabelValues(r.Cluster).Set(float64(value))
+		gauge.With(prometheus.Labels{"cluster": r.Cluster}).Set(float64(value))
 	}
 
 	currentQueues := make(map[string]struct{})
@@ -72,17 +71,19 @@ func (p *Prometheus) Collect(r *collector.Result) error {
 		for name, value := range counts {
 			gauge, ok := p.queues[name]
 			if !ok { // first time this metric has been seen so create a new gauge
-				labelNames := []string{"queue", "cluster"}
 				gauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 					Name: fmt.Sprintf("buildkite_queues_%s", camelToUnderscore(name)),
 					Help: fmt.Sprintf("Buildkite Queues: %s", name),
-				}, labelNames)
+				}, []string{"queue", "cluster"})
 				prometheus.MustRegister(gauge)
 				p.queues[name] = gauge
 			}
 
 			// note that r.Cluster will be empty for unclustered agents, this label will be dropped by prometheus
-			gauge.WithLabelValues(queue, r.Cluster).Set(float64(value))
+			gauge.With(prometheus.Labels{
+				"cluster": r.Cluster,
+				"queue":   queue,
+			}).Set(float64(value))
 		}
 	}
 
