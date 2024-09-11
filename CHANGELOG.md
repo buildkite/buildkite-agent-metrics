@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.9.9](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.9) (2024-09-10)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.8...v5.9.9)
+
+### Fixed
+- Delete Prometheus labels for deleted queues [#305](https://github.com/buildkite/buildkite-agent-metrics/pull/305) (@DrJosh9000)
+- provide clearer direction on boolean environment variables [#298](https://github.com/buildkite/buildkite-agent-metrics/pull/298) (@wolfeidau)
+
+### Dependencies
+- build(deps): bump docker/library/golang from 1.23.0 to 1.23.1 [#306](https://github.com/buildkite/buildkite-agent-metrics/pull/306) (@dependabot[bot])
+- build(deps): bump docker/library/alpine from 3.20.2 to 3.20.3 [#307](https://github.com/buildkite/buildkite-agent-metrics/pull/307) (@dependabot[bot])
+- build(deps): bump docker/library/alpine from 3.20.1 to 3.20.2 [#303](https://github.com/buildkite/buildkite-agent-metrics/pull/303) (@dependabot[bot])
+- build(deps): bump docker/library/golang from 1.22.6 to 1.23.0 [#302](https://github.com/buildkite/buildkite-agent-metrics/pull/302) (@dependabot[bot])
+- build(deps): bump lambda/provided from `aa5d31f` to `d72c31c` [#301](https://github.com/buildkite/buildkite-agent-metrics/pull/301) (@dependabot[bot])
+- build(deps): bump docker/library/golang from 1.22.5 to 1.22.6 [#299](https://github.com/buildkite/buildkite-agent-metrics/pull/299) (@dependabot[bot])
+- build(deps): bump lambda/provided from `aff4e78` to `aa5d31f` [#294](https://github.com/buildkite/buildkite-agent-metrics/pull/294) (@dependabot[bot])
+
+
 ## [v5.9.8](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.8) (2024-07-22)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.7...v5.9.8)
 
