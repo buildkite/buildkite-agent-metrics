@@ -32,6 +32,17 @@ const (
 	PollDurationHeader = `Buildkite-Agent-Metrics-Poll-Duration`
 )
 
+var AllMetrics = []string{
+	ScheduledJobsCount,
+	RunningJobsCount,
+	UnfinishedJobsCount,
+	WaitingJobsCount,
+	IdleAgentCount,
+	BusyAgentCount,
+	TotalAgentCount,
+	BusyAgentPercentage,
+}
+
 var ErrUnauthorized = errors.New("unauthorized")
 
 var traceLog = log.New(os.Stderr, "TRACE", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile|log.Lmsgprefix)

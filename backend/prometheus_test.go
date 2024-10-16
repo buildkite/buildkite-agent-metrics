@@ -10,36 +10,29 @@ import (
 	dto "github.com/prometheus/client_model/go"
 )
 
-const (
-	runningBuildsCount = iota
-	scheduledBuildsCount
-	runningJobsCount
-	scheduledJobsCount
-	unfinishedJobsCount
-	idleAgentCount
-	busyAgentCount
-	totalAgentCount
+var (
+	fakeTotals       = make(map[string]int)
+	fakeDefaultQueue = make(map[string]int)
+	fakeDeployQueue  = make(map[string]int)
 )
+
+func init() {
+	for i, metric := range collector.AllMetrics {
+		fakeTotals[metric] = i
+		fakeDefaultQueue[metric] = i + 100
+		fakeDeployQueue[metric] = i + 200
+	}
+}
 
 func newTestResult(t *testing.T) *collector.Result {
 	t.Helper()
-	totals := map[string]int{
-		"RunningBuildsCount":   runningBuildsCount,
-		"ScheduledBuildsCount": scheduledBuildsCount,
-		"RunningJobsCount":     runningJobsCount,
-		"ScheduledJobsCount":   scheduledJobsCount,
-		"UnfinishedJobsCount":  unfinishedJobsCount,
-		"IdleAgentCount":       idleAgentCount,
-		"BusyAgentCount":       busyAgentCount,
-		"TotalAgentCount":      totalAgentCount,
-	}
 
 	res := &collector.Result{
-		Totals:  totals,
+		Totals:  fakeTotals,
 		Cluster: "test_cluster",
 		Queues: map[string]map[string]int{
-			"default": totals,
-			"deploy":  totals,
+			"default": fakeDefaultQueue,
+			"deploy":  fakeDeployQueue,
 		},
 	}
 	return res
@@ -100,7 +93,7 @@ func TestCollect(t *testing.T) {
 			wantMetrics: []promMetric{
 				{
 					Labels: map[string]string{"cluster": "test_cluster"},
-					Value:  runningJobsCount,
+					Value:  float64(fakeTotals[collector.RunningJobsCount]),
 				},
 			},
 		},
@@ -112,14 +105,14 @@ func TestCollect(t *testing.T) {
 			wantMetrics: []promMetric{
 				{
 					Labels: map[string]string{"cluster": "test_cluster"},
-					Value:  scheduledJobsCount,
+					Value:  float64(fakeTotals[collector.ScheduledJobsCount]),
 				},
 			},
 		},
 		{
 			group:      "Queues",
-			metricName: "buildkite_queues_scheduled_builds_count",
-			wantHelp:   "Buildkite Queues: ScheduledBuildsCount",
+			metricName: "buildkite_queues_unfinished_jobs_count",
+			wantHelp:   "Buildkite Queues: UnfinishedJobsCount",
 			wantType:   dto.MetricType_GAUGE,
 			wantMetrics: []promMetric{
 				{
@@ -127,14 +120,14 @@ func TestCollect(t *testing.T) {
 						"cluster": "test_cluster",
 						"queue":   "default",
 					},
-					Value: scheduledBuildsCount,
+					Value: float64(fakeDefaultQueue[collector.UnfinishedJobsCount]),
 				},
 				{
 					Labels: map[string]string{
 						"cluster": "test_cluster",
 						"queue":   "deploy",
 					},
-					Value: scheduledBuildsCount,
+					Value: float64(fakeDeployQueue[collector.UnfinishedJobsCount]),
 				},
 			},
 		},
@@ -149,14 +142,14 @@ func TestCollect(t *testing.T) {
 						"cluster": "test_cluster",
 						"queue":   "default",
 					},
-					Value: idleAgentCount,
+					Value: float64(fakeDefaultQueue[collector.IdleAgentCount]),
 				},
 				{
 					Labels: map[string]string{
 						"cluster": "test_cluster",
 						"queue":   "deploy",
 					},
-					Value: idleAgentCount,
+					Value: float64(fakeDeployQueue[collector.IdleAgentCount]),
 				},
 			},
 		},
