@@ -414,6 +414,7 @@ func NewHTTPClient(timeout, maxIdleConns int) *http.Client {
 	return &http.Client{
 		Timeout: connectionTimeout,
 		Transport: &http.Transport{
+			Proxy: http.ProxyFromEnvironment,
 			MaxIdleConns:          maxIdleConns,
 			IdleConnTimeout:       connectionTimeout,
 			ResponseHeaderTimeout: connectionTimeout,

@@ -5,6 +5,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 )
 
@@ -281,5 +282,14 @@ func TestCollectorWithSomeJobsAndAgentsForAQueue(t *testing.T) {
 				t.Fatalf("%s was %d; want %d", tc.Key, tc.Counts[tc.Key], tc.Expected)
 			}
 		})
+	}
+}
+
+func TestCollectorWithProxy(t *testing.T) {
+	os.Setenv("HTTP_PROXY", "http://unit.test")
+	client := NewHTTPClient(1, 1)
+	proxyHost := client.Transport.(*http.Transport).Proxy
+	if proxyHost == nil {
+		t.Fatalf("Proxy was not picked up from env.")
 	}
 }
