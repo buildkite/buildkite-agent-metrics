@@ -37,10 +37,11 @@ else
 fi
 
 echo "~~~ :buildkite: Downloading artifacts"
-buildkite-agent artifact download handler.zip .
+mkdir -p dist
+buildkite-agent artifact download dist/handler.zip ./dist
 
 echo "--- :s3: Uploading lambda to ${BASE_BUCKET}/${BUCKET_PATH}/ in ${AWS_DEFAULT_REGION}"
-aws s3 cp --acl public-read handler.zip "s3://${BASE_BUCKET}/${BUCKET_PATH}/handler.zip"
+aws s3 cp --acl public-read dist/handler.zip "s3://${BASE_BUCKET}/${BUCKET_PATH}/handler.zip"
 
 for region in "${EXTRA_REGIONS[@]}" ; do
 	bucket="${BASE_BUCKET}-${region}"

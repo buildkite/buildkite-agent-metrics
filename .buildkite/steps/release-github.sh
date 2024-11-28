@@ -15,8 +15,7 @@ git fetch --prune --force origin "+refs/tags/*:refs/tags/*"
 echo --- Downloading binaries
 rm -rf dist
 mkdir -p dist
-buildkite-agent artifact download handler.zip ./dist
-buildkite-agent artifact download "buildkite-agent-metrics-*" ./dist
+buildkite-agent artifact download "dist/*" ./dist
 
 echo --- Checking tags
 version=$(awk -F\" '/const Version/ {print $2}' version/version.go)

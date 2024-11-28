@@ -3,35 +3,47 @@ steps:
     key: test
     command: go test -v -race ./...
     plugins:
-      - docker#v5.9.0:
-          image: golang:1.21
+      - docker-compose#v5.5.0:
+          config: .buildkite/docker-compose.yaml
+          cli-version: 2
+          run: test
 
   - group: ":hammer_and_wrench: Binary builds"
     steps:
-    - name: ":{{matrix.os}}: Build {{matrix.os}} {{matrix.arch}} binary"
-      command: .buildkite/steps/build-binary.sh {{matrix.os}} {{matrix.arch}}
-      key: build-binary
-      depends_on:
-        - test
-      plugins:
-        - docker#v5.9.0:
-            image: golang:1.21
-            mount-buildkite-agent: true
-      matrix:
-        setup:
-          os:
-            - darwin
-            - linux
-            - windows
-          arch:
-            - amd64
-            - arm64
+      - name: ":{{matrix.os}}: Build {{matrix.os}} {{matrix.arch}} binary"
+        command: .buildkite/steps/build-binary.sh {{matrix.os}} {{matrix.arch}}
+        key: build-binary
+        depends_on:
+          - test
+        plugins:
+          - docker-compose#v5.5.0:
+              config: .buildkite/docker-compose.yaml
+              cli-version: 2
+              run: build
+        matrix:
+          setup:
+            os:
+              - darwin
+              - linux
+              - windows
+            arch:
+              - amd64
+              - arm64
+        artifact_paths:
+          - ./dist/*
 
   - name: ":lambda: Build Lambda"
     key: build-lambda
     depends_on:
       - test
     command: .buildkite/steps/build-lambda.sh
+    plugins:
+      - docker-compose#v5.5.0:
+          config: .buildkite/docker-compose.yaml
+          cli-version: 2
+          run: build
+    artifact_paths:
+      - ./dist/*
 
   - name: ":s3: Upload to S3"
     key: upload-to-s3
