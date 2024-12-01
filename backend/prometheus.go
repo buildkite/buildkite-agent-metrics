@@ -1,11 +1,11 @@
 package backend
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"regexp"
 	"strings"
+	"sync"
 
 	"github.com/buildkite/buildkite-agent-metrics/v5/collector"
 
@@ -13,26 +13,55 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
-var (
-	camel = regexp.MustCompile("(^[^A-Z0-9]*|[A-Z0-9]*)([A-Z0-9][^A-Z]+|$)")
-)
+var camelCaseRE = regexp.MustCompile("(^[^A-Z0-9]*|[A-Z0-9]*)([A-Z0-9][^A-Z]+|$)")
 
-// Prometheus this holds a list of prometheus gauges which have been created, one for each metric
-// that we want to expose. These are created on the fly as we receive metrics from the agent.
+// Prometheus this holds a list of prometheus gauges which have been created,
+// one for each metric that we want to expose. These are created and registered
+// in NewPrometheusBackend.
 //
-// Note: these metrics are not unique to a cluster / queue, as these labels are added to the
-// value when it is set.
+// Note: these metrics are not unique to a cluster / queue, as these labels are
+// added to the value when it is set.
 type Prometheus struct {
 	totals    map[string]*prometheus.GaugeVec
 	queues    map[string]*prometheus.GaugeVec
 	oldQueues map[string]map[string]struct{} // cluster -> set of queues in cluster from last collect
 }
 
+var (
+	promSingletonOnce sync.Once
+	promSingleton     *Prometheus
+)
+
+// NewPrometheusBackend creates an instance of Prometheus and creates and
+// registers all the metrics gauges. Because Prometheus metrics must be unique,
+// it manages a singleton instance rather than creating a new backend for each
+// call.
 func NewPrometheusBackend() *Prometheus {
-	return &Prometheus{
+	promSingletonOnce.Do(createPromSingleton)
+	return promSingleton
+}
+
+func createPromSingleton() {
+	promSingleton = &Prometheus{
 		totals:    make(map[string]*prometheus.GaugeVec),
 		queues:    make(map[string]*prometheus.GaugeVec),
 		oldQueues: make(map[string]map[string]struct{}),
+	}
+
+	for _, name := range collector.AllMetrics {
+		gauge := prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Name: "buildkite_total_" + camelToUnderscore(name),
+			Help: "Buildkite Total: " + name,
+		}, []string{"cluster"})
+		prometheus.MustRegister(gauge)
+		promSingleton.totals[name] = gauge
+
+		gauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+			Name: "buildkite_queues_" + camelToUnderscore(name),
+			Help: "Buildkite Queues: " + name,
+		}, []string{"queue", "cluster"})
+		prometheus.MustRegister(gauge)
+		promSingleton.queues[name] = gauge
 	}
 }
 
@@ -43,23 +72,22 @@ func (p *Prometheus) Serve(path, addr string) {
 	log.Fatal(http.ListenAndServe(addr, m))
 }
 
-// Collect receives a set of metrics from the agent and creates or updates the prometheus gauges
+// Collect receives a set of metrics from the agent and updates the gauges.
 //
 // Note: This is called once per agent token per interval
 func (p *Prometheus) Collect(r *collector.Result) error {
-	for name, value := range r.Totals {
-		gauge, ok := p.totals[name]
-		if !ok { // first time this metric has been seen so create a new gauge
-			gauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-				Name: fmt.Sprintf("buildkite_total_%s", camelToUnderscore(name)),
-				Help: fmt.Sprintf("Buildkite Total: %s", name),
-			}, []string{"cluster"})
-			prometheus.MustRegister(gauge)
-			p.totals[name] = gauge
-		}
 
-		// note that r.Cluster will be empty for unclustered agents, this label will be dropped by prometheus
-		gauge.With(prometheus.Labels{"cluster": r.Cluster}).Set(float64(value))
+	// Ranging over all gauges and searching Totals / Queues for values ensures
+	// that metrics that are not in this collection are reset to 0.
+
+	for name, gauge := range p.totals {
+		value := r.Totals[name] // 0 if missing
+
+		// note that r.Cluster will be empty for unclustered agents, this label
+		// will be dropped by prometheus
+		gauge.With(prometheus.Labels{
+			"cluster": r.Cluster,
+		}).Set(float64(value))
 	}
 
 	currentQueues := make(map[string]struct{})
@@ -68,18 +96,11 @@ func (p *Prometheus) Collect(r *collector.Result) error {
 		currentQueues[queue] = struct{}{}
 		delete(oldQueues, queue) // still current
 
-		for name, value := range counts {
-			gauge, ok := p.queues[name]
-			if !ok { // first time this metric has been seen so create a new gauge
-				gauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-					Name: fmt.Sprintf("buildkite_queues_%s", camelToUnderscore(name)),
-					Help: fmt.Sprintf("Buildkite Queues: %s", name),
-				}, []string{"queue", "cluster"})
-				prometheus.MustRegister(gauge)
-				p.queues[name] = gauge
-			}
+		for name, gauge := range p.queues {
+			value := counts[name] // 0 if missing
 
-			// note that r.Cluster will be empty for unclustered agents, this label will be dropped by prometheus
+			// note that r.Cluster will be empty for unclustered agents, this
+			// label will be dropped by prometheus
 			gauge.With(prometheus.Labels{
 				"cluster": r.Cluster,
 				"queue":   queue,
@@ -105,7 +126,7 @@ func (p *Prometheus) Collect(r *collector.Result) error {
 
 func camelToUnderscore(s string) string {
 	var a []string
-	for _, sub := range camel.FindAllStringSubmatch(s, -1) {
+	for _, sub := range camelCaseRE.FindAllStringSubmatch(s, -1) {
 		if sub[1] != "" {
 			a = append(a, sub[1])
 		}
