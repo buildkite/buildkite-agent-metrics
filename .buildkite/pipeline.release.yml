@@ -9,7 +9,7 @@ steps:
     agents:
       queue: "elastic-runners"
     concurrency: 1
-    concurrency_group: 'release_buildkite_metrics_github'
+    concurrency_group: "release_buildkite_metrics_github"
     plugins:
       - aws-assume-role-with-web-identity:
           role-arn: arn:aws:iam::032379705303:role/pipeline-buildkite-buildkite-agent-metrics
@@ -26,6 +26,8 @@ steps:
       - aws-ssm#v1.0.0:
           parameters:
             GITHUB_RELEASE_ACCESS_TOKEN: /pipelines/buildkite/buildkite-agent-metrics/GITHUB_RELEASE_ACCESS_TOKEN
-      - docker-compose#v4.14.0:
+      - docker-compose#v5.5.0:
           config: .buildkite/docker-compose.yaml
-          run: agent
+          run: build
+          cli-version: 2
+          mount-buildkite-agent: true
