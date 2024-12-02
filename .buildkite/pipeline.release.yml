@@ -28,6 +28,6 @@ steps:
             GITHUB_RELEASE_ACCESS_TOKEN: /pipelines/buildkite/buildkite-agent-metrics/GITHUB_RELEASE_ACCESS_TOKEN
       - docker-compose#v5.5.0:
           config: .buildkite/docker-compose.yaml
-          run: build
+          run: release
           cli-version: 2
           mount-buildkite-agent: true
