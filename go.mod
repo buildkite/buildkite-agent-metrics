@@ -5,7 +5,7 @@ go 1.23
 require (
 	cloud.google.com/go/monitoring v1.19.0
 	github.com/DataDog/datadog-go v4.8.3+incompatible
-	github.com/aws/aws-lambda-go v1.46.0
+	github.com/aws/aws-lambda-go v1.47.0
 	github.com/aws/aws-sdk-go v1.51.21
 	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.6.0
