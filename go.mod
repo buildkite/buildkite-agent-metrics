@@ -1,6 +1,6 @@
 module github.com/buildkite/buildkite-agent-metrics/v5
 
-go 1.20
+go 1.23
 
 require (
 	cloud.google.com/go/monitoring v1.19.0
