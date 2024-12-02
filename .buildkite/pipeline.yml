@@ -1,3 +1,6 @@
+env:
+  RELEASE_DRY_RUN: false
+
 steps:
   - name: ":test_tube: Test"
     key: test
@@ -60,9 +63,19 @@ steps:
       - aws-assume-role-with-web-identity:
           role-arn: arn:aws:iam::032379705303:role/pipeline-buildkite-buildkite-agent-metrics
 
-  - name: ":pipeline:"
-    key: upload-release-steps
+  - if: build.env("RELEASE_DRY_RUN") == "true" || build.env("BUILDKITE_TAG") =~ /^v\d+\.\d+\.\d+$$/
+    name: ":rocket: Release"
+    key: trigger-release
+    trigger: "buildkite-agent-metrics-release"
+    async: false
     depends_on:
       - build-binary
       - upload-to-s3
-    command: .buildkite/steps/upload-release-steps.sh
+    build:
+      message: "Release for ${BUILDKITE_TAG}, build ${BUILDKITE_BUILD_NUMBER}"
+      commit: "${BUILDKITE_COMMIT}"
+      branch: "${BUILDKITE_BRANCH}"
+      meta_data:
+        metrics-artifacts-build: "${BUILDKITE_BUILD_ID}"
+      env:
+        RELEASE_DRY_RUN: "${RELEASE_DRY_RUN:-false}"

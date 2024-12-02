@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eu
 
-export AWS_DEFAULT_REGION=us-east-1
+export AWS_DEFAULT_REGION="us-east-1"
 
 # Updated from https://docs.aws.amazon.com/general/latest/gr/rande.html#lambda_region
 EXTRA_REGIONS=(
@@ -26,8 +26,8 @@ EXTRA_REGIONS=(
   sa-east-1
 )
 
-VERSION=$(awk -F\" '/const Version/ {print $2}' version/version.go)
-BASE_BUCKET=buildkite-lambdas
+VERSION="$(awk -F\" '/const Version/ {print $2}' version/version.go)"
+BASE_BUCKET="buildkite-lambdas"
 BUCKET_PATH="buildkite-agent-metrics"
 
 if [[ "${1:-}" == "release" ]] ; then
@@ -37,8 +37,11 @@ else
 fi
 
 echo "~~~ :buildkite: Downloading artifacts"
+
+artifacts_build="$(buildkite-agent meta-data get "metrics-artifacts-build")"
+
 mkdir -p dist
-buildkite-agent artifact download dist/handler.zip ./dist
+buildkite-agent artifact download --build "${artifacts_build}" dist/handler.zip ./dist
 
 echo "--- :s3: Uploading lambda to ${BASE_BUCKET}/${BUCKET_PATH}/ in ${AWS_DEFAULT_REGION}"
 aws s3 cp --acl public-read dist/handler.zip "s3://${BASE_BUCKET}/${BUCKET_PATH}/handler.zip"
