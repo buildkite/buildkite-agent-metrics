@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/buildkite/buildkite-agent-metrics/v5/collector"
-	newrelic "github.com/newrelic/go-agent"
+	newrelic "github.com/newrelic/go-agent/v3/newrelic"
 )
 
 const newRelicConnectionTimeout = time.Second * 30
@@ -20,8 +20,10 @@ type NewRelicBackend struct {
 //
 //	and licenseKey is your New Relic license key
 func NewNewRelicBackend(appName string, licenseKey string) (*NewRelicBackend, error) {
-	config := newrelic.NewConfig(appName, licenseKey)
-	app, err := newrelic.NewApplication(config)
+	app, err := newrelic.NewApplication(
+		newrelic.ConfigAppName(appName),
+		newrelic.ConfigLicense(licenseKey),
+	)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +35,7 @@ func NewNewRelicBackend(appName string, licenseKey string) (*NewRelicBackend, er
 	}
 
 	return &NewRelicBackend{
-		client: app,
+		client: *app,
 	}, nil
 }
 
@@ -42,11 +44,7 @@ func (nr *NewRelicBackend) Collect(r *collector.Result) error {
 	// Publish event for each queue
 	for queue, metrics := range r.Queues {
 		data := toCustomEvent(r.Cluster, queue, metrics)
-		err := nr.client.RecordCustomEvent("BuildkiteQueueMetrics", data)
-		if err != nil {
-			return err
-		}
-
+		nr.client.RecordCustomEvent("BuildkiteQueueMetrics", data)
 		nr.client.RecordCustomEvent("queue_agent_metrics", data)
 	}
 

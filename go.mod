@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go v1.55.5
 	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.6.0
-	github.com/newrelic/go-agent v3.24.1+incompatible
+	github.com/newrelic/go-agent/v3 v3.35.1
 	github.com/prometheus/client_golang v1.20.5
 	github.com/prometheus/client_model v0.6.1
 	google.golang.org/genproto/googleapis/api v0.0.0-20241007155032-5fefd90f89a9
