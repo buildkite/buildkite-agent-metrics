@@ -38,10 +38,13 @@ fi
 
 echo "~~~ :buildkite: Downloading artifacts"
 
-artifacts_build="$(buildkite-agent meta-data get "metrics-artifacts-build")"
-
 mkdir -p dist
-buildkite-agent artifact download --build "${artifacts_build}" dist/handler.zip ./dist
+if [[ "${1:-}" == "release" ]] ; then
+  artifacts_build="$(buildkite-agent meta-data get "metrics-artifacts-build")"
+  buildkite-agent artifact download --build "${artifacts_build}" dist/handler.zip ./dist
+else
+  buildkite-agent artifact download dist/handler.zip ./dist
+fi
 
 echo "--- :s3: Uploading lambda to ${BASE_BUCKET}/${BUCKET_PATH}/ in ${AWS_DEFAULT_REGION}"
 aws s3 cp --acl public-read dist/handler.zip "s3://${BASE_BUCKET}/${BUCKET_PATH}/handler.zip"
