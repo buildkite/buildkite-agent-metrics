@@ -25,7 +25,7 @@ steps:
           role-arn: arn:aws:iam::445615400570:role/pipeline-buildkite-buildkite-agent-metrics-release
       - aws-ssm#v1.0.0:
           parameters:
-            GITHUB_RELEASE_ACCESS_TOKEN: /pipelines/buildkite/buildkite-agent-metrics/GITHUB_RELEASE_ACCESS_TOKEN
+            GITHUB_RELEASE_ACCESS_TOKEN: /pipelines/buildkite/buildkite-agent-metrics-release/GITHUB_RELEASE_ACCESS_TOKEN
       - docker-compose#v5.5.0:
           config: .buildkite/docker-compose.yaml
           run: release
