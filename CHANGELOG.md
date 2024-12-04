@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.9.11](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.11) (2024-12-04)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.10...v5.9.11)
+
+This release exists in order to make the pipeline push a Docker image to the new
+[public repository!](https://gallery.ecr.aws/buildkite/agent-metrics)
+
+### Release process changes
+- Fix S3 upload for non-tagged builds [#340](https://github.com/buildkite/buildkite-agent-metrics/pull/340) (@DrJosh9000)
+- Add Docker image release [#339](https://github.com/buildkite/buildkite-agent-metrics/pull/339) (@DrJosh9000)
+
 ## [v5.9.10](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.10) (2024-12-02)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.9...v5.9.10)
 
