@@ -4,7 +4,7 @@ set -eufo pipefail
 
 source .buildkite/lib/release_dry_run.sh
 
-if [[ "${RELEASE_DRY_RUN:-false}" != "true" && "${BUILDKITE_BRANCH}" != "${BUILDKITE_TAG:-}" ]]; then
+if [[ "${RELEASE_DRY_RUN:-false}" != "true" && "${BUILDKITE_BRANCH}" != "${RELEASE_VERSION_TAG:-}" ]]; then
   echo "Skipping release for a non-tag build on ${BUILDKITE_BRANCH}" >&2
   exit 0
 fi
@@ -19,18 +19,16 @@ git fetch --prune --force origin "+refs/tags/*:refs/tags/*"
 
 echo --- Downloading binaries
 
-artifacts_build="$(buildkite-agent meta-data get "metrics-artifacts-build")"
-
 rm -rf dist
 mkdir -p dist
-buildkite-agent artifact download --build "${artifacts_build}" "dist/*" ./dist
+buildkite-agent artifact download --build "${BUILDKITE_TRIGGERED_FROM_BUILD_ID}" "dist/*" ./dist
 
 echo --- Checking tags
 version="$(awk -F\" '/const Version/ {print $2}' version/version.go)"
 tag="v${version#v}"
 
-if [[ "${RELEASE_DRY_RUN:-false}" != true && "${tag}" != "${BUILDKITE_TAG}" ]]; then
-  echo "Error: version.go has not been updated to ${BUILDKITE_TAG#v}"
+if [[ "${RELEASE_DRY_RUN:-false}" != true && "${tag}" != "${RELEASE_VERSION_TAG}" ]]; then
+  echo "Error: version.go has not been updated to ${RELEASE_VERSION_TAG#v}"
   exit 1
 fi
 

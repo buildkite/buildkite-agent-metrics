@@ -64,18 +64,23 @@ steps:
           role-arn: arn:aws:iam::032379705303:role/pipeline-buildkite-buildkite-agent-metrics
 
   - if: build.env("RELEASE_DRY_RUN") == "true" || build.env("BUILDKITE_TAG") =~ /^v\d+\.\d+\.\d+$$/
+    block: ":rocket: Release ${BUILDKITE_TAG:-UNTAGGED}?"
+    key: block-release
+    depends_on:
+      - build-binary
+      - upload-to-s3
+
+  - if: build.env("RELEASE_DRY_RUN") == "true" || build.env("BUILDKITE_TAG") =~ /^v\d+\.\d+\.\d+$$/
     name: ":rocket: Release"
     key: trigger-release
     trigger: "buildkite-agent-metrics-release"
     async: false
     depends_on:
-      - build-binary
-      - upload-to-s3
+      - block-release
     build:
-      message: "Release for ${BUILDKITE_TAG}, build ${BUILDKITE_BUILD_NUMBER}"
+      message: "Release for ${BUILDKITE_TAG:-UNTAGGED}, build ${BUILDKITE_BUILD_NUMBER}"
       commit: "${BUILDKITE_COMMIT}"
       branch: "${BUILDKITE_BRANCH}"
-      meta_data:
-        metrics-artifacts-build: "${BUILDKITE_BUILD_ID}"
       env:
+        RELEASE_VERSION_TAG: "${BUILDKITE_TAG:-UNTAGGED}"
         RELEASE_DRY_RUN: "${RELEASE_DRY_RUN:-false}"
