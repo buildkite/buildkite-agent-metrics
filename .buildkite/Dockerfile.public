@@ -2,5 +2,6 @@ FROM public.ecr.aws/docker/library/alpine:3.20.3@sha256:1e42bbe2508154c9126d48c2
 ARG TARGETARCH
 RUN apk update && apk add --no-cache curl ca-certificates
 COPY dist/buildkite-agent-metrics-linux-${TARGETARCH} ./buildkite-agent-metrics
+RUN chmod +x ./buildkite-agent-metrics
 EXPOSE 8080 8125
 ENTRYPOINT ["./buildkite-agent-metrics"]
