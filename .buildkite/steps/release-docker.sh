@@ -80,7 +80,7 @@ release_dry_run docker buildx build \
     --progress plain \
     --builder "${builder_name}" \
     --tag "${registry}:latest" \
-    "${version_tags[@]/#/--tag ${registry}:v}" \
+    "${version_tags[@]/#/--tag=${registry}:v}" \
     --platform linux/amd64,linux/arm64 \
     --file .buildkite/Dockerfile.public \
     --push \
