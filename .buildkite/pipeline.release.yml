@@ -32,3 +32,6 @@ steps:
     plugins:
       - aws-assume-role-with-web-identity:
           role-arn: arn:aws:iam::172840064832:role/pipeline-buildkite-buildkite-agent-metrics-release
+      - ecr#v2.9.0:
+          login: true
+          account_ids: "public.ecr.aws"
