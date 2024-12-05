@@ -40,8 +40,7 @@ echo "~~~ :buildkite: Downloading artifacts"
 
 mkdir -p dist
 if [[ "${1:-}" == "release" ]] ; then
-  artifacts_build="$(buildkite-agent meta-data get "metrics-artifacts-build")"
-  buildkite-agent artifact download --build "${artifacts_build}" dist/handler.zip ./dist
+  buildkite-agent artifact download --build "${BUILDKITE_TRIGGERED_FROM_BUILD_ID}" dist/handler.zip ./dist
 else
   buildkite-agent artifact download dist/handler.zip ./dist
 fi
