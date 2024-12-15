@@ -7,7 +7,7 @@ steps:
     concurrency_group: "release_buildkite_metrics_github"
     plugins:
       - aws-assume-role-with-web-identity:
-          role-arn: arn:aws:iam::032379705303:role/pipeline-buildkite-buildkite-agent-metrics
+          role-arn: arn:aws:iam::172840064832:role/pipeline-buildkite-buildkite-agent-metrics
 
   - label: ":github: Release"
     command: ".buildkite/steps/release-github.sh"
