@@ -1,19 +1,46 @@
-version: "3.9"
-
 services:
-  agent:
+  build:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.build
     volumes:
-      - ../:/workspace:cached
-    working_dir: /workspace
+      - ../:/work:cached
+      - ~/gocache:/gocache
+      - ~/gomodcache:/gomodcache
+    working_dir: /work
     environment:
-      - BUILDKITE_BUILD_NUMBER
-      - BUILDKITE_BUILD_ID
-      - BUILDKITE_JOB_ID
-      - BUILDKITE_BRANCH
-      - BUILDKITE_TAG
+      - GOCACHE=/gocache
+      - GOMODCACHE=/gomodcache
+
+  test:
+    build:
+      context: .
+      dockerfile: Dockerfile.test
+    volumes:
+      - ../:/work:cached
+      - ~/gocache:/gocache
+      - ~/gomodcache:/gomodcache
+    working_dir: /work
+    environment:
+      - GOCACHE=/gocache
+      - GOMODCACHE=/gomodcache
+
+  release:
+    build:
+      context: .
+      dockerfile: Dockerfile.release
+    volumes:
+      - ../:/work:cached
+    working_dir: /work
+    environment:
       - BUILDKITE_AGENT_ACCESS_TOKEN
+      - BUILDKITE_AGENT_TAGS=queue=default
+      - BUILDKITE_BRANCH
+      - BUILDKITE_BUILD_ID
+      - BUILDKITE_BUILD_NUMBER
+      - BUILDKITE_BUILD_PATH=/buildkite
+      - BUILDKITE_JOB_ID
+      - BUILDKITE_TRIGGERED_FROM_BUILD_ID
       - GITHUB_RELEASE_ACCESS_TOKEN
+      - RELEASE_VERSION_TAG
       - RELEASE_DRY_RUN

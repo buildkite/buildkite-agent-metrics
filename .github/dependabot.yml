@@ -8,7 +8,9 @@ updates:
     reviewers:
       - "buildkite/pipelines-dispatch"
   - package-ecosystem: "docker"
-    directory: "/"
+    directories:
+      - "/"
+      - ".buildkite"
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 2

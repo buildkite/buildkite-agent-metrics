@@ -1,31 +1,37 @@
 steps:
-  - block: ":rocket: Release ${BUILDKITE_TAG}?"
-    key: block-release
-
   - label: ":s3: Upload"
     command: ".buildkite/steps/release-s3-version.sh"
-    depends_on:
-      - block-release
     agents:
       queue: "elastic-runners"
     concurrency: 1
-    concurrency_group: 'release_buildkite_metrics_github'
+    concurrency_group: "release_buildkite_metrics_github"
     plugins:
       - aws-assume-role-with-web-identity:
-          role-arn: arn:aws:iam::032379705303:role/pipeline-buildkite-buildkite-agent-metrics
+          role-arn: arn:aws:iam::172840064832:role/pipeline-buildkite-buildkite-agent-metrics
 
   - label: ":github: Release"
     command: ".buildkite/steps/release-github.sh"
-    depends_on:
-      - block-release
     agents:
       queue: "elastic-runners"
     plugins:
       - aws-assume-role-with-web-identity:
-          role-arn: arn:aws:iam::445615400570:role/pipeline-buildkite-buildkite-agent-metrics
+          role-arn: arn:aws:iam::445615400570:role/pipeline-buildkite-buildkite-agent-metrics-release
       - aws-ssm#v1.0.0:
           parameters:
-            GITHUB_RELEASE_ACCESS_TOKEN: /pipelines/buildkite/buildkite-agent-metrics/GITHUB_RELEASE_ACCESS_TOKEN
-      - docker-compose#v4.14.0:
+            GITHUB_RELEASE_ACCESS_TOKEN: /pipelines/buildkite/buildkite-agent-metrics-release/GITHUB_RELEASE_ACCESS_TOKEN
+      - docker-compose#v5.5.0:
           config: .buildkite/docker-compose.yaml
-          run: agent
+          run: release
+          cli-version: 2
+          mount-buildkite-agent: true
+
+  - label: ":docker: Push"
+    command: ".buildkite/steps/release-docker.sh"
+    agents:
+      queue: "elastic-runners"
+    plugins:
+      - aws-assume-role-with-web-identity:
+          role-arn: arn:aws:iam::172840064832:role/pipeline-buildkite-buildkite-agent-metrics-release
+      - ecr#v2.9.0:
+          login: true
+          account_ids: "public.ecr.aws"

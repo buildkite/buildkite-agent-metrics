@@ -4,6 +4,33 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.9.11](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.11) (2024-12-04)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.10...v5.9.11)
+
+This release exists in order to make the pipeline push a Docker image to the new
+[public repository!](https://gallery.ecr.aws/buildkite/agent-metrics)
+
+### Release process changes
+- Fix S3 upload for non-tagged builds [#340](https://github.com/buildkite/buildkite-agent-metrics/pull/340) (@DrJosh9000)
+- Add Docker image release [#339](https://github.com/buildkite/buildkite-agent-metrics/pull/339) (@DrJosh9000)
+
+## [v5.9.10](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.10) (2024-12-02)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.9...v5.9.10)
+
+### Fixed
+- Fix stale Prometheus metrics [#311](https://github.com/buildkite/buildkite-agent-metrics/pull/311) (@DrJosh9000)
+- Don't hardcode linux/amd64 or GO111MODULE in Dockerfile [#327](https://github.com/buildkite/buildkite-agent-metrics/pull/327) (@DrJosh9000)
+- Fix regression with HTTP Client and Proxy environment variables [#320](https://github.com/buildkite/buildkite-agent-metrics/pull/320) (@lionelfleury)
+
+### Internal
+- Fix New Relic Go agent dep [#337](https://github.com/buildkite/buildkite-agent-metrics/pull/337) (@DrJosh9000)
+- Bump Go to 1.23 [#331](https://github.com/buildkite/buildkite-agent-metrics/pull/331) (@DrJosh9000)
+- Pipeline cleanups [#328](https://github.com/buildkite/buildkite-agent-metrics/pull/328) (@DrJosh9000)
+- Fix build badge [#329](https://github.com/buildkite/buildkite-agent-metrics/pull/329) (@DrJosh9000)
+
+### Dependencies
+- [#336](https://github.com/buildkite/buildkite-agent-metrics/pull/336), [#335](https://github.com/buildkite/buildkite-agent-metrics/pull/335), [#334](https://github.com/buildkite/buildkite-agent-metrics/pull/334), [#332](https://github.com/buildkite/buildkite-agent-metrics/pull/332), [#333](https://github.com/buildkite/buildkite-agent-metrics/pull/333), [#325](https://github.com/buildkite/buildkite-agent-metrics/pull/325), [#326](https://github.com/buildkite/buildkite-agent-metrics/pull/326), [#323](https://github.com/buildkite/buildkite-agent-metrics/pull/323), [#324](https://github.com/buildkite/buildkite-agent-metrics/pull/324), [#322](https://github.com/buildkite/buildkite-agent-metrics/pull/322), [#321](https://github.com/buildkite/buildkite-agent-metrics/pull/321), [#318](https://github.com/buildkite/buildkite-agent-metrics/pull/318), [#317](https://github.com/buildkite/buildkite-agent-metrics/pull/317), [#316](https://github.com/buildkite/buildkite-agent-metrics/pull/316), [#315](https://github.com/buildkite/buildkite-agent-metrics/pull/315), [#313](https://github.com/buildkite/buildkite-agent-metrics/pull/313), [#314](https://github.com/buildkite/buildkite-agent-metrics/pull/314), [#309](https://github.com/buildkite/buildkite-agent-metrics/pull/309), [#310](https://github.com/buildkite/buildkite-agent-metrics/pull/310) (@dependabot[bot])
+
 ## [v5.9.9](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.9) (2024-09-10)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.8...v5.9.9)
 

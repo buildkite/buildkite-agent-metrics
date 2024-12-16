@@ -9,5 +9,5 @@ export GOOS
 export GOARCH
 export CGO_ENABLED=0
 
-go build -o "buildkite-agent-metrics-${GOOS}-${GOARCH}" .
-buildkite-agent artifact upload "buildkite-agent-metrics-${GOOS}-${GOARCH}"
+mkdir -p dist
+go build -o "dist/buildkite-agent-metrics-${GOOS}-${GOARCH}" .
