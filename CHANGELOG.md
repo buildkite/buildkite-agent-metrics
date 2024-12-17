@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.9.12](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.12) (2024-12-17)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.11...v5.9.12)
+
+### Release process changes
+- Update release process to assume new IAM roles via OIDC [#352](https://github.com/buildkite/buildkite-agent-metrics/pull/352) (@yob)
+- Simplify docker release script [#347](https://github.com/buildkite/buildkite-agent-metrics/pull/347) (@yob)
+
+### Dependency updates
+- Group container image bumps into single PR [#356](https://github.com/buildkite/buildkite-agent-metrics/pull/356) (@DrJosh9000)
+- build(deps): bump golang.org/x/crypto from 0.28.0 to 0.31.0 [#358](https://github.com/buildkite/buildkite-agent-metrics/pull/358) (@dependabot[bot])
+- build(deps): bump google.golang.org/protobuf from 1.35.2 to 1.36.0 [#357](https://github.com/buildkite/buildkite-agent-metrics/pull/357) (@dependabot[bot])
+- build(deps): bump docker/library/golang from `574185e` to `7003184` [#353](https://github.com/buildkite/buildkite-agent-metrics/pull/353) (@dependabot[bot])
+- build(deps): bump docker/library/golang from `6c5c959` to `6c5c959` in /.buildkite [#354](https://github.com/buildkite/buildkite-agent-metrics/pull/354) (@dependabot[bot])
+- build(deps): bump cloud.google.com/go/monitoring from 1.21.2 to 1.22.0 [#348](https://github.com/buildkite/buildkite-agent-metrics/pull/348) (@dependabot[bot])
+- build(deps): bump docker/library/alpine from 3.20.3 to 3.21.0 [#350](https://github.com/buildkite/buildkite-agent-metrics/pull/350) (@dependabot[bot])
+- build(deps): bump docker/library/golang from 1.23.3 to 1.23.4 [#349](https://github.com/buildkite/buildkite-agent-metrics/pull/349) (@dependabot[bot])
+- build(deps): bump docker/library/golang from 1.23.3 to 1.23.4 in /.buildkite [#351](https://github.com/buildkite/buildkite-agent-metrics/pull/351) (@dependabot[bot])
+
 ## [v5.9.11](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.11) (2024-12-04)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.10...v5.9.11)
 
