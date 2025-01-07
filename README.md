@@ -313,8 +313,6 @@ Buildkite > (Org, Queue) > BusyAgentPercentage
 Buildkite > (Org, Queue) > TotalAgentsCount
 ```
 
-When a queue is specified, only that queue's metrics are published.
-
 We send metrics for Jobs in the following states:
 
 - **Scheduled**: the job hasn't been assigned to an agent yet. If you have agent
@@ -323,6 +321,16 @@ We send metrics for Jobs in the following states:
   dependencies, `wait` statements, etc. This information is mostly useful to an
   autoscaler, since it represents work that will start soon.
 - **Running**: an agent is actively executing this job.
+
+Detailed explanations about some of the metrics: 
+
+**RunningJobsCount**: This metric counts the number of jobs that are currently in the “running” state. These jobs have been picked up by agents and are actively being executed.
+
+**UnfinishedJobsCount**: This metric includes all jobs that have been scheduled but have not yet finished. This count would include the jobs that are in the “running,” “scheduled”.
+
+**ScheduledJobsCount**: This metric refers to jobs that have been scheduled but not yet started by any agent. These jobs are in the queue, waiting for an available agent to start executing them.
+
+**WaitingJobsCount**: This metric counts jobs that are in a “waiting” state, which could mean they are waiting on dependencies to resolve, on other jobs to finish, or on any other condition that needs to be met before they can be scheduled. When a queue is specified, only that queue's metrics are published.
 
 ## License
 
