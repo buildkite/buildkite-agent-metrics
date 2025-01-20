@@ -33,17 +33,17 @@ func main() {
 		maxIdleConns = flag.Int("max-idle-conns", 100, "Maximum number of idle (keep-alive) HTTP connections for Buildkite Agent API. Zero means no limit, -1 disables connection reuse.")
 
 		// backend config
-		backendOpt     = flag.String("backend", "cloudwatch", "Specify the backend to use: cloudwatch, newrelic, prometheus, stackdriver, statsd")
-		statsdHost     = flag.String("statsd-host", "127.0.0.1:8125", "Specify the StatsD server")
-		statsdTags     = flag.Bool("statsd-tags", false, "Whether your StatsD server supports tagging like Datadog")
-		prometheusAddr = flag.String("prometheus-addr", ":8080", "Prometheus metrics transport bind address")
-		prometheusPath = flag.String("prometheus-path", "/metrics", "Prometheus metrics transport path")
-		clwRegion      = flag.String("cloudwatch-region", "", "AWS Region to connect to, defaults to $AWS_REGION or us-east-1")
-		clwDimensions  = flag.String("cloudwatch-dimensions", "", "Cloudwatch dimensions to index metrics under, in the form of Key=Value, Other=Value")
+		backendOpt        = flag.String("backend", "cloudwatch", "Specify the backend to use: cloudwatch, newrelic, prometheus, stackdriver, statsd")
+		statsdHost        = flag.String("statsd-host", "127.0.0.1:8125", "Specify the StatsD server")
+		statsdTags        = flag.Bool("statsd-tags", false, "Whether your StatsD server supports tagging like Datadog")
+		prometheusAddr    = flag.String("prometheus-addr", ":8080", "Prometheus metrics transport bind address")
+		prometheusPath    = flag.String("prometheus-path", "/metrics", "Prometheus metrics transport path")
+		clwRegion         = flag.String("cloudwatch-region", "", "AWS Region to connect to, defaults to $AWS_REGION or us-east-1")
+		clwDimensions     = flag.String("cloudwatch-dimensions", "", "Cloudwatch dimensions to index metrics under, in the form of Key=Value, Other=Value")
 		clwHighResolution = flag.Bool("cloudwatch-high-resolution", false, "Send metrics at a high-resolution, which incurs extra costs")
-		gcpProjectID   = flag.String("stackdriver-projectid", "", "Specify Stackdriver Project ID")
-		nrAppName      = flag.String("newrelic-app-name", "", "New Relic application name for metric events")
-		nrLicenseKey   = flag.String("newrelic-license-key", "", "New Relic license key for publishing events")
+		gcpProjectID      = flag.String("stackdriver-projectid", "", "Specify Stackdriver Project ID")
+		nrAppName         = flag.String("newrelic-app-name", "", "New Relic application name for metric events")
+		nrLicenseKey      = flag.String("newrelic-license-key", "", "New Relic license key for publishing events")
 	)
 
 	// custom config for multiple tokens and queues
@@ -56,6 +56,10 @@ func main() {
 	if *showVersion {
 		fmt.Printf("buildkite-agent-metrics %s\n", version.Version)
 		os.Exit(0)
+	}
+
+	if os.Getenv("BUILDKITE_AGENT_ENDPOINT") != "" {
+		*endpoint = os.Getenv("BUILDKITE_AGENT_ENDPOINT")
 	}
 
 	if len(tokens) == 0 {
