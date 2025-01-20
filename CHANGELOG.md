@@ -4,6 +4,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.9.13](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.13) (2025-01-20)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.12...v5.9.13)
+
+### Added
+- Add an environment variable to override the agent endpoint URL [#367](https://github.com/buildkite/buildkite-agent-metrics/pull/367) (@wolfeidau)
+
+### Dependency updates
+- build(deps): bump google.golang.org/protobuf from 1.36.0 to 1.36.3 [#368](https://github.com/buildkite/buildkite-agent-metrics/pull/368) (@dependabot[bot])
+- build(deps): bump cloud.google.com/go/monitoring from 1.22.0 to 1.22.1 [#363](https://github.com/buildkite/buildkite-agent-metrics/pull/363) (@dependabot[bot])
+- build(deps): bump the container-images group across 2 directories with 2 updates [#366](https://github.com/buildkite/buildkite-agent-metrics/pull/366) (@dependabot[bot])
+- update golang.org/x/net [#360](https://github.com/buildkite/buildkite-agent-metrics/pull/360) (@yob)
+
 ## [v5.9.12](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.12) (2024-12-17)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.11...v5.9.12)
 
