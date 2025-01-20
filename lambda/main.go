@@ -24,6 +24,7 @@ import (
 )
 
 const (
+	BKAgentEndpointEnvVar                    = "BUILDKITE_AGENT_ENDPOINT"
 	BKAgentTokenEnvVar                       = "BUILDKITE_AGENT_TOKEN"
 	BKAgentTokenSSMKeyEnvVar                 = "BUILDKITE_AGENT_TOKEN_SSM_KEY"
 	BKAgentTokenSecretsManagerSecretIDEnvVar = "BUILDKITE_AGENT_SECRETS_MANAGER_SECRET_ID"
@@ -112,12 +113,18 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 
 	userAgent := fmt.Sprintf("buildkite-agent-metrics/%s buildkite-agent-metrics-lambda", version.Version)
 
+	endpoint := "https://agent.buildkite.com/v3"
+
+	if bkAgentEndpoint := os.Getenv(BKAgentEndpointEnvVar); bkAgentEndpoint != "" {
+		endpoint = bkAgentEndpoint
+	}
+
 	collectors := make([]*collector.Collector, 0, len(tokens))
 	for _, token := range tokens {
 		collectors = append(collectors, &collector.Collector{
 			Client:    httpClient,
 			UserAgent: userAgent,
-			Endpoint:  "https://agent.buildkite.com/v3",
+			Endpoint:  endpoint,
 			Token:     token,
 			Queues:    queues,
 			Quiet:     quiet,

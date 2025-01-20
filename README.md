@@ -74,6 +74,10 @@ It requires a `provided.al2` environment and respects the following env vars:
    under.
  - `BUILDKITE_CLOUDWATCH_HIGH_RESOLUTION` : Whether to enable [High-Resolution Metrics](https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/publishingMetrics.html#high-resolution-metrics) which incurs additional charges. This accepts either `1` or `true` to enable.
 
+To override the endpoint use the following env var:
+
+- `BUILDKITE_AGENT_ENDPOINT`: Endpoint URL of the Buildkite Agent API (default https://agent.buildkite.com/v3)
+
 To adjust timeouts, and connection pooling in the HTTP client use the following env vars:
 
 - `BUILDKITE_AGENT_METRICS_TIMEOUT` : Timeout, in seconds, TLS handshake and idle connections, for HTTP requests, to Buildkite API (default 15).
