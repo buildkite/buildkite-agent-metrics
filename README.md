@@ -328,6 +328,16 @@ We send metrics for Jobs in the following states:
   autoscaler, since it represents work that will start soon.
 - **Running**: an agent is actively executing this job.
 
+Detailed explanations about some of the metrics: 
+
+**RunningJobsCount**: This metric counts the number of jobs that are currently in the “running” state. These jobs have been picked up by agents and are actively being executed.
+
+**UnfinishedJobsCount**: This metric includes all jobs that have been scheduled but have not yet finished. This includes jobs in the “running” and “scheduled” states.
+
+**ScheduledJobsCount**: This metric counts jobs that have been scheduled but are not yet started by any agent. These jobs are in the queue, waiting for an available agent to start executing them.
+
+**WaitingJobsCount**: This metric counts jobs that are in a “waiting” state, which could mean they are waiting on dependencies to resolve, on other jobs to finish, or on any other condition that needs to be met before they can be scheduled. 
+
 ## License
 
 See [LICENSE.md](LICENSE.md) (MIT)
