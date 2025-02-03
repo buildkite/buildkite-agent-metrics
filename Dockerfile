@@ -1,7 +1,7 @@
 # Use this Dockerfile when building the image yourself.
 # The Buildkite pipeline is similar, but copies prebuilt binaries instead of
 # rebuilding them.
-FROM public.ecr.aws/docker/library/golang:1.23.4@sha256:7ea4c9dcb2b97ff8ee80a67db3d44f98c8ffa0d191399197007d8459c1453041 AS builder
+FROM public.ecr.aws/docker/library/golang:1.23.5@sha256:8c10f21bec412f08f73aa7b97ca5ac5f28a39d8a88030ad8a339fd0a781d72b4 AS builder
 WORKDIR /go/src/github.com/buildkite/buildkite-agent-metrics/
 COPY . .
 RUN CGO_ENABLED=0 go build -o buildkite-agent-metrics .
