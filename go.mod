@@ -8,7 +8,7 @@ require (
 	github.com/aws/aws-lambda-go v1.47.0
 	github.com/aws/aws-sdk-go v1.55.6
 	github.com/golang/mock v1.6.0
-	github.com/google/go-cmp v0.6.0
+	github.com/google/go-cmp v0.7.0
 	github.com/newrelic/go-agent/v3 v3.36.0
 	github.com/prometheus/client_golang v1.21.0
 	github.com/prometheus/client_model v0.6.1
