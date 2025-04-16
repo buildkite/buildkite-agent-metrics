@@ -5,7 +5,7 @@ go 1.23.0
 require (
 	cloud.google.com/go/monitoring v1.24.1
 	github.com/DataDog/datadog-go v4.8.3+incompatible
-	github.com/aws/aws-lambda-go v1.47.0
+	github.com/aws/aws-lambda-go v1.48.0
 	github.com/aws/aws-sdk-go v1.55.6
 	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.7.0
