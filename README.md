@@ -325,7 +325,7 @@ We send metrics for Jobs in the following states:
 - **Running**: the jobs that are currently in the “running” state. These jobs have been 
   picked up by agents and are actively being executed.
 - **Unfinished**: the jobs that have been scheduled but have not yet
-  finished. This count would include jobs that are in the “running,” “scheduled”.
+  finished. This count includes jobs that are in the states “running” and “scheduled”.
 
 ## License
 
