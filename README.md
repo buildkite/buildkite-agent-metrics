@@ -326,7 +326,10 @@ We send metrics for Jobs in the following states:
 - **Waiting**: the job is known to exist but isn't schedulable yet due to
   dependencies, `wait` statements, etc. This information is mostly useful to an
   autoscaler, since it represents work that will start soon.
-- **Running**: an agent is actively executing this job.
+- **Running**: the jobs that are currently in the “running” state. These jobs have been 
+  picked up by agents and are actively being executed.
+- **Unfinished**: the jobs that have been scheduled but have not yet
+  finished. This count includes jobs that are in the states “running” and “scheduled”.
 
 Detailed explanations about some of the metrics: 
 
