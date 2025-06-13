@@ -1,6 +1,6 @@
 # Buildkite Agent Metrics
 
-A command-line tool for collecting [Buildkite](https://buildkite.com/) agent metrics, focusing on enabling auto-scaling. Currently [AWS Cloudwatch](http://aws.amazon.com/cloudwatch/), [StatsD](https://github.com/etsy/statsd), [Prometheus](https://prometheus.io), [Stackdriver](https://cloud.google.com/stackdriver/) and [New Relic](https://newrelic.com/products/insights) are supported.
+A command-line tool for collecting [Buildkite](https://buildkite.com/) agent metrics, focusing on enabling auto-scaling. Currently [AWS Cloudwatch](http://aws.amazon.com/cloudwatch/), [StatsD](https://github.com/etsy/statsd), [Prometheus](https://prometheus.io), [Stackdriver](https://cloud.google.com/stackdriver/), [New Relic](https://newrelic.com/products/insights), and [OpenTelemetry](https://opentelemetry.io) are supported.
 
 [![Build status](https://badge.buildkite.com/3642e233e25707a91db3a9e7d61a6fd46e1352c161605b56cf.svg)](https://buildkite.com/buildkite/buildkite-agent-metrics)
 
@@ -63,7 +63,7 @@ IAM permission.
 It requires a `provided.al2` environment and respects the following env vars:
 
 - `BUILDKITE_BACKEND` : The name of the backend to use (e.g. `cloudwatch`,
-   `statsd`, `newrelic`. For the lambda, `prometheus` and `stackdriver` are not
+   `statsd`, `newrelic`, `opentelemetry`. For the lambda, `prometheus` and `stackdriver` are not
    supported).
 - `BUILDKITE_QUEUE` : A comma separated list of Buildkite queues to process
   (e.g. `backend-deploy,ui-deploy`).
@@ -156,7 +156,7 @@ docker run --rm buildkite-agent-metrics -token abc123 -interval 30s -queue my-qu
 $ buildkite-agent-metrics --help
 Usage of buildkite-agent-metrics:
   -backend string
-        Specify the backend to use: cloudwatch, newrelic, prometheus, stackdriver, statsd (default "cloudwatch")
+        Specify the backend to use: cloudwatch, newrelic, prometheus, stackdriver, statsd, opentelemetry (default "cloudwatch")
   -cloudwatch-dimensions string
         Cloudwatch dimensions to index metrics under, in the form of Key=Value, Other=Value
   -cloudwatch-region string
@@ -179,6 +179,10 @@ Usage of buildkite-agent-metrics:
         New Relic application name for metric events
   -newrelic-license-key string
         New Relic license key for publishing events
+  -otel-api-key string
+        OpenTelemetry API key for authentication
+  -otel-endpoint string
+        OpenTelemetry endpoint (defaults to HyperDX)
   -prometheus-addr string
         Prometheus metrics transport bind address (default ":8080")
   -prometheus-path string
@@ -201,17 +205,17 @@ Usage of buildkite-agent-metrics:
         Show the version
 ```
 
-### Backends
+## Backends
 
-By default metrics will be submitted to CloudWatch but the backend can be switched to StatsD or Prometheus using the command-line argument `-backend statsd` or `-backend prometheus` respectively.
+By default metrics will be submitted to CloudWatch but the backend can be switched to other systems using the `-backend` argument.
 
-#### Cloudwatch
+### CloudWatch
 
-The Cloudwatch backend supports the following arguments:
+The CloudWatch backend supports the following arguments:
 
 - `-cloudwatch-dimensions`: A optional custom dimension in the form of `Key=Value, Key=Value`
 
-#### StatsD (Datadog)
+### StatsD (Datadog)
 
 The StatsD backend supports the following arguments:
 
@@ -221,7 +225,7 @@ The StatsD backend supports the following arguments:
    include the queue name in the metric. Only enable this option if you know
    your StatsD server supports tags.
 
-#### Prometheus
+### Prometheus
 
 The Prometheus backend supports the following arguments:
 
@@ -229,19 +233,113 @@ The Prometheus backend supports the following arguments:
 - `-prometheus-path`: The path under `prometheus-addr` to expose metrics on
    (defaults to `/metrics`).
 
-#### Stackdriver
+### Stackdriver
 
 The Stackdriver backend supports the following arguments:
 
 - `-stackdriver-projectid`: The Google Cloud Platform project to report metrics
    for.
 
+### New Relic
+
 The New Relic backend supports the following arguments:
 
 - `-newrelic-app-name`: String for the New Relic app name
 - `-newrelic-license-key`: The New Relic license key. Must be of type `INGEST`
 
-### Upgrading from v2 to v3
+### OpenTelemetry
+
+The OpenTelemetry backend allows you to send metrics, traces, and logs to any OpenTelemetry-compatible system; defaulting to HyperDX.
+
+#### Configuration
+
+**Command Line Flags:**
+- `--backend opentelemetry`: Select OpenTelemetry as the metrics backend
+- `--otel-endpoint`: OpenTelemetry OTLP endpoint (defaults to HyperDX: https://in-otel.hyperdx.io)  
+- `--otel-api-key`: OpenTelemetry API key for authentication
+
+**Environment Variables:**
+- `OTEL_ENDPOINT`: Custom OTLP endpoint (optional, defaults to HyperDX)
+- `OTEL_API_KEY`: Your HyperDX API key
+
+Standard OpenTelemetry environment variables are also supported:
+- `OTEL_SERVICE_NAME`: Service name (defaults to "buildkite-agent-metrics")
+- `OTEL_SERVICE_NAMESPACE`: Server namespace (defaults to "buildkite-agent-metrics")
+- `OTEL_SERVICE_VERSION`: Service version (uses the binary version)
+- `OTEL_EXPORTER_OTLP_ENDPOINT`: OTLP endpoint
+- `OTEL_EXPORTER_OTLP_HEADERS`: Authentication headers
+- `OTEL_EXPORTER_OTLP_PROTOCOL`: Protocol (defaults to "http/protobuf")
+
+#### Usage Examples
+
+**Basic Usage with HyperDX:**
+```bash
+buildkite-agent-metrics \
+  --backend opentelemetry \
+  --token $$YOUR_BUILDKITE_TOKEN \
+  --otel-api-key $YOUR_HYPERDX_API_KEY \
+  --interval 30s
+```
+
+**Custom Endpoint:**
+```bash
+buildkite-agent-metrics \
+  --backend opentelemetry \
+  --token $YOUR_BUILDKITE_TOKEN \
+  --otel-endpoint https://your-custom-otlp-endpoint.com \
+  --otel-api-key $YOUR_API_KEY \
+  --interval 30s
+```
+
+#### What Gets Sent
+
+**Metrics:**
+The following metrics are exported to OpenTelemetry:
+
+- `buildkite.jobs.scheduled`: Number of scheduled jobs
+- `buildkite.jobs.running`: Number of running jobs  
+- `buildkite.jobs.unfinished`: Number of unfinished jobs
+- `buildkite.jobs.waiting`: Number of waiting jobs
+- `buildkite.agents.idle`: Number of idle agents
+- `buildkite.agents.busy`: Number of busy agents
+- `buildkite.agents.total`: Total number of agents
+- `buildkite.agents.busy_percentage`: Percentage of busy agents
+- `buildkite.collection.duration`: Time taken to collect metrics
+
+All metrics include attributes for:
+- `org`: Buildkite organization
+- `cluster`: Buildkite cluster name
+- `queue`: Queue name (for per-queue metrics)
+
+**Traces:**
+Distributed tracing is provided for:
+- Metrics collection operations
+- HTTP requests to the Buildkite API
+- Backend metric publishing
+
+Each trace includes relevant attributes such as organization, cluster, and queue information.
+
+**Logs:**
+Structured logging is integrated with OpenTelemetry:
+- Error events are recorded as span events with error details
+- Info events provide operational context
+- All logs include relevant attributes and are correlated with traces
+
+#### Troubleshooting
+
+**Check if OpenTelemetry is enabled:**
+Look for this log message on startup:
+```
+OpenTelemetry backend initialized successfully
+```
+
+**Compatibility:**
+- OpenTelemetry backend can be used as a complete replacement for other backends
+- Supports both HTTP and gRPC OTLP protocols
+- Works with any OpenTelemetry-compatible system (HyperDX, Jaeger, Prometheus, etc.)
+- No impact on other backend functionality when not selected
+
+## Upgrading from v2 to v3
 
 1. The `-org` argument is no longer needed
 2. The `-token` argument is now an _Agent Registration Token_ — the same used in
@@ -326,20 +424,20 @@ We send metrics for Jobs in the following states:
 - **Waiting**: the job is known to exist but isn't schedulable yet due to
   dependencies, `wait` statements, etc. This information is mostly useful to an
   autoscaler, since it represents work that will start soon.
-- **Running**: the jobs that are currently in the “running” state. These jobs have been 
+- **Running**: the jobs that are currently in the "running" state. These jobs have been 
   picked up by agents and are actively being executed.
 - **Unfinished**: the jobs that have been scheduled but have not yet
-  finished. This count includes jobs that are in the states “running” and “scheduled”.
+  finished. This count includes jobs that are in the states "running" and "scheduled".
 
 Detailed explanations about some of the metrics: 
 
-**RunningJobsCount**: This metric counts the number of jobs that are currently in the “running” state. These jobs have been picked up by agents and are actively being executed.
+**RunningJobsCount**: This metric counts the number of jobs that are currently in the "running" state. These jobs have been picked up by agents and are actively being executed.
 
-**UnfinishedJobsCount**: This metric includes all jobs that have been scheduled but have not yet finished. This includes jobs in the “running” and “scheduled” states.
+**UnfinishedJobsCount**: This metric includes all jobs that have been scheduled but have not yet finished. This includes jobs in the "running" and "scheduled" states.
 
 **ScheduledJobsCount**: This metric counts jobs that have been scheduled but are not yet started by any agent. These jobs are in the queue, waiting for an available agent to start executing them.
 
-**WaitingJobsCount**: This metric counts jobs that are in a “waiting” state, which could mean they are waiting on dependencies to resolve, on other jobs to finish, or on any other condition that needs to be met before they can be scheduled. 
+**WaitingJobsCount**: This metric counts jobs that are in a "waiting" state, which could mean they are waiting on dependencies to resolve, on other jobs to finish, or on any other condition that needs to be met before they can be scheduled. 
 
 ## License
 

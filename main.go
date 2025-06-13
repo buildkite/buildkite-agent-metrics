@@ -33,7 +33,7 @@ func main() {
 		maxIdleConns = flag.Int("max-idle-conns", 100, "Maximum number of idle (keep-alive) HTTP connections for Buildkite Agent API. Zero means no limit, -1 disables connection reuse.")
 
 		// backend config
-		backendOpt        = flag.String("backend", "cloudwatch", "Specify the backend to use: cloudwatch, newrelic, prometheus, stackdriver, statsd")
+		backendOpt        = flag.String("backend", "cloudwatch", "Specify the backend to use: cloudwatch, newrelic, prometheus, stackdriver, statsd, opentelemetry")
 		statsdHost        = flag.String("statsd-host", "127.0.0.1:8125", "Specify the StatsD server")
 		statsdTags        = flag.Bool("statsd-tags", false, "Whether your StatsD server supports tagging like Datadog")
 		prometheusAddr    = flag.String("prometheus-addr", ":8080", "Prometheus metrics transport bind address")
@@ -44,6 +44,10 @@ func main() {
 		gcpProjectID      = flag.String("stackdriver-projectid", "", "Specify Stackdriver Project ID")
 		nrAppName         = flag.String("newrelic-app-name", "", "New Relic application name for metric events")
 		nrLicenseKey      = flag.String("newrelic-license-key", "", "New Relic license key for publishing events")
+
+		// OpenTelemetry/HyperDX config
+		otelEndpoint  = flag.String("otel-endpoint", "", "OpenTelemetry OTLP endpoint (defaults to HyperDX)")
+		otelAPIKey    = flag.String("otel-api-key", "", "HyperDX API key for authentication")
 	)
 
 	// custom config for multiple tokens and queues
@@ -76,6 +80,14 @@ func main() {
 	if len(tokens) == 0 {
 		fmt.Println("Must provide at least one token with either --token or BUILDKITE_AGENT_TOKEN")
 		os.Exit(1)
+	}
+
+	// Handle OpenTelemetry configuration from environment variables
+	if os.Getenv("OTEL_ENDPOINT") != "" {
+		*otelEndpoint = os.Getenv("OTEL_ENDPOINT")
+	}
+	if os.Getenv("OTEL_API_KEY") != "" {
+		*otelAPIKey = os.Getenv("OTEL_API_KEY")
 	}
 
 	var err error
@@ -123,8 +135,21 @@ func main() {
 			os.Exit(1)
 		}
 
+	case "opentelemetry":
+		otelConfig := backend.OpenTelemetryConfig{
+			ServiceName:    "buildkite-agent-metrics",
+			ServiceVersion: version.Version,
+			Endpoint:       *otelEndpoint,
+			APIKey:         *otelAPIKey,
+		}
+		metricsBackend, err = backend.NewOpenTelemetryBackend(otelConfig)
+		if err != nil {
+			fmt.Printf("Error starting OpenTelemetry backend: %v\n", err)
+			os.Exit(1)
+		}
+
 	default:
-		fmt.Println("Must provide a supported backend: cloudwatch, newrelic, prometheus, stackdriver, statsd")
+		fmt.Println("Must provide a supported backend: cloudwatch, newrelic, prometheus, stackdriver, statsd, opentelemetry")
 		os.Exit(1)
 	}
 
@@ -193,7 +218,9 @@ func main() {
 			}
 		}
 
-		log.Printf("Finished in %s", time.Since(start))
+		collectionDuration := time.Since(start)
+		log.Printf("Finished in %s", collectionDuration)
+		
 		return pollDuration, nil
 	}
 
