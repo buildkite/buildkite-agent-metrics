@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"strings"
 	"time"
 
 	"github.com/buildkite/buildkite-agent-metrics/v5/collector"
@@ -55,9 +56,14 @@ func NewOpenTelemetryBackend(cfg OpenTelemetryConfig) (*OpenTelemetryBackend, er
 		return nil, fmt.Errorf("OTEL endpoint is required")
 	}
 	
-	// Default to HTTP if protocol not specified
+	
+	// Infer protocol from endpoint if not specified
 	if cfg.Protocol == "" {
-		cfg.Protocol = "http"
+		if strings.Contains(cfg.Endpoint, ":4317") {
+			cfg.Protocol = "grpc"
+		} else {
+			cfg.Protocol = "http"
+		}
 	}
 	
 	// Validate protocol
@@ -93,6 +99,14 @@ func NewOpenTelemetryBackend(cfg OpenTelemetryConfig) (*OpenTelemetryBackend, er
 	var traceExporter sdktrace.SpanExporter
 	var err error
 	
+	// For HTTP exporters, extract hostname from full URL if needed
+	httpEndpoint := cfg.Endpoint
+	if strings.HasPrefix(cfg.Endpoint, "https://") {
+		httpEndpoint = strings.TrimPrefix(cfg.Endpoint, "https://")
+	} else if strings.HasPrefix(cfg.Endpoint, "http://") {
+		httpEndpoint = strings.TrimPrefix(cfg.Endpoint, "http://")
+	}
+	
 	if cfg.Protocol == "grpc" {
 		traceExporterOpts := []otlptracegrpc.Option{
 			otlptracegrpc.WithEndpoint(cfg.Endpoint),
@@ -105,8 +119,11 @@ func NewOpenTelemetryBackend(cfg OpenTelemetryConfig) (*OpenTelemetryBackend, er
 		traceExporter, err = otlptracegrpc.New(context.Background(), traceExporterOpts...)
 	} else {
 		traceExporterOpts := []otlptracehttp.Option{
-			otlptracehttp.WithEndpoint(cfg.Endpoint),
-			otlptracehttp.WithURLPath("/v1/traces"),
+			otlptracehttp.WithEndpoint(httpEndpoint),
+		}
+		// Only add URL path if endpoint doesn't already contain it
+		if !strings.Contains(httpEndpoint, "/v1/traces") {
+			traceExporterOpts = append(traceExporterOpts, otlptracehttp.WithURLPath("/v1/traces"))
 		}
 		if cfg.APIKey != "" {
 			traceExporterOpts = append(traceExporterOpts, otlptracehttp.WithHeaders(map[string]string{
@@ -142,8 +159,11 @@ func NewOpenTelemetryBackend(cfg OpenTelemetryConfig) (*OpenTelemetryBackend, er
 		metricExporter, err = otlpmetricgrpc.New(context.Background(), metricExporterOpts...)
 	} else {
 		metricExporterOpts := []otlpmetrichttp.Option{
-			otlpmetrichttp.WithEndpoint(cfg.Endpoint),
-			otlpmetrichttp.WithURLPath("/v1/metrics"),
+			otlpmetrichttp.WithEndpoint(httpEndpoint),
+		}
+		// Only add URL path if endpoint doesn't already contain it
+		if !strings.Contains(httpEndpoint, "/v1/metrics") {
+			metricExporterOpts = append(metricExporterOpts, otlpmetrichttp.WithURLPath("/v1/metrics"))
 		}
 		if cfg.APIKey != "" {
 			metricExporterOpts = append(metricExporterOpts, otlpmetrichttp.WithHeaders(map[string]string{
