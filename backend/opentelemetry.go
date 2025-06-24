@@ -4,15 +4,22 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"time"
 
 	"github.com/buildkite/buildkite-agent-metrics/v5/collector"
-	"github.com/hyperdxio/otel-config-go/otelconfig"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
+	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
+	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/metric"
+	"go.opentelemetry.io/otel/propagation"
+	"go.opentelemetry.io/otel/sdk/resource"
+	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
+	sdktrace "go.opentelemetry.io/otel/sdk/trace"
 	"go.opentelemetry.io/otel/trace"
+	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
 )
 
 type OpenTelemetryBackend struct {
@@ -39,53 +46,137 @@ type OpenTelemetryConfig struct {
 	ServiceNamespace string
 	Endpoint         string
 	APIKey           string
+	Protocol         string // "http" or "grpc"
 }
 
 func NewOpenTelemetryBackend(cfg OpenTelemetryConfig) (*OpenTelemetryBackend, error) {
-	// Set environment variables for HyperDX configuration
-	if cfg.Endpoint != "" {
-		os.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", cfg.Endpoint)
-	} else {
-		os.Setenv("OTEL_EXPORTER_OTLP_ENDPOINT", "https://in-otel.hyperdx.io")
-	}
-
-	if cfg.APIKey != "" {
-		os.Setenv("OTEL_EXPORTER_OTLP_HEADERS", fmt.Sprintf("authorization=%s", cfg.APIKey))
-	}
-
-	os.Setenv("OTEL_EXPORTER_OTLP_PROTOCOL", "http/protobuf")
-
-	if cfg.ServiceName != "" {
-		os.Setenv("OTEL_SERVICE_NAME", cfg.ServiceName)
-	} else {
-		os.Setenv("OTEL_SERVICE_NAME", "buildkite-agent-metrics")
-	}
-
-	if cfg.ServiceVersion != "" {
-		os.Setenv("OTEL_SERVICE_VERSION", cfg.ServiceVersion)
+	// Endpoint is required
+	if cfg.Endpoint == "" {
+		return nil, fmt.Errorf("OTEL endpoint is required")
 	}
 	
-	// Set resource attributes including namespace
+	// Default to HTTP if protocol not specified
+	if cfg.Protocol == "" {
+		cfg.Protocol = "http"
+	}
+	
+	// Validate protocol
+	if cfg.Protocol != "http" && cfg.Protocol != "grpc" {
+		return nil, fmt.Errorf("OTEL protocol must be 'http' or 'grpc', got: %s", cfg.Protocol)
+	}
+
+	// Set up resource with service information
 	serviceName := "buildkite-agent-metrics"
 	if cfg.ServiceName != "" {
 		serviceName = cfg.ServiceName
 	}
-	
+
 	serviceNamespace := "buildkite-agent-metrics"
 	if cfg.ServiceNamespace != "" {
 		serviceNamespace = cfg.ServiceNamespace
 	}
-	
-	resourceAttrs := fmt.Sprintf("service.name=%s,service.namespace=%s", serviceName, serviceNamespace)
-	if cfg.ServiceVersion != "" {
-		resourceAttrs += fmt.Sprintf(",service.version=%s", cfg.ServiceVersion)
-	}
-	os.Setenv("OTEL_RESOURCE_ATTRIBUTES", resourceAttrs)
 
-	// Initialize OpenTelemetry
-	otelShutdown, err := otelconfig.ConfigureOpenTelemetry()
+	resourceAttrs := []attribute.KeyValue{
+		semconv.ServiceName(serviceName),
+		semconv.ServiceNamespace(serviceNamespace),
+	}
+	if cfg.ServiceVersion != "" {
+		resourceAttrs = append(resourceAttrs, semconv.ServiceVersion(cfg.ServiceVersion))
+	}
+
+	res := resource.NewWithAttributes(
+		semconv.SchemaURL,
+		resourceAttrs...,
+	)
+
+	// Set up trace exporter based on protocol
+	var traceExporter sdktrace.SpanExporter
+	var err error
+	
+	if cfg.Protocol == "grpc" {
+		traceExporterOpts := []otlptracegrpc.Option{
+			otlptracegrpc.WithEndpoint(cfg.Endpoint),
+		}
+		if cfg.APIKey != "" {
+			traceExporterOpts = append(traceExporterOpts, otlptracegrpc.WithHeaders(map[string]string{
+				"authorization": cfg.APIKey,
+			}))
+		}
+		traceExporter, err = otlptracegrpc.New(context.Background(), traceExporterOpts...)
+	} else {
+		traceExporterOpts := []otlptracehttp.Option{
+			otlptracehttp.WithEndpoint(cfg.Endpoint),
+			otlptracehttp.WithURLPath("/v1/traces"),
+		}
+		if cfg.APIKey != "" {
+			traceExporterOpts = append(traceExporterOpts, otlptracehttp.WithHeaders(map[string]string{
+				"authorization": cfg.APIKey,
+			}))
+		}
+		traceExporter, err = otlptracehttp.New(context.Background(), traceExporterOpts...)
+	}
+	
 	if err != nil {
-		return nil, fmt.Errorf("error setting up OpenTelemetry SDK: %w", err)
+		return nil, fmt.Errorf("failed to create trace exporter: %w", err)
+	}
+
+	// Set up trace provider
+	tracerProvider := sdktrace.NewTracerProvider(
+		sdktrace.WithBatcher(traceExporter),
+		sdktrace.WithResource(res),
+	)
+	otel.SetTracerProvider(tracerProvider)
+
+	// Set up metric exporter based on protocol
+	var metricExporter sdkmetric.Exporter
+	
+	if cfg.Protocol == "grpc" {
+		metricExporterOpts := []otlpmetricgrpc.Option{
+			otlpmetricgrpc.WithEndpoint(cfg.Endpoint),
+		}
+		if cfg.APIKey != "" {
+			metricExporterOpts = append(metricExporterOpts, otlpmetricgrpc.WithHeaders(map[string]string{
+				"authorization": cfg.APIKey,
+			}))
+		}
+		metricExporter, err = otlpmetricgrpc.New(context.Background(), metricExporterOpts...)
+	} else {
+		metricExporterOpts := []otlpmetrichttp.Option{
+			otlpmetrichttp.WithEndpoint(cfg.Endpoint),
+			otlpmetrichttp.WithURLPath("/v1/metrics"),
+		}
+		if cfg.APIKey != "" {
+			metricExporterOpts = append(metricExporterOpts, otlpmetrichttp.WithHeaders(map[string]string{
+				"authorization": cfg.APIKey,
+			}))
+		}
+		metricExporter, err = otlpmetrichttp.New(context.Background(), metricExporterOpts...)
+	}
+	
+	if err != nil {
+		tracerProvider.Shutdown(context.Background())
+		return nil, fmt.Errorf("failed to create metric exporter: %w", err)
+	}
+
+	// Set up metric provider
+	meterProvider := sdkmetric.NewMeterProvider(
+		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(metricExporter)),
+		sdkmetric.WithResource(res),
+	)
+	otel.SetMeterProvider(meterProvider)
+
+	// Set up text map propagator
+	otel.SetTextMapPropagator(propagation.NewCompositeTextMapPropagator(
+		propagation.TraceContext{},
+		propagation.Baggage{},
+	))
+
+	// Create shutdown function
+	otelShutdown := func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		defer cancel()
+		tracerProvider.Shutdown(ctx)
+		meterProvider.Shutdown(ctx)
 	}
 
 	backend := &OpenTelemetryBackend{

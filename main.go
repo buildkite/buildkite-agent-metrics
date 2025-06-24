@@ -45,9 +45,10 @@ func main() {
 		nrAppName         = flag.String("newrelic-app-name", "", "New Relic application name for metric events")
 		nrLicenseKey      = flag.String("newrelic-license-key", "", "New Relic license key for publishing events")
 
-		// OpenTelemetry/HyperDX config
-		otelEndpoint  = flag.String("otel-endpoint", "", "OpenTelemetry OTLP endpoint (defaults to HyperDX)")
-		otelAPIKey    = flag.String("otel-api-key", "", "HyperDX API key for authentication")
+		// OpenTelemetry config
+		otelEndpoint  = flag.String("otel-endpoint", "", "OpenTelemetry OTLP endpoint (required when using opentelemetry backend)")
+		otelAPIKey    = flag.String("otel-api-key", "", "OpenTelemetry API key for authentication")
+		otelProtocol  = flag.String("otel-protocol", "http", "OpenTelemetry protocol: http or grpc")
 	)
 
 	// custom config for multiple tokens and queues
@@ -88,6 +89,9 @@ func main() {
 	}
 	if os.Getenv("OTEL_API_KEY") != "" {
 		*otelAPIKey = os.Getenv("OTEL_API_KEY")
+	}
+	if os.Getenv("OTEL_PROTOCOL") != "" {
+		*otelProtocol = os.Getenv("OTEL_PROTOCOL")
 	}
 
 	var err error
@@ -136,11 +140,16 @@ func main() {
 		}
 
 	case "opentelemetry":
+		if *otelEndpoint == "" {
+			fmt.Println("Error: OpenTelemetry endpoint is required when using opentelemetry backend. Use --otel-endpoint or set OTEL_ENDPOINT environment variable.")
+			os.Exit(1)
+		}
 		otelConfig := backend.OpenTelemetryConfig{
 			ServiceName:    "buildkite-agent-metrics",
 			ServiceVersion: version.Version,
 			Endpoint:       *otelEndpoint,
 			APIKey:         *otelAPIKey,
+			Protocol:       *otelProtocol,
 		}
 		metricsBackend, err = backend.NewOpenTelemetryBackend(otelConfig)
 		if err != nil {

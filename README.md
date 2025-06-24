@@ -182,7 +182,7 @@ Usage of buildkite-agent-metrics:
   -otel-api-key string
         OpenTelemetry API key for authentication
   -otel-endpoint string
-        OpenTelemetry endpoint (defaults to HyperDX)
+        OpenTelemetry OTLP endpoint (required when using opentelemetry backend)
   -prometheus-addr string
         Prometheus metrics transport bind address (default ":8080")
   -prometheus-path string
@@ -249,45 +249,56 @@ The New Relic backend supports the following arguments:
 
 ### OpenTelemetry
 
-The OpenTelemetry backend allows you to send metrics, traces, and logs to any OpenTelemetry-compatible system; defaulting to HyperDX.
+The OpenTelemetry backend allows you to send metrics, traces, and logs to any OpenTelemetry-compatible system.
 
 #### Configuration
 
 **Command Line Flags:**
 - `--backend opentelemetry`: Select OpenTelemetry as the metrics backend
-- `--otel-endpoint`: OpenTelemetry OTLP endpoint (defaults to HyperDX: https://in-otel.hyperdx.io)  
-- `--otel-api-key`: OpenTelemetry API key for authentication
+- `--otel-endpoint`: OpenTelemetry OTLP endpoint (required)
+- `--otel-api-key`: OpenTelemetry API key for authentication (optional)
+- `--otel-protocol`: Protocol to use: `http` or `grpc` (default: `http`)
 
 **Environment Variables:**
-- `OTEL_ENDPOINT`: Custom OTLP endpoint (optional, defaults to HyperDX)
-- `OTEL_API_KEY`: Your HyperDX API key
+- `OTEL_ENDPOINT`: OTLP endpoint (required when using opentelemetry backend)
+- `OTEL_API_KEY`: API key for authentication (optional)
+- `OTEL_PROTOCOL`: Protocol to use: `http` or `grpc` (default: `http`)
 
-Standard OpenTelemetry environment variables are also supported:
+**Service Configuration:**
 - `OTEL_SERVICE_NAME`: Service name (defaults to "buildkite-agent-metrics")
-- `OTEL_SERVICE_NAMESPACE`: Server namespace (defaults to "buildkite-agent-metrics")
+- `OTEL_SERVICE_NAMESPACE`: Service namespace (defaults to "buildkite-agent-metrics")
 - `OTEL_SERVICE_VERSION`: Service version (uses the binary version)
-- `OTEL_EXPORTER_OTLP_ENDPOINT`: OTLP endpoint
-- `OTEL_EXPORTER_OTLP_HEADERS`: Authentication headers
-- `OTEL_EXPORTER_OTLP_PROTOCOL`: Protocol (defaults to "http/protobuf")
 
 #### Usage Examples
 
-**Basic Usage with HyperDX:**
-```bash
-buildkite-agent-metrics \
-  --backend opentelemetry \
-  --token $$YOUR_BUILDKITE_TOKEN \
-  --otel-api-key $YOUR_HYPERDX_API_KEY \
-  --interval 30s
-```
-
-**Custom Endpoint:**
+**Basic Usage:**
 ```bash
 buildkite-agent-metrics \
   --backend opentelemetry \
   --token $YOUR_BUILDKITE_TOKEN \
-  --otel-endpoint https://your-custom-otlp-endpoint.com \
+  --otel-endpoint https://your-otlp-endpoint.com \
   --otel-api-key $YOUR_API_KEY \
+  --interval 30s
+```
+
+**Using gRPC protocol:**
+```bash
+buildkite-agent-metrics \
+  --backend opentelemetry \
+  --token $YOUR_BUILDKITE_TOKEN \
+  --otel-endpoint your-otlp-server.com:4317 \
+  --otel-protocol grpc \
+  --interval 30s
+```
+
+**Using environment variables:**
+```bash
+export OTEL_ENDPOINT="https://your-otlp-endpoint.com"
+export OTEL_API_KEY="your-api-key"
+export OTEL_PROTOCOL="http"
+buildkite-agent-metrics \
+  --backend opentelemetry \
+  --token $YOUR_BUILDKITE_TOKEN \
   --interval 30s
 ```
 
@@ -336,7 +347,7 @@ OpenTelemetry backend initialized successfully
 **Compatibility:**
 - OpenTelemetry backend can be used as a complete replacement for other backends
 - Supports both HTTP and gRPC OTLP protocols
-- Works with any OpenTelemetry-compatible system (HyperDX, Jaeger, Prometheus, etc.)
+- Works with any OpenTelemetry-compatible system (Jaeger, Honeycomb, HyperDX, Grafana Cloud, etc.)
 - No impact on other backend functionality when not selected
 
 ## Upgrading from v2 to v3
