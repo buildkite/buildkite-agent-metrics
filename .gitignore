@@ -3,3 +3,5 @@ build/
 handler.zip
 bin/
 lambda/handler
+.envrc
+buildkite-agent-metrics
