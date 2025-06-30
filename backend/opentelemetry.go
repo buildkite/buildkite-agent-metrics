@@ -49,6 +49,7 @@ type OpenTelemetryBackend struct {
 // https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/
 // https://opentelemetry.io/docs/specs/otel/protocol/exporter/#endpoint-urls-for-otlphttp
 func NewOpenTelemetryBackend() (*OpenTelemetryBackend, error) {
+	ctx := context.TODO()
 	serviceName := os.Getenv("OTEL_SERVICE_NAME")
 	if serviceName == "" {
 		serviceName = "buildkite-agent-metrics"
@@ -72,9 +73,9 @@ func NewOpenTelemetryBackend() (*OpenTelemetryBackend, error) {
 
 	switch protocol {
 	case "grpc":
-		traceExporter, err = otlptracegrpc.New(context.Background())
+		traceExporter, err = otlptracegrpc.New(ctx)
 	case "http/protobuf", "http":
-		traceExporter, err = otlptracehttp.New(context.Background())
+		traceExporter, err = otlptracehttp.New(ctx)
 	default:
 		return nil, fmt.Errorf("unsupported otlp protocol: %s", protocol)
 	}
@@ -94,12 +95,12 @@ func NewOpenTelemetryBackend() (*OpenTelemetryBackend, error) {
 
 	switch protocol {
 	case "grpc":
-		metricExporter, err = otlpmetricgrpc.New(context.Background())
+		metricExporter, err = otlpmetricgrpc.New(ctx)
 	case "http/protobuf", "http":
-		metricExporter, err = otlpmetrichttp.New(context.Background())
+		metricExporter, err = otlpmetrichttp.New(ctx)
 	}
 	if err != nil {
-		tracerProvider.Shutdown(context.Background())
+		tracerProvider.Shutdown(ctx)
 		return nil, fmt.Errorf("failed to create metric exporter: %w", err)
 	}
 
@@ -118,7 +119,7 @@ func NewOpenTelemetryBackend() (*OpenTelemetryBackend, error) {
 
 	// Create shutdown function
 	otelShutdown := func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 		defer cancel()
 		tracerProvider.Shutdown(ctx)
 		meterProvider.Shutdown(ctx)
@@ -221,7 +222,7 @@ func (b *OpenTelemetryBackend) initializeMetrics() error {
 
 // Collect implements the Backend interface
 func (b *OpenTelemetryBackend) Collect(r *collector.Result) error {
-	ctx := context.Background()
+	ctx := context.TODO()
 	start := time.Now()
 
 	// Start tracing span for this collection
