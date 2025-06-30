@@ -179,10 +179,6 @@ Usage of buildkite-agent-metrics:
         New Relic application name for metric events
   -newrelic-license-key string
         New Relic license key for publishing events
-  -otel-api-key string
-        OpenTelemetry API key for authentication
-  -otel-endpoint string
-        OpenTelemetry OTLP endpoint (required when using opentelemetry backend)
   -prometheus-addr string
         Prometheus metrics transport bind address (default ":8080")
   -prometheus-path string
@@ -249,53 +245,32 @@ The New Relic backend supports the following arguments:
 
 ### OpenTelemetry
 
-The OpenTelemetry backend allows you to send metrics, traces, and logs to any OpenTelemetry-compatible system.
+The OpenTelemetry backend allows you to send metrics and traces to any OpenTelemetry-compatible using OTLP.
 
 #### Configuration
 
 **Command Line Flags:**
 - `--backend opentelemetry`: Select OpenTelemetry as the metrics backend
-- `--otel-endpoint`: OpenTelemetry OTLP endpoint (required)
-- `--otel-api-key`: OpenTelemetry API key for authentication (optional)
-- `--otel-protocol`: Protocol to use: `http` or `grpc` (default: `http`)
 
 **Environment Variables:**
-- `OTEL_ENDPOINT`: OTLP endpoint (required when using opentelemetry backend)
-- `OTEL_API_KEY`: API key for authentication (optional)
-- `OTEL_PROTOCOL`: Protocol to use: `http` or `grpc` (default: `http`)
+- `OTEL_SERVICE_NAME`: OpenTelemetry service name (default: `buildkite-agent-metrics`)
+- `OTEL_EXPORTER_OTLP_PROTOCOL`: Protocol to use: `http/protobuf` or `grpc` (default: `http/protobuf`)
+- `OTEL_EXPORTER_OTLP_ENDPOINT`: Endpoint to send metrics to (default: `http://localhost:4318` for `http/protobuf` and `http://localhost:4317` for `grpc`)
+- `OTEL_EXPORTER_OTLP_HEADERS`: Headers to send with each request (default: none)
 
-**Service Configuration:**
-- `OTEL_SERVICE_NAME`: Service name (defaults to "buildkite-agent-metrics")
-- `OTEL_SERVICE_NAMESPACE`: Service namespace (defaults to "buildkite-agent-metrics")
-- `OTEL_SERVICE_VERSION`: Service version (uses the binary version)
+See OpenTelemetry SDK documentation for more complete list of supported environment variables.
 
-#### Usage Examples
+- https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/
+- https://opentelemetry.io/docs/specs/otel/protocol/exporter/#endpoint-urls-for-otlphttp
 
-**Basic Usage:**
+#### Usage Example
+
 ```bash
-buildkite-agent-metrics \
-  --backend opentelemetry \
-  --token $YOUR_BUILDKITE_TOKEN \
-  --otel-endpoint https://your-otlp-endpoint.com \
-  --otel-api-key $YOUR_API_KEY \
-  --interval 30s
-```
+export OTEL_SERVICE_NAME="buildkite-metrics"
+export OTEL_EXPORTER_OTLP_ENDPOINT="https://your-otlp-endpoint.com:4317"
+export OTEL_EXPORTER_OTLP_HEADERS="authorization=your-api-key"
+export OTEL_EXPORTER_OTLP_PROTOCOL="grpc"
 
-**Using gRPC protocol:**
-```bash
-buildkite-agent-metrics \
-  --backend opentelemetry \
-  --token $YOUR_BUILDKITE_TOKEN \
-  --otel-endpoint your-otlp-server.com:4317 \
-  --otel-protocol grpc \
-  --interval 30s
-```
-
-**Using environment variables:**
-```bash
-export OTEL_ENDPOINT="https://your-otlp-endpoint.com"
-export OTEL_API_KEY="your-api-key"
-export OTEL_PROTOCOL="http"
 buildkite-agent-metrics \
   --backend opentelemetry \
   --token $YOUR_BUILDKITE_TOKEN \
@@ -308,7 +283,7 @@ buildkite-agent-metrics \
 The following metrics are exported to OpenTelemetry:
 
 - `buildkite.jobs.scheduled`: Number of scheduled jobs
-- `buildkite.jobs.running`: Number of running jobs  
+- `buildkite.jobs.running`: Number of running jobs
 - `buildkite.jobs.unfinished`: Number of unfinished jobs
 - `buildkite.jobs.waiting`: Number of waiting jobs
 - `buildkite.agents.idle`: Number of idle agents
@@ -324,6 +299,7 @@ All metrics include attributes for:
 
 **Traces:**
 Distributed tracing is provided for:
+
 - Metrics collection operations
 - HTTP requests to the Buildkite API
 - Backend metric publishing

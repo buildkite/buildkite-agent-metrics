@@ -44,11 +44,6 @@ func main() {
 		gcpProjectID      = flag.String("stackdriver-projectid", "", "Specify Stackdriver Project ID")
 		nrAppName         = flag.String("newrelic-app-name", "", "New Relic application name for metric events")
 		nrLicenseKey      = flag.String("newrelic-license-key", "", "New Relic license key for publishing events")
-
-		// OpenTelemetry config
-		otelEndpoint  = flag.String("otel-endpoint", "", "OpenTelemetry OTLP endpoint (required when using opentelemetry backend)")
-		otelAPIKey    = flag.String("otel-api-key", "", "OpenTelemetry API key for authentication")
-		otelProtocol  = flag.String("otel-protocol", "http", "OpenTelemetry protocol: http or grpc")
 	)
 
 	// custom config for multiple tokens and queues
@@ -81,17 +76,6 @@ func main() {
 	if len(tokens) == 0 {
 		fmt.Println("Must provide at least one token with either --token or BUILDKITE_AGENT_TOKEN")
 		os.Exit(1)
-	}
-
-	// Handle OpenTelemetry configuration from environment variables
-	if os.Getenv("OTEL_ENDPOINT") != "" {
-		*otelEndpoint = os.Getenv("OTEL_ENDPOINT")
-	}
-	if os.Getenv("OTEL_API_KEY") != "" {
-		*otelAPIKey = os.Getenv("OTEL_API_KEY")
-	}
-	if os.Getenv("OTEL_PROTOCOL") != "" {
-		*otelProtocol = os.Getenv("OTEL_PROTOCOL")
 	}
 
 	var err error
@@ -140,18 +124,7 @@ func main() {
 		}
 
 	case "opentelemetry":
-		if *otelEndpoint == "" {
-			fmt.Println("Error: OpenTelemetry endpoint is required when using opentelemetry backend. Use --otel-endpoint or set OTEL_ENDPOINT environment variable.")
-			os.Exit(1)
-		}
-		otelConfig := backend.OpenTelemetryConfig{
-			ServiceName:    "buildkite-agent-metrics",
-			ServiceVersion: version.Version,
-			Endpoint:       *otelEndpoint,
-			APIKey:         *otelAPIKey,
-			Protocol:       *otelProtocol,
-		}
-		metricsBackend, err = backend.NewOpenTelemetryBackend(otelConfig)
+		metricsBackend, err = backend.NewOpenTelemetryBackend()
 		if err != nil {
 			fmt.Printf("Error starting OpenTelemetry backend: %v\n", err)
 			os.Exit(1)
@@ -229,7 +202,7 @@ func main() {
 
 		collectionDuration := time.Since(start)
 		log.Printf("Finished in %s", collectionDuration)
-		
+
 		return pollDuration, nil
 	}
 
