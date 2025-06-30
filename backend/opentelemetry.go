@@ -4,10 +4,11 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"strings"
+	"os"
 	"time"
 
 	"github.com/buildkite/buildkite-agent-metrics/v5/collector"
+	"github.com/buildkite/buildkite-agent-metrics/v5/version"
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/attribute"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc"
@@ -16,11 +17,11 @@ import (
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
 	"go.opentelemetry.io/otel/metric"
 	"go.opentelemetry.io/otel/propagation"
-	"go.opentelemetry.io/otel/sdk/resource"
 	sdkmetric "go.opentelemetry.io/otel/sdk/metric"
+	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
-	"go.opentelemetry.io/otel/trace"
 	semconv "go.opentelemetry.io/otel/semconv/v1.17.0"
+	"go.opentelemetry.io/otel/trace"
 )
 
 type OpenTelemetryBackend struct {
@@ -41,98 +42,43 @@ type OpenTelemetryBackend struct {
 	shutdown func()
 }
 
-type OpenTelemetryConfig struct {
-	ServiceName      string
-	ServiceVersion   string
-	ServiceNamespace string
-	Endpoint         string
-	APIKey           string
-	Protocol         string // "http" or "grpc"
-}
-
-func NewOpenTelemetryBackend(cfg OpenTelemetryConfig) (*OpenTelemetryBackend, error) {
-	// Endpoint is required
-	if cfg.Endpoint == "" {
-		return nil, fmt.Errorf("OTEL endpoint is required")
-	}
-	
-	
-	// Infer protocol from endpoint if not specified
-	if cfg.Protocol == "" {
-		if strings.Contains(cfg.Endpoint, ":4317") {
-			cfg.Protocol = "grpc"
-		} else {
-			cfg.Protocol = "http"
-		}
-	}
-	
-	// Validate protocol
-	if cfg.Protocol != "http" && cfg.Protocol != "grpc" {
-		return nil, fmt.Errorf("OTEL protocol must be 'http' or 'grpc', got: %s", cfg.Protocol)
-	}
-
-	// Set up resource with service information
-	serviceName := "buildkite-agent-metrics"
-	if cfg.ServiceName != "" {
-		serviceName = cfg.ServiceName
-	}
-
-	serviceNamespace := "buildkite-agent-metrics"
-	if cfg.ServiceNamespace != "" {
-		serviceNamespace = cfg.ServiceNamespace
-	}
-
-	resourceAttrs := []attribute.KeyValue{
-		semconv.ServiceName(serviceName),
-		semconv.ServiceNamespace(serviceNamespace),
-	}
-	if cfg.ServiceVersion != "" {
-		resourceAttrs = append(resourceAttrs, semconv.ServiceVersion(cfg.ServiceVersion))
+// NewOpenTelemetryBackend creates a new OpenTelemetry backend.
+//
+// # Configuration is through standard OpenTelemetry SDK environment variables
+//
+// https://opentelemetry.io/docs/specs/otel/configuration/sdk-environment-variables/
+// https://opentelemetry.io/docs/specs/otel/protocol/exporter/#endpoint-urls-for-otlphttp
+func NewOpenTelemetryBackend() (*OpenTelemetryBackend, error) {
+	ctx := context.TODO()
+	serviceName := os.Getenv("OTEL_SERVICE_NAME")
+	if serviceName == "" {
+		serviceName = "buildkite-agent-metrics"
 	}
 
 	res := resource.NewWithAttributes(
 		semconv.SchemaURL,
-		resourceAttrs...,
+		semconv.ServiceName(serviceName),
+		semconv.ServiceNamespace("buildkite"),
+		semconv.ServiceVersion(version.Version),
 	)
 
 	// Set up trace exporter based on protocol
 	var traceExporter sdktrace.SpanExporter
 	var err error
-	
-	// For HTTP exporters, extract hostname from full URL if needed
-	httpEndpoint := cfg.Endpoint
-	if strings.HasPrefix(cfg.Endpoint, "https://") {
-		httpEndpoint = strings.TrimPrefix(cfg.Endpoint, "https://")
-	} else if strings.HasPrefix(cfg.Endpoint, "http://") {
-		httpEndpoint = strings.TrimPrefix(cfg.Endpoint, "http://")
+	protocol := os.Getenv("OTEL_EXPORTER_OTLP_PROTOCOL")
+	// default to http/protobuf as per spec
+	if protocol == "" {
+		protocol = "http/protobuf"
 	}
-	
-	if cfg.Protocol == "grpc" {
-		traceExporterOpts := []otlptracegrpc.Option{
-			otlptracegrpc.WithEndpoint(cfg.Endpoint),
-		}
-		if cfg.APIKey != "" {
-			traceExporterOpts = append(traceExporterOpts, otlptracegrpc.WithHeaders(map[string]string{
-				"authorization": cfg.APIKey,
-			}))
-		}
-		traceExporter, err = otlptracegrpc.New(context.Background(), traceExporterOpts...)
-	} else {
-		traceExporterOpts := []otlptracehttp.Option{
-			otlptracehttp.WithEndpoint(httpEndpoint),
-		}
-		// Only add URL path if endpoint doesn't already contain it
-		if !strings.Contains(httpEndpoint, "/v1/traces") {
-			traceExporterOpts = append(traceExporterOpts, otlptracehttp.WithURLPath("/v1/traces"))
-		}
-		if cfg.APIKey != "" {
-			traceExporterOpts = append(traceExporterOpts, otlptracehttp.WithHeaders(map[string]string{
-				"authorization": cfg.APIKey,
-			}))
-		}
-		traceExporter, err = otlptracehttp.New(context.Background(), traceExporterOpts...)
+
+	switch protocol {
+	case "grpc":
+		traceExporter, err = otlptracegrpc.New(ctx)
+	case "http/protobuf", "http":
+		traceExporter, err = otlptracehttp.New(ctx)
+	default:
+		return nil, fmt.Errorf("unsupported otlp protocol: %s", protocol)
 	}
-	
 	if err != nil {
 		return nil, fmt.Errorf("failed to create trace exporter: %w", err)
 	}
@@ -146,35 +92,15 @@ func NewOpenTelemetryBackend(cfg OpenTelemetryConfig) (*OpenTelemetryBackend, er
 
 	// Set up metric exporter based on protocol
 	var metricExporter sdkmetric.Exporter
-	
-	if cfg.Protocol == "grpc" {
-		metricExporterOpts := []otlpmetricgrpc.Option{
-			otlpmetricgrpc.WithEndpoint(cfg.Endpoint),
-		}
-		if cfg.APIKey != "" {
-			metricExporterOpts = append(metricExporterOpts, otlpmetricgrpc.WithHeaders(map[string]string{
-				"authorization": cfg.APIKey,
-			}))
-		}
-		metricExporter, err = otlpmetricgrpc.New(context.Background(), metricExporterOpts...)
-	} else {
-		metricExporterOpts := []otlpmetrichttp.Option{
-			otlpmetrichttp.WithEndpoint(httpEndpoint),
-		}
-		// Only add URL path if endpoint doesn't already contain it
-		if !strings.Contains(httpEndpoint, "/v1/metrics") {
-			metricExporterOpts = append(metricExporterOpts, otlpmetrichttp.WithURLPath("/v1/metrics"))
-		}
-		if cfg.APIKey != "" {
-			metricExporterOpts = append(metricExporterOpts, otlpmetrichttp.WithHeaders(map[string]string{
-				"authorization": cfg.APIKey,
-			}))
-		}
-		metricExporter, err = otlpmetrichttp.New(context.Background(), metricExporterOpts...)
+
+	switch protocol {
+	case "grpc":
+		metricExporter, err = otlpmetricgrpc.New(ctx)
+	case "http/protobuf", "http":
+		metricExporter, err = otlpmetrichttp.New(ctx)
 	}
-	
 	if err != nil {
-		tracerProvider.Shutdown(context.Background())
+		tracerProvider.Shutdown(ctx)
 		return nil, fmt.Errorf("failed to create metric exporter: %w", err)
 	}
 
@@ -193,7 +119,7 @@ func NewOpenTelemetryBackend(cfg OpenTelemetryConfig) (*OpenTelemetryBackend, er
 
 	// Create shutdown function
 	otelShutdown := func() {
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 		defer cancel()
 		tracerProvider.Shutdown(ctx)
 		meterProvider.Shutdown(ctx)
@@ -296,7 +222,7 @@ func (b *OpenTelemetryBackend) initializeMetrics() error {
 
 // Collect implements the Backend interface
 func (b *OpenTelemetryBackend) Collect(r *collector.Result) error {
-	ctx := context.Background()
+	ctx := context.TODO()
 	start := time.Now()
 
 	// Start tracing span for this collection
