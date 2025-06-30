@@ -81,7 +81,7 @@ To override the endpoint use the following env var:
 To adjust timeouts, and connection pooling in the HTTP client use the following env vars:
 
 - `BUILDKITE_AGENT_METRICS_TIMEOUT` : Timeout, in seconds, TLS handshake and idle connections, for HTTP requests, to Buildkite API (default 15).
-- `BUILDKITE_AGENT_METRICS_MAX_IDLE_CONNS` : Maximum number of idle (keep-alive) HTTP connections 
+- `BUILDKITE_AGENT_METRICS_MAX_IDLE_CONNS` : Maximum number of idle (keep-alive) HTTP connections
    for Buildkite Agent API. Zero means no limit, -1 disables pooling (default 100).
 
 To assist with debugging the following env vars are provided:
@@ -411,12 +411,12 @@ We send metrics for Jobs in the following states:
 - **Waiting**: the job is known to exist but isn't schedulable yet due to
   dependencies, `wait` statements, etc. This information is mostly useful to an
   autoscaler, since it represents work that will start soon.
-- **Running**: the jobs that are currently in the "running" state. These jobs have been 
+- **Running**: the jobs that are currently in the "running" state. These jobs have been
   picked up by agents and are actively being executed.
 - **Unfinished**: the jobs that have been scheduled but have not yet
   finished. This count includes jobs that are in the states "running" and "scheduled".
 
-Detailed explanations about some of the metrics: 
+Detailed explanations about some of the metrics:
 
 **RunningJobsCount**: This metric counts the number of jobs that are currently in the "running" state. These jobs have been picked up by agents and are actively being executed.
 
@@ -424,7 +424,7 @@ Detailed explanations about some of the metrics:
 
 **ScheduledJobsCount**: This metric counts jobs that have been scheduled but are not yet started by any agent. These jobs are in the queue, waiting for an available agent to start executing them.
 
-**WaitingJobsCount**: This metric counts jobs that are in a "waiting" state, which could mean they are waiting on dependencies to resolve, on other jobs to finish, or on any other condition that needs to be met before they can be scheduled. 
+**WaitingJobsCount**: This metric counts jobs that are in a "waiting" state, which could mean they are waiting on dependencies to resolve, on other jobs to finish, or on any other condition that needs to be met before they can be scheduled.
 
 ## License
 
