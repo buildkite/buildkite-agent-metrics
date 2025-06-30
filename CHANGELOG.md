@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ### Added
 - Adding support for OpenTelemetry backend [#412](https://github.com/buildkite/buildkite-agent-metrics/pull/412) (@huewood)
+- Simplify OpenTelemetry backend [#415](https://github.com/buildkite/buildkite-agent-metrics/pull/415) (@catkins)
 - Added detailed explanations about some metrics [#364](https://github.com/buildkite/buildkite-agent-metrics/pull/364) (@amnabk)
 
 ### Changed
