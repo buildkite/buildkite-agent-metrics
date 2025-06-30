@@ -150,6 +150,12 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 			fmt.Printf("Error starting New Relic client: %v\n", err)
 			os.Exit(1)
 		}
+	case "opentelemetry":
+		metricsBackend, err = backend.NewOpenTelemetryBackend()
+		if err != nil {
+			fmt.Printf("Error starting OpenTelemetry backend: %v\n", err)
+			os.Exit(1)
+		}
 
 	default:
 		dimensions, err := backend.ParseCloudWatchDimensions(clwDimensions)
