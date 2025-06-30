@@ -135,6 +135,17 @@ func main() {
 		os.Exit(1)
 	}
 
+	if closableMetrics, ok := metricsBackend.(backend.Closer); ok {
+		defer func(closer backend.Closer) {
+			err := closer.Close()
+			log.Println("Closing metrics backend")
+			if err != nil {
+				fmt.Printf("Error closing metrics backend: %v\n", err)
+				os.Exit(1)
+			}
+		}(closableMetrics)
+	}
+
 	if *quiet {
 		log.SetOutput(io.Discard)
 	}
