@@ -4,6 +4,25 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.10.0](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.10.0) (2025-06-30)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.13...v5.10.0)
+
+### Added
+- Adding support for OpenTelemetry backend [#412](https://github.com/buildkite/buildkite-agent-metrics/pull/412) (@huewood)
+- Added detailed explanations about some metrics [#364](https://github.com/buildkite/buildkite-agent-metrics/pull/364) (@amnabk)
+
+### Changed
+- Clarify "running" and "unfinished" states in README [#355](https://github.com/buildkite/buildkite-agent-metrics/pull/355) (@ivannalisetska)
+
+### Internal
+- Update CODEOWNERS, dependabot.yml [#389](https://github.com/buildkite/buildkite-agent-metrics/pull/389) (@DrJosh9000)
+- Update CODEOWNERS [#380](https://github.com/buildkite/buildkite-agent-metrics/pull/380) (@karensawrey)
+- Create CODEOWNERS - adding Support Engineers as CODEOWNERS [#373](https://github.com/buildkite/buildkite-agent-metrics/pull/373) (@karensawrey)
+
+### Dependency bumps
+[#413](https://github.com/buildkite/buildkite-agent-metrics/pull/413), [#410](https://github.com/buildkite/buildkite-agent-metrics/pull/410), [#411](https://github.com/buildkite/buildkite-agent-metrics/pull/411), [#406](https://github.com/buildkite/buildkite-agent-metrics/pull/406), [#407](https://github.com/buildkite/buildkite-agent-metrics/pull/407), [#408](https://github.com/buildkite/buildkite-agent-metrics/pull/408), [#402](https://github.com/buildkite/buildkite-agent-metrics/pull/402), [#403](https://github.com/buildkite/buildkite-agent-metrics/pull/403), [#405](https://github.com/buildkite/buildkite-agent-metrics/pull/405), [#401](https://github.com/buildkite/buildkite-agent-metrics/pull/401), [#400](https://github.com/buildkite/buildkite-agent-metrics/pull/400), [#397](https://github.com/buildkite/buildkite-agent-metrics/pull/397), [#398](https://github.com/buildkite/buildkite-agent-metrics/pull/398), [#399](https://github.com/buildkite/buildkite-agent-metrics/pull/399), [#396](https://github.com/buildkite/buildkite-agent-metrics/pull/396), [#395](https://github.com/buildkite/buildkite-agent-metrics/pull/395), [#392](https://github.com/buildkite/buildkite-agent-metrics/pull/392), [#393](https://github.com/buildkite/buildkite-agent-metrics/pull/393), [#394](https://github.com/buildkite/buildkite-agent-metrics/pull/394), [#391](https://github.com/buildkite/buildkite-agent-metrics/pull/391), [#390](https://github.com/buildkite/buildkite-agent-metrics/pull/390), [#388](https://github.com/buildkite/buildkite-agent-metrics/pull/388), [#387](https://github.com/buildkite/buildkite-agent-metrics/pull/387), [#386](https://github.com/buildkite/buildkite-agent-metrics/pull/386), [#384](https://github.com/buildkite/buildkite-agent-metrics/pull/384), [#385](https://github.com/buildkite/buildkite-agent-metrics/pull/385), [#381](https://github.com/buildkite/buildkite-agent-metrics/pull/381), [#382](https://github.com/buildkite/buildkite-agent-metrics/pull/382), [#383](https://github.com/buildkite/buildkite-agent-metrics/pull/383), [#377](https://github.com/buildkite/buildkite-agent-metrics/pull/377), [#378](https://github.com/buildkite/buildkite-agent-metrics/pull/378), [#379](https://github.com/buildkite/buildkite-agent-metrics/pull/379), [#372](https://github.com/buildkite/buildkite-agent-metrics/pull/372), [#375](https://github.com/buildkite/buildkite-agent-metrics/pull/375), [#376](https://github.com/buildkite/buildkite-agent-metrics/pull/376) (@dependabot[bot])
+
+
 ## [v5.9.13](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.9.13) (2025-01-20)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.12...v5.9.13)
 
