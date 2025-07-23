@@ -60,8 +60,12 @@ steps:
     concurrency: 1
     concurrency_group: "release_buildkite_metrics_s3"
     plugins:
-      - aws-assume-role-with-web-identity:
+      - aws-assume-role-with-web-identity#v1.4.0:
           role-arn: arn:aws:iam::172840064832:role/pipeline-buildkite-buildkite-agent-metrics
+          session-tags:
+            - organization_slug
+            - organization_id
+            - pipeline_slug
 
   - if: build.env("RELEASE_DRY_RUN") == "true" || build.env("BUILDKITE_TAG") =~ /^v\d+\.\d+\.\d+$$/
     block: ":rocket: Release ${BUILDKITE_TAG:-UNTAGGED}?"
