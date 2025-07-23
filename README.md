@@ -6,12 +6,53 @@ A command-line tool for collecting [Buildkite](https://buildkite.com/) agent met
 
 ## Installing
 
-Either download the latest binary from
-[Github Releases](https://github.com/buildkite/buildkite-agent-metrics/releases) or install with:
+The latest binary is available from
+[Github Releases](https://github.com/buildkite/buildkite-agent-metrics/releases).
+
+### Container images
+
+We also publish Docker Images to 
+[Amazon Public ECR](https://gallery.ecr.aws/buildkite/agent-metrics). These are
+based on Alpine Linux.
+
+You can run the container with a Docker CLI command such as:
+
+```shell
+docker run --rm public.ecr.aws/buildkite/agent-metrics:latest \
+  -token abc123 \
+  -interval 30s \
+  -queue my-queue
+```
+
+### AWS Lambdas
+
+We also publish an AWS Lambda to S3 in region us-east-1. Each version is
+published to 
+`s3://buildkite-lambdas/buildkite-agent-metrics/v${VERSION}/handler.zip` and
+is also available from [Github Releases](https://github.com/buildkite/buildkite-agent-metrics/releases)
+as `handler.zip`.
+
+Example 
+
+```shell
+aws lambda create-function \
+  --function-name buildkite-agent-metrics \
+  --memory 128 \
+  --role arn:aws:iam::account-id:role/execution_role \
+  --runtime provided.al2 \
+  --code S3Bucket=buildkite-lambdas,S3Key=buildkite-agent-metrics/v5.10.0/handler.zip \
+  --handler handler
+```
+
+### Installing from source
+
+Go can be used to download and build the binary from source:
 
 ```bash
 go install github.com/buildkite/buildkite-agent-metrics/v5@latest
 ```
+
+This typically installs the `buildkite-agent-metrics` binary into `~/go/bin`.
 
 ## Running
 
@@ -56,7 +97,7 @@ buildkite-agent-metrics -token clusterAtoken -token clusterBtoken ...
 ### Running as an AWS Lambda
 
 An AWS Lambda bundle is created and published as part of the build process. The
-lambda will require the
+Lambda will require the
 [`cloudwatch:PutMetricData`](https://docs.aws.amazon.com/AmazonCloudWatch/latest/DeveloperGuide/publishingMetrics.html)
 IAM permission.
 
@@ -128,13 +169,14 @@ aws lambda create-function \
   --memory 128 \
   --role arn:aws:iam::account-id:role/execution_role \
   --runtime provided.al2 \
-  --zip-file fileb://handler.zip \
+  --code S3Bucket=buildkite-lambdas,S3Key=buildkite-agent-metrics/v5.10.0/handler.zip \
   --handler handler
 ```
 
-### Running as a Container
+### Building and running the container
 
-You can build a docker image for the `buildkite-agent-metrics` following:
+You can build a Docker image for the `buildkite-agent-metrics` from a clone of
+the source repo with the following:
 
 ```shell
 docker build -t buildkite-agent-metrics .
@@ -147,7 +189,10 @@ You can use the command-line arguments in a docker execution in the same way as
 described before:
 
 ```shell
-docker run --rm buildkite-agent-metrics -token abc123 -interval 30s -queue my-queue
+docker run --rm buildkite-agent-metrics \
+  -token abc123 \
+  -interval 30s \
+  -queue my-queue
 ```
 
 ### Supported command line flags
