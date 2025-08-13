@@ -52,6 +52,7 @@
 	  }
 	]
   },
+  "description": "Displays Prometheus metrics collected from the Buildkite Agent Metrics exporter.",
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
@@ -582,7 +583,7 @@
 		},
 		"tooltip": {
 		  "hideZeros": false,
-		  "mode": "single",
+		  "mode": "multi",
 		  "sort": "none"
 		}
 	  },
@@ -675,7 +676,7 @@
 		},
 		"tooltip": {
 		  "hideZeros": false,
-		  "mode": "single",
+		  "mode": "multi",
 		  "sort": "none"
 		}
 	  },
@@ -702,7 +703,7 @@
 		"h": 1,
 		"w": 24,
 		"x": 0,
-		"y": 26
+		"y": 13
 	  },
 	  "id": 4,
 	  "panels": [],
@@ -773,7 +774,7 @@
 		"h": 8,
 		"w": 12,
 		"x": 0,
-		"y": 27
+		"y": 14
 	  },
 	  "id": 7,
 	  "options": {
@@ -785,7 +786,7 @@
 		},
 		"tooltip": {
 		  "hideZeros": false,
-		  "mode": "single",
+		  "mode": "multi",
 		  "sort": "none"
 		}
 	  },
@@ -879,7 +880,7 @@
 		"h": 8,
 		"w": 12,
 		"x": 12,
-		"y": 27
+		"y": 14
 	  },
 	  "id": 13,
 	  "options": {
@@ -891,7 +892,7 @@
 		},
 		"tooltip": {
 		  "hideZeros": false,
-		  "mode": "single",
+		  "mode": "multi",
 		  "sort": "none"
 		}
 	  },
@@ -954,7 +955,10 @@
   ],
   "refresh": "auto",
   "schemaVersion": 41,
-  "tags": [],
+  "tags": [
+	"buildkite",
+	"ci/cd"
+  ],
   "templating": {
 	"list": [
 	  {
@@ -1013,6 +1017,6 @@
   "timezone": "browser",
   "title": "Buildkite Agent Metrics",
   "uid": "e2eb56fd-4d19-4e09-9b06-e479bb66bb72",
-  "version": 6,
+  "version": 11,
   "weekStart": ""
 }
