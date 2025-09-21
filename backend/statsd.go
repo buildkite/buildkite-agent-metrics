@@ -2,6 +2,7 @@ package backend
 
 import (
 	"fmt"
+	"log"
 
 	"github.com/DataDog/datadog-go/statsd"
 	"github.com/buildkite/buildkite-agent-metrics/v5/collector"
@@ -13,13 +14,14 @@ type StatsD struct {
 	tagsSupported bool
 }
 
-func NewStatsDBackend(host string, tagsSupported bool) (*StatsD, error) {
+func NewStatsDBackend(host string, tagsSupported bool, metricsPrefix string) (*StatsD, error) {
 	client, err := statsd.NewBuffered(host, 100)
 	if err != nil {
 		return nil, err
 	}
 	// prefix every metric with the app name
-	client.Namespace = "buildkite."
+	client.Namespace = metricsPrefix
+	log.Printf("using metrics prefix: %s", metricsPrefix)
 	return &StatsD{
 		client:        client,
 		tagsSupported: tagsSupported,
