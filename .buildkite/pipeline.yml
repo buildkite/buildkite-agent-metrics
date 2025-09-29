@@ -54,7 +54,7 @@ steps:
       - test
       - build-lambda
     command: ".buildkite/steps/upload-to-s3.sh"
-    branches: master
+    branches: main
     agents:
       queue: "elastic-runners"
     concurrency: 1
