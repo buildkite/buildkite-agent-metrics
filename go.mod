@@ -1,6 +1,6 @@
 module github.com/buildkite/buildkite-agent-metrics/v5
 
-go 1.23.0
+go 1.24
 
 require (
 	cloud.google.com/go/monitoring v1.24.2
@@ -9,7 +9,7 @@ require (
 	github.com/aws/aws-sdk-go v1.55.8
 	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.7.0
-	github.com/newrelic/go-agent/v3 v3.40.1
+	github.com/newrelic/go-agent/v3 v3.41.0
 	github.com/prometheus/client_golang v1.23.0
 	github.com/prometheus/client_model v0.6.2
 	go.opentelemetry.io/otel v1.38.0
