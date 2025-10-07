@@ -3,8 +3,8 @@ package collector
 import (
 	"crypto/tls"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"io"
 	"log"
 	"maps"
 	"net"
@@ -42,8 +42,6 @@ var AllMetrics = []string{
 	TotalAgentCount,
 	BusyAgentPercentage,
 }
-
-var ErrUnauthorized = errors.New("unauthorized")
 
 var traceLog = log.New(os.Stderr, "TRACE", log.Ldate|log.Ltime|log.Lmicroseconds|log.Lshortfile|log.Lmsgprefix)
 
@@ -111,6 +109,43 @@ type allMetricsResponse struct {
 	Cluster      clusterResponse          `json:"cluster"`
 }
 
+type HTTPError struct {
+	StatusCode int    `json:"-"`
+	Message    string `json:"message"`
+}
+
+func (e HTTPError) Error() string {
+	return fmt.Sprintf("request failed with status %d: %s", e.StatusCode, e.Message)
+}
+
+func handleHTTPError(res *http.Response) error {
+	if res.StatusCode >= 200 && res.StatusCode <= 299 {
+		return nil
+	}
+
+	bodyBytes, err := io.ReadAll(res.Body)
+	if err != nil {
+		return fmt.Errorf("failed to read error response body (status: %d): %w", res.StatusCode, err)
+	}
+
+	if strings.HasPrefix(res.Header.Get("Content-Type"), "application/json") {
+		var httpErr HTTPError
+		err := json.Unmarshal(bodyBytes, &httpErr)
+		if err != nil {
+			return fmt.Errorf("unmarshalling error response for response body %s (status: %d): %w", bodyBytes, res.StatusCode, err)
+		}
+
+		httpErr.StatusCode = res.StatusCode
+
+		return httpErr
+	}
+
+	return HTTPError{
+		StatusCode: res.StatusCode,
+		Message:    string(bodyBytes),
+	}
+}
+
 func (c *Collector) Collect() (*Result, error) {
 	result := &Result{
 		Totals: map[string]int{},
@@ -164,32 +199,15 @@ func (c *Collector) collectAllQueues(result *Result) error {
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode == 401 {
-		return fmt.Errorf("http 401 response received %w", ErrUnauthorized)
-	}
-
 	if c.DebugHttp {
 		if dump, err := httputil.DumpResponse(res, true); err == nil {
 			traceLog.Printf("response uri=%s\n%s", req.URL, dump)
 		}
 	}
 
-	// Handle any errors
-	if res.StatusCode != http.StatusOK {
-		// If it's json response, show the error message
-		if strings.HasPrefix(res.Header.Get("Content-Type"), "application/json") {
-			var errStruct struct {
-				Message string `json:"message"`
-			}
-			err := json.NewDecoder(res.Body).Decode(&errStruct)
-			if err == nil {
-				return errors.New(errStruct.Message)
-			} else {
-				log.Printf("Failed to decode error: %v", err)
-			}
-		}
-
-		return fmt.Errorf("Request failed with %s (%d)", res.Status, res.StatusCode)
+	err = handleHTTPError(res)
+	if err != nil {
+		return fmt.Errorf("making http request to fetch all metrics: %w", err)
 	}
 
 	var allMetrics allMetricsResponse
@@ -278,32 +296,15 @@ func (c *Collector) collectQueue(result *Result, queue string) error {
 	}
 	defer res.Body.Close()
 
-	if res.StatusCode == 401 {
-		return fmt.Errorf("http 401 response received %w", ErrUnauthorized)
-	}
-
 	if c.DebugHttp {
 		if dump, err := httputil.DumpResponse(res, true); err == nil {
 			traceLog.Printf("response uri=%s\n%s", req.URL, dump)
 		}
 	}
 
-	// Handle any errors
-	if res.StatusCode != http.StatusOK {
-		// If it's json response, show the error message
-		if strings.HasPrefix(res.Header.Get("Content-Type"), "application/json") {
-			var errStruct struct {
-				Message string `json:"message"`
-			}
-			err := json.NewDecoder(res.Body).Decode(&errStruct)
-			if err == nil {
-				return errors.New(errStruct.Message)
-			} else {
-				log.Printf("Failed to decode error: %v", err)
-			}
-		}
-
-		return fmt.Errorf("Request failed with %s (%d)", res.Status, res.StatusCode)
+	err = handleHTTPError(res)
+	if err != nil {
+		return fmt.Errorf("making http request to fetch metrics for queue %q: %w", queue, err)
 	}
 
 	var queueMetrics queueMetricsResponse
