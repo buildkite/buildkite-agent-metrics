@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.11.0](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.11.0) (2025-10-07)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.10.0...v5.11.0)
+
+#### Addend
+- Add Grafana dashboard (for use with Prometheus backend) [#436](https://github.com/buildkite/buildkite-agent-metrics/pull/436) (@DrJosh9000)
+
+### Fixed
+- Better HTTP errors, especially for HTTP 401 errors [#453](https://github.com/buildkite/buildkite-agent-metrics/pull/453) (@moskyb)
+
+### Internal
+- Add lint step to pipeline [#454](https://github.com/buildkite/buildkite-agent-metrics/pull/454) (@moskyb)
+- Update README with info about exisitng containers and Lambda [#431](https://github.com/buildkite/buildkite-agent-metrics/pull/431) (@DrJosh9000)
+- Update to use OIDC session tokens on AWS role assumption [#424](https://github.com/buildkite/buildkite-agent-metrics/pull/424) (@duckalini)
+- Update to use OIDC session tokens on AWS role assumption in buildkite-dev [#423](https://github.com/buildkite/buildkite-agent-metrics/pull/423) (@duckalini)
+- Switch default branch from master to main [#448](https://github.com/buildkite/buildkite-agent-metrics/pull/448) (@moskyb)
+- A boatload of dependency updates [#451](https://github.com/buildkite/buildkite-agent-metrics/pull/451) [#450](https://github.com/buildkite/buildkite-agent-metrics/pull/450) [#444](https://github.com/buildkite/buildkite-agent-metrics/pull/444) [#449](https://github.com/buildkite/buildkite-agent-metrics/pull/449) [#445](https://github.com/buildkite/buildkite-agent-metrics/pull/445) [#441](https://github.com/buildkite/buildkite-agent-metrics/pull/441) [#442](https://github.com/buildkite/buildkite-agent-metrics/pull/442) [#440](https://github.com/buildkite/buildkite-agent-metrics/pull/440) [#437](https://github.com/buildkite/buildkite-agent-metrics/pull/437) [#438](https://github.com/buildkite/buildkite-agent-metrics/pull/438) [#435](https://github.com/buildkite/buildkite-agent-metrics/pull/435) [#433](https://github.com/buildkite/buildkite-agent-metrics/pull/433) [#434](https://github.com/buildkite/buildkite-agent-metrics/pull/434) [#425](https://github.com/buildkite/buildkite-agent-metrics/pull/425) [#426](https://github.com/buildkite/buildkite-agent-metrics/pull/426) [#428](https://github.com/buildkite/buildkite-agent-metrics/pull/428) [#420](https://github.com/buildkite/buildkite-agent-metrics/pull/420) [#421](https://github.com/buildkite/buildkite-agent-metrics/pull/421) [#422](https://github.com/buildkite/buildkite-agent-metrics/pull/422) [#417](https://github.com/buildkite/buildkite-agent-metrics/pull/417) [#419](https://github.com/buildkite/buildkite-agent-metrics/pull/419) (@dependabot[bot])
+
 ## [v5.10.0](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.10.0) (2025-06-30)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.9.13...v5.10.0)
 
