@@ -34,4 +34,14 @@ if ! git diff --no-ext-diff --exit-code; then
   exit 1
 fi
 
+echo +++ :go: Running golangci-lint...
+if ! lint_out="$(golangci-lint run --color=always)" ; then
+  echo ^^^ +++
+  echo "golangci-lint found the following issues:"
+  echo ""
+  echo "${lint_out}"
+
+  exit 1
+fi
+
 echo +++ Everything is clean and tidy! 🎉
