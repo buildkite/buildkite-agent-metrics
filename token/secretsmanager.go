@@ -59,12 +59,12 @@ func (p secretsManagerProvider) Get() (string, error) {
 	})
 
 	if err != nil {
-		return "", fmt.Errorf("failed to retrieve secret '%s' from SecretsManager: %v", p.SecretID, err)
+		return "", fmt.Errorf("failed to retrieve secret '%s' from SecretsManager: %w", p.SecretID, err)
 	}
 
 	secret, err := p.parseResponse(res)
 	if err != nil {
-		return "", fmt.Errorf("failed to parse SecretsManager's response for '%s': %v", p.SecretID, err)
+		return "", fmt.Errorf("failed to parse SecretsManager's response for '%s': %w", p.SecretID, err)
 	}
 
 	return secret, nil

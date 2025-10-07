@@ -191,8 +191,10 @@ func main() {
 		for _, c := range collectors {
 			result, err := c.Collect()
 			if err != nil {
-				fmt.Printf("Error collecting agent metrics, err: %s\n", err)
-				if errors.Is(err, collector.ErrUnauthorized) {
+				fmt.Println("Error collecting agent metrics:", err)
+
+				var httpErr collector.HTTPError
+				if errors.As(err, &httpErr) && httpErr.StatusCode == 401 {
 					// Unique exit code to signal HTTP 401
 					os.Exit(4)
 				}
