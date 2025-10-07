@@ -10,7 +10,7 @@ import (
 	"github.com/golang/mock/gomock"
 )
 
-//go:generate mockgen -source ssm.go -mock_names SSMClient=SSMClient -package mock -destination mock/ssm_client.go
+//go:generate go tool mockgen -source ssm.go -mock_names SSMClient=SSMClient -package mock -destination mock/ssm_client.go
 
 const (
 	ssmTestParameterName  = "test-param"

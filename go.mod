@@ -2,6 +2,8 @@ module github.com/buildkite/buildkite-agent-metrics/v5
 
 go 1.24
 
+tool github.com/golang/mock/mockgen
+
 require (
 	cloud.google.com/go/monitoring v1.24.2
 	github.com/DataDog/datadog-go v4.8.3+incompatible

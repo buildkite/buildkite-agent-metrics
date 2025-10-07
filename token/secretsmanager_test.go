@@ -11,7 +11,7 @@ import (
 	"github.com/golang/mock/gomock"
 )
 
-//go:generate mockgen -source secretsmanager.go -mock_names SecretsManagerClient=SecretsManagerClient -package mock -destination mock/secretsmanager_client.go
+//go:generate go tool mockgen -source secretsmanager.go -mock_names SecretsManagerClient=SecretsManagerClient -package mock -destination mock/secretsmanager_client.go
 
 const (
 	secretsManagerSecretID        = "some-secret-id"

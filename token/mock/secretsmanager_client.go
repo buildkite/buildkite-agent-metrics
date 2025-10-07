@@ -5,35 +5,36 @@
 package mock
 
 import (
+	reflect "reflect"
+
 	secretsmanager "github.com/aws/aws-sdk-go/service/secretsmanager"
 	gomock "github.com/golang/mock/gomock"
-	reflect "reflect"
 )
 
-// SecretsManagerClient is a mock of SecretsManagerClient interface
+// SecretsManagerClient is a mock of SecretsManagerClient interface.
 type SecretsManagerClient struct {
 	ctrl     *gomock.Controller
 	recorder *SecretsManagerClientMockRecorder
 }
 
-// SecretsManagerClientMockRecorder is the mock recorder for SecretsManagerClient
+// SecretsManagerClientMockRecorder is the mock recorder for SecretsManagerClient.
 type SecretsManagerClientMockRecorder struct {
 	mock *SecretsManagerClient
 }
 
-// NewSecretsManagerClient creates a new mock instance
+// NewSecretsManagerClient creates a new mock instance.
 func NewSecretsManagerClient(ctrl *gomock.Controller) *SecretsManagerClient {
 	mock := &SecretsManagerClient{ctrl: ctrl}
 	mock.recorder = &SecretsManagerClientMockRecorder{mock}
 	return mock
 }
 
-// EXPECT returns an object that allows the caller to indicate expected use
+// EXPECT returns an object that allows the caller to indicate expected use.
 func (m *SecretsManagerClient) EXPECT() *SecretsManagerClientMockRecorder {
 	return m.recorder
 }
 
-// GetSecretValue mocks base method
+// GetSecretValue mocks base method.
 func (m *SecretsManagerClient) GetSecretValue(arg0 *secretsmanager.GetSecretValueInput) (*secretsmanager.GetSecretValueOutput, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetSecretValue", arg0)
@@ -42,7 +43,7 @@ func (m *SecretsManagerClient) GetSecretValue(arg0 *secretsmanager.GetSecretValu
 	return ret0, ret1
 }
 
-// GetSecretValue indicates an expected call of GetSecretValue
+// GetSecretValue indicates an expected call of GetSecretValue.
 func (mr *SecretsManagerClientMockRecorder) GetSecretValue(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSecretValue", reflect.TypeOf((*SecretsManagerClient)(nil).GetSecretValue), arg0)
