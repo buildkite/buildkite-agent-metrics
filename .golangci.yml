@@ -1,0 +1,7 @@
+version: 2
+linters:
+  exclusions:
+    rules:
+      # Updating to aws-sdk-go-v2 isn't in the cards right now, so just ignore the deprecation warning
+      linters: [staticcheck]
+      text: "aws-sdk-go is deprecated"
