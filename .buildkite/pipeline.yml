@@ -2,6 +2,16 @@ env:
   RELEASE_DRY_RUN: false
 
 steps:
+  - name: ":go::robot_face: Lint"
+    key: check-code-committed
+    command: .buildkite/steps/check-code-committed.sh
+    if_changed: "{go.mod,go.sum,**.go,.buildkite/steps/check-code-committed.sh}"
+    plugins:
+      - docker-compose#v5.5.0:
+          config: .buildkite/docker-compose.yaml
+          cli-version: 2
+          run: test
+
   - name: ":test_tube: Test"
     key: test
     command: go test -v -race ./...

@@ -7,10 +7,10 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/ssm"
 	"github.com/buildkite/buildkite-agent-metrics/v5/token/mock"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
-//go:generate mockgen -source ssm.go -mock_names SSMClient=SSMClient -package mock -destination mock/ssm_client.go
+//go:generate go tool mockgen -source ssm.go -mock_names SSMClient=SSMClient -package mock -destination mock/ssm_client.go
 
 const (
 	ssmTestParameterName  = "test-param"
