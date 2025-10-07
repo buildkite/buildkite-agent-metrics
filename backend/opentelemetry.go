@@ -100,7 +100,9 @@ func NewOpenTelemetryBackend() (*OpenTelemetryBackend, error) {
 		metricExporter, err = otlpmetrichttp.New(ctx)
 	}
 	if err != nil {
-		tracerProvider.Shutdown(ctx)
+		if shutdownErr := tracerProvider.Shutdown(ctx); shutdownErr != nil {
+			log.Printf("failed to shutdown tracer provider: %v", shutdownErr)
+		}
 		return nil, fmt.Errorf("failed to create metric exporter: %w", err)
 	}
 
@@ -121,8 +123,12 @@ func NewOpenTelemetryBackend() (*OpenTelemetryBackend, error) {
 	otelShutdown := func() {
 		ctx, cancel := context.WithTimeout(context.TODO(), 10*time.Second)
 		defer cancel()
-		tracerProvider.Shutdown(ctx)
-		meterProvider.Shutdown(ctx)
+		if err := tracerProvider.Shutdown(ctx); err != nil {
+			log.Printf("failed to shutdown tracer provider: %v", err)
+		}
+		if err := meterProvider.Shutdown(ctx); err != nil {
+			log.Printf("failed to shutdown meter provider: %v", err)
+		}
 	}
 
 	backend := &OpenTelemetryBackend{

@@ -286,7 +286,7 @@ func TestCollectorWithSomeJobsAndAgentsForAQueue(t *testing.T) {
 }
 
 func TestCollectorWithProxy(t *testing.T) {
-	os.Setenv("HTTP_PROXY", "http://unit.test")
+	os.Setenv("HTTP_PROXY", "http://unit.test") //nolint:errcheck // test environment setup, error not actionable
 	client := NewHTTPClient(1, 1)
 	proxyHost := client.Transport.(*http.Transport).Proxy
 	if proxyHost == nil {

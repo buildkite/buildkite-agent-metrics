@@ -51,7 +51,9 @@ func gatherMetrics(t *testing.T) map[string]*dto.MetricFamily {
 	prometheus.DefaultRegisterer = r
 
 	p := NewPrometheusBackend()
-	p.Collect(newTestResult(t))
+	if err := p.Collect(newTestResult(t)); err != nil {
+		t.Fatalf("p.Collect() = %v", err)
+	}
 
 	mfs, err := r.Gather()
 	if err != nil {

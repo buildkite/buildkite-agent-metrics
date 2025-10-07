@@ -10,7 +10,7 @@ steps:
       - docker-compose#v5.5.0:
           config: .buildkite/docker-compose.yaml
           cli-version: 2
-          run: test
+          run: lint
 
   - name: ":test_tube: Test"
     key: test
