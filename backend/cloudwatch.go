@@ -27,7 +27,7 @@ func ParseCloudWatchDimensions(ds string) ([]CloudWatchDimension, error) {
 	for _, dimension := range strings.Split(strings.TrimSpace(ds), ",") {
 		parts := strings.SplitN(strings.TrimSpace(dimension), "=", 2)
 		if len(parts) != 2 {
-			return nil, fmt.Errorf("Failed to parse dimension of %q", dimension)
+			return nil, fmt.Errorf("failed to parse dimension of %q", dimension)
 		}
 		dimensions = append(dimensions, CloudWatchDimension{
 			Key:   parts[0],

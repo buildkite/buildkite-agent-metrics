@@ -197,7 +197,7 @@ func (c *Collector) collectAllQueues(result *Result) error {
 	if err != nil {
 		return err
 	}
-	defer res.Body.Close()
+	defer res.Body.Close() //nolint:errcheck // this is idiomatic for http response bodies
 
 	if c.DebugHttp {
 		if dump, err := httputil.DumpResponse(res, true); err == nil {
@@ -228,7 +228,7 @@ func (c *Collector) collectAllQueues(result *Result) error {
 	}
 
 	if allMetrics.Organization.Slug == "" {
-		return fmt.Errorf("No organization slug was found in the metrics response")
+		return fmt.Errorf("no organization slug was found in the metrics response")
 	}
 
 	log.Printf("Found organization %q, cluster %q", allMetrics.Organization.Slug, allMetrics.Cluster.Name)
@@ -314,7 +314,7 @@ func (c *Collector) collectQueue(result *Result, queue string) error {
 	}
 
 	if queueMetrics.Organization.Slug == "" {
-		return fmt.Errorf("No organization slug was found in the metrics response")
+		return fmt.Errorf("no organization slug was found in the metrics response")
 	}
 
 	log.Printf("Found organization %q, cluster %q", queueMetrics.Organization.Slug, queueMetrics.Cluster.Name)
