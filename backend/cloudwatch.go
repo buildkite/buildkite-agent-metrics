@@ -40,18 +40,18 @@ func ParseCloudWatchDimensions(ds string) ([]CloudWatchDimension, error) {
 
 // CloudWatchBackend sends metrics to AWS CloudWatch
 type CloudWatchBackend struct {
-	region     string
-	dimensions []CloudWatchDimension
-	interval int64
+	region               string
+	dimensions           []CloudWatchDimension
+	interval             int64
 	enableHighResolution bool
 }
 
 // NewCloudWatchBackend returns a new CloudWatchBackend with optional dimensions
 func NewCloudWatchBackend(region string, dimensions []CloudWatchDimension, interval int64, enableHighResolution bool) *CloudWatchBackend {
 	return &CloudWatchBackend{
-		region:     region,
-		dimensions: dimensions,
-		interval: interval,
+		region:               region,
+		dimensions:           dimensions,
+		interval:             interval,
 		enableHighResolution: enableHighResolution,
 	}
 }
