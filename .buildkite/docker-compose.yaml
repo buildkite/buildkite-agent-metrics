@@ -12,6 +12,19 @@ services:
       - GOCACHE=/gocache
       - GOMODCACHE=/gomodcache
 
+  lint:
+    build:
+      context: .
+      dockerfile: Dockerfile.lint
+    volumes:
+      - ../:/work:cached
+      - ~/gocache:/gocache
+      - ~/gomodcache:/gomodcache
+    working_dir: /work
+    environment:
+      - GOCACHE=/gocache
+      - GOMODCACHE=/gomodcache
+
   test:
     build:
       context: .
