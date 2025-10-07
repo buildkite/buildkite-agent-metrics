@@ -40,7 +40,7 @@ func NewStackDriverBackend(gcpProjectID string) (*StackDriverBackend, error) {
 	ctx := context.Background()
 	c, err := monitoring.NewMetricClient(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("[NewStackDriverBackend] could not create stackdriver client: %v", err)
+		return nil, fmt.Errorf("[NewStackDriverBackend] could not create stackdriver client: %w", err)
 	}
 
 	return &StackDriverBackend{
@@ -68,7 +68,7 @@ func (sd *StackDriverBackend) Collect(r *collector.Result) error {
 			metricReq := createCustomMetricRequest(&sd.projectID, &mt)
 			_, err := sd.client.CreateMetricDescriptor(ctx, metricReq)
 			if err != nil {
-				retErr := fmt.Errorf("[Collect] could not create custom metric [%s]: %v", mt, err)
+				retErr := fmt.Errorf("[Collect] could not create custom metric [%s]: %w", mt, err)
 				log.Println(retErr)
 				return retErr
 			}
@@ -78,7 +78,7 @@ func (sd *StackDriverBackend) Collect(r *collector.Result) error {
 		req := createTimeSeriesValueRequest(&sd.projectID, &mt, r.Cluster, totalMetricsQueue, value, now)
 		err := sd.client.CreateTimeSeries(ctx, req)
 		if err != nil {
-			retErr := fmt.Errorf("[Collect] could not write metric [%s] value [%d], %v ", mt, value, err)
+			retErr := fmt.Errorf("[Collect] could not write metric [%s] value [%d], %w", mt, value, err)
 			log.Println(retErr)
 			return retErr
 		}
@@ -90,7 +90,7 @@ func (sd *StackDriverBackend) Collect(r *collector.Result) error {
 			req := createTimeSeriesValueRequest(&sd.projectID, &mt, r.Cluster, queue, value, now)
 			err := sd.client.CreateTimeSeries(ctx, req)
 			if err != nil {
-				retErr := fmt.Errorf("[Collect] could not write metric [%s] value [%d], %v ", mt, value, err)
+				retErr := fmt.Errorf("[Collect] could not write metric [%s] value [%d], %w ", mt, value, err)
 				log.Println(retErr)
 				return retErr
 			}

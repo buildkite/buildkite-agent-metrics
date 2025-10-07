@@ -45,7 +45,7 @@ func (p ssmProvider) Get() (string, error) {
 	})
 
 	if err != nil {
-		return "", fmt.Errorf("failed to retrieve Buildkite token (%s) from AWS SSM: %v", p.Name, err)
+		return "", fmt.Errorf("failed to retrieve Buildkite token (%s) from AWS SSM: %w", p.Name, err)
 	}
 
 	return *output.Parameter.Value, nil
