@@ -8,7 +8,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/secretsmanager"
 	"github.com/buildkite/buildkite-agent-metrics/v5/token/mock"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 )
 
 //go:generate go tool mockgen -source secretsmanager.go -mock_names SecretsManagerClient=SecretsManagerClient -package mock -destination mock/secretsmanager_client.go
