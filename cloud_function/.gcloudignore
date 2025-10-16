@@ -1,0 +1,24 @@
+# This file specifies files that gcloud will ignore when deploying to Cloud Functions
+# See: https://cloud.google.com/sdk/gcloud/reference/topic/gcloudignore
+
+# Ignore local test files
+cmd/
+*_test.go
+
+# Ignore documentation
+*.md
+
+# Ignore git files
+.git/
+.gitignore
+
+# Ignore editor files
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Ignore go build artifacts
+*.exe
+*.test
+*.out
