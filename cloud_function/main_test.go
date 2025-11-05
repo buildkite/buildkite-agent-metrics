@@ -113,12 +113,12 @@ func TestMemoryTokenProvider(t *testing.T) {
 	provider := &memoryTokenProvider{
 		token: "test-token-123",
 	}
-	
+
 	token, err := provider.Get()
 	if err != nil {
 		t.Errorf("memoryTokenProvider.Get() error = %v", err)
 	}
-	
+
 	if token != "test-token-123" {
 		t.Errorf("memoryTokenProvider.Get() = %v, want %v", token, "test-token-123")
 	}

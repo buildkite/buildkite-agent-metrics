@@ -53,12 +53,12 @@ func init() {
 
 // Response represents the JSON response returned by the Cloud Function
 type Response struct {
-	Success         bool                `json:"success"`
-	Message         string              `json:"message,omitempty"`
-	Error           string              `json:"error,omitempty"`
-	Metrics         int                 `json:"metrics_collected,omitempty"`
-	TokensProcessed int                 `json:"tokens_processed,omitempty"`
-	TokenErrors     []TokenErrorDetail  `json:"token_errors,omitempty"`
+	Success         bool               `json:"success"`
+	Message         string             `json:"message,omitempty"`
+	Error           string             `json:"error,omitempty"`
+	Metrics         int                `json:"metrics_collected,omitempty"`
+	TokensProcessed int                `json:"tokens_processed,omitempty"`
+	TokenErrors     []TokenErrorDetail `json:"token_errors,omitempty"`
 }
 
 // TokenErrorDetail provides details about errors for specific tokens
@@ -88,7 +88,7 @@ type singleTokenProvider interface {
 func (m *multiTokenProvider) GetAll() ([]string, error) {
 	var tokens []string
 	var errors []error
-	
+
 	for _, provider := range m.providers {
 		token, err := provider.Get()
 		if err != nil {
@@ -97,12 +97,12 @@ func (m *multiTokenProvider) GetAll() ([]string, error) {
 		}
 		tokens = append(tokens, token)
 	}
-	
+
 	if len(errors) > 0 && len(tokens) == 0 {
 		// All providers failed
 		return nil, fmt.Errorf("all token providers failed: %v", errors)
 	}
-	
+
 	return tokens, nil
 }
 
@@ -125,16 +125,16 @@ type secretManagerTokenProvider struct {
 // Get retrieves the token from Secret Manager
 func (s *secretManagerTokenProvider) Get() (string, error) {
 	ctx := context.Background()
-	
+
 	req := &secretmanagerpb.AccessSecretVersionRequest{
 		Name: s.secretID,
 	}
-	
+
 	result, err := s.client.AccessSecretVersion(ctx, req)
 	if err != nil {
 		return "", fmt.Errorf("failed to access secret %s: %w", s.secretID, err)
 	}
-	
+
 	return string(result.Payload.Data), nil
 }
 
@@ -191,7 +191,7 @@ func CollectMetrics(w http.ResponseWriter, r *http.Request) {
 	quiet := isQuietMode()
 	debug := isDebugMode()
 	debugHTTP := isDebugHTTPMode()
-	
+
 	// Configure logging based on quiet/debug settings
 	if quiet && !debug {
 		// In quiet mode (without debug), suppress all non-error logs
@@ -207,7 +207,7 @@ func CollectMetrics(w http.ResponseWriter, r *http.Request) {
 	if !nextPollTime.IsZero() && nextPollTime.After(startTime) {
 		timeUntilNextPoll := nextPollTime.Sub(startTime)
 		log.Printf("Skipping polling, next poll time is in %v", timeUntilNextPoll)
-		
+
 		response.Success = true
 		response.Message = fmt.Sprintf("Skipping polling, next poll time is in %v", timeUntilNextPoll)
 		w.WriteHeader(http.StatusOK)
@@ -311,10 +311,10 @@ func CollectMetrics(w http.ResponseWriter, r *http.Request) {
 	totalMetrics := 0
 	successfulTokens := 0
 	var tokenErrors []TokenErrorDetail
-	
+
 	for i, token := range tokens {
 		log.Printf("Processing token %d of %d", i+1, len(tokens))
-		
+
 		// Create collector for this token
 		bkCollector := &collector.Collector{
 			Client:    httpClient,
@@ -329,7 +329,7 @@ func CollectMetrics(w http.ResponseWriter, r *http.Request) {
 
 		// Collect metrics from Buildkite API
 		log.Printf("Fetching metrics from Buildkite API for token %d...", i+1)
-		
+
 		result, err := bkCollector.Collect()
 		if err != nil {
 			// Log the error but continue with other tokens
@@ -378,7 +378,7 @@ func CollectMetrics(w http.ResponseWriter, r *http.Request) {
 		successfulTokens++
 		tokenMetricsCount := len(result.Totals) + countQueueMetrics(result)
 		totalMetrics += tokenMetricsCount
-		
+
 		log.Printf("SUCCESS for token %d: Sent %d metrics to Stackdriver", i+1, tokenMetricsCount)
 	}
 
@@ -402,7 +402,7 @@ func CollectMetrics(w http.ResponseWriter, r *http.Request) {
 	response.TokensProcessed = len(tokens)
 	response.Metrics = totalMetrics
 	response.TokenErrors = tokenErrors
-	
+
 	if successfulTokens == 0 {
 		// All tokens failed
 		response.Success = false
@@ -436,18 +436,18 @@ func CollectMetrics(w http.ResponseWriter, r *http.Request) {
 func initTokenProvider() (tokenProvider, error) {
 	tokensEnv := os.Getenv(BKAgentTokensEnvVar)
 	secretNames := os.Getenv(BKAgentTokenSecretNamesEnvVar)
-	
+
 	// Check that only one method is configured
 	if tokensEnv != "" && secretNames != "" {
 		return nil, fmt.Errorf("cannot specify both %s and %s. Use only one token configuration method",
 			BKAgentTokensEnvVar, BKAgentTokenSecretNamesEnvVar)
 	}
-	
+
 	if tokensEnv == "" && secretNames == "" {
 		return nil, fmt.Errorf("must specify either %s or %s",
 			BKAgentTokensEnvVar, BKAgentTokenSecretNamesEnvVar)
 	}
-	
+
 	// Handle tokens from environment variable
 	if tokensEnv != "" {
 		var providers []singleTokenProvider
@@ -464,7 +464,7 @@ func initTokenProvider() (tokenProvider, error) {
 		}
 		return &multiTokenProvider{providers: providers}, nil
 	}
-	
+
 	// Handle secrets from Secret Manager
 	if secretNames != "" {
 		ctx := context.Background()
@@ -472,7 +472,7 @@ func initTokenProvider() (tokenProvider, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to create secretmanager client: %w", err)
 		}
-		
+
 		var providers []singleTokenProvider
 		secrets := strings.Split(secretNames, ",")
 		for _, secret := range secrets {
@@ -490,7 +490,7 @@ func initTokenProvider() (tokenProvider, error) {
 		}
 		return &multiTokenProvider{providers: providers}, nil
 	}
-	
+
 	// This should never be reached due to earlier checks
 	return nil, fmt.Errorf("no valid token configuration found")
 }
@@ -501,12 +501,12 @@ func toIntWithDefault(s string, defaultValue int) (int, error) {
 	if s == "" {
 		return defaultValue, nil
 	}
-	
+
 	val, err := strconv.Atoi(s)
 	if err != nil {
 		return 0, fmt.Errorf("failed to parse '%s' as integer: %w", s, err)
 	}
-	
+
 	return val, nil
 }
 
