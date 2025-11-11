@@ -92,7 +92,7 @@ gcloud functions deploy buildkite-agent-metrics \
   --entry-point=buildkite-agent-metrics \
   --trigger-http \
   --allow-unauthenticated \
-  --set-env-vars="BUILDKITE_AGENT_TOKEN_SECRET_NAME=projects/${PROJECT_ID}/secrets/buildkite-token/versions/latest,GCP_PROJECT_ID=$PROJECT_ID" \
+  --set-env-vars="BUILDKITE_AGENT_TOKEN_SECRET_NAMES=projects/${PROJECT_ID}/secrets/buildkite-token/versions/latest,GCP_PROJECT_ID=$PROJECT_ID" \
   --memory=256MB \
   --timeout=60s \
   --max-instances=10
@@ -249,29 +249,3 @@ gcloud functions deploy buildkite-agent-metrics \
   --update-env-vars="BUILDKITE_DEBUG=true" \
   --region=$REGION
 ```
-
-## Security Considerations
-
-1. **Use Secret Manager for tokens** (recommended for production):
-
-```bash
-# Store token in Secret Manager
-echo -n "$BUILDKITE_TOKEN" | gcloud secrets create buildkite-token --data-file=-
-
-# Grant function access to the secret
-gcloud secrets add-iam-policy-binding buildkite-token \
-  --member="serviceAccount:$PROJECT_ID@appspot.gserviceaccount.com" \
-  --role="roles/secretmanager.secretAccessor"
-
-# Deploy function with secret
-gcloud functions deploy buildkite-agent-metrics \
-  --set-secrets="BUILDKITE_AGENT_TOKEN=buildkite-token:latest" \
-  --region=$REGION
-```
-
-2. **Restrict function access**:
-   - Remove `--allow-unauthenticated` flag
-   - Use Cloud Scheduler with a service account
-
-3. **Enable VPC connector** if Buildkite API is behind a firewall
-
