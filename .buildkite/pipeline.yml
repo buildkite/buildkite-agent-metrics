@@ -1,6 +1,3 @@
-env:
-  RELEASE_DRY_RUN: false
-
 steps:
   - name: ":go::robot_face: Lint"
     key: check-code-committed
