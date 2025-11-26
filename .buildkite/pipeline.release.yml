@@ -13,6 +13,17 @@ steps:
             - organization_id
             - pipeline_slug
 
+  - label: ":gcs: Upload"
+    command: ".buildkite/steps/release-gcs-version.sh"
+    agents:
+      queue: "gcp"
+    concurrency: 1
+    concurrency_group: "release_buildkite_metrics_gcs"
+    plugins:
+      - gcp-workload-identity-federation#v1.5.0:
+          audience: "//iam.googleapis.com/projects/203137002969/locations/global/workloadIdentityPools/buildkite-pool/providers/buildkite"
+          service-account: "buildkite-cf-gcs-writer@buildkite-gcp-stack.iam.gserviceaccount.com"
+
   - label: ":github: Release"
     command: ".buildkite/steps/release-github.sh"
     agents:
