@@ -224,17 +224,20 @@ func initTokenProvider(awsRegion string) ([]token.Provider, error) {
 		}
 	}
 
-	if ssmKey := os.Getenv(BKAgentTokenSSMKeyEnvVar); ssmKey != "" {
+	if ssmKeyEnvVar := os.Getenv(BKAgentTokenSSMKeyEnvVar); ssmKeyEnvVar != "" {
 		sess, err := session.NewSession(&aws.Config{Region: aws.String(awsRegion)})
 		if err != nil {
 			return nil, err
 		}
 		client := ssm.New(sess)
-		provider, err := token.NewSSM(client, ssmKey)
-		if err != nil {
-			return nil, err
+		ssmKeys := strings.Split(ssmKeyEnvVar, ",")
+		for _, ssmKey := range ssmKeys {
+			ssmProvider, err := token.NewSSM(client, ssmKey)
+			if err != nil {
+				return nil, err
+			}
+			providers = append(providers, ssmProvider)
 		}
-		providers = append(providers, provider)
 	}
 
 	if secretsManagerSecretID := os.Getenv(BKAgentTokenSecretsManagerSecretIDEnvVar); secretsManagerSecretID != "" {
