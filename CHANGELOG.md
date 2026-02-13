@@ -4,10 +4,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.12.0](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.12.0) (2026-02-13)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.11.0...v5.12.0)
+
+### Added
+- Create a Cloud Function for GCP auto-scaling [#463](https://github.com/buildkite/buildkite-agent-metrics/pull/463) [#476](https://github.com/buildkite/buildkite-agent-metrics/pull/476) (@omehegan)
+
+### Changed
+- Refactor SSM key handling to support multiple keys [#493](https://github.com/buildkite/buildkite-agent-metrics/pull/493) (@aiven-amartin)
+
+### Internal
+- Minor CI Updates [#475](https://github.com/buildkite/buildkite-agent-metrics/pull/475) [#472](https://github.com/buildkite/buildkite-agent-metrics/pull/472) (@ellsclytn)
+- Various dependabot updates: [#473](https://github.com/buildkite/buildkite-agent-metrics/pull/473) [#474](https://github.com/buildkite/buildkite-agent-metrics/pull/474) [#471](https://github.com/buildkite/buildkite-agent-metrics/pull/471) [#469](https://github.com/buildkite/buildkite-agent-metrics/pull/469) [#468](https://github.com/buildkite/buildkite-agent-metrics/pull/468) [#487](https://github.com/buildkite/buildkite-agent-metrics/pull/487) [#483](https://github.com/buildkite/buildkite-agent-metrics/pull/483) [#482](https://github.com/buildkite/buildkite-agent-metrics/pull/482) [#478](https://github.com/buildkite/buildkite-agent-metrics/pull/478) [#470](https://github.com/buildkite/buildkite-agent-metrics/pull/470) [#479](https://github.com/buildkite/buildkite-agent-metrics/pull/479) [#481](https://github.com/buildkite/buildkite-agent-metrics/pull/481) [#477](https://github.com/buildkite/buildkite-agent-metrics/pull/477) [#465](https://github.com/buildkite/buildkite-agent-metrics/pull/465) [#464](https://github.com/buildkite/buildkite-agent-metrics/pull/464) [#467](https://github.com/buildkite/buildkite-agent-metrics/pull/467) [#457](https://github.com/buildkite/buildkite-agent-metrics/pull/457) [#462](https://github.com/buildkite/buildkite-agent-metrics/pull/462) [#461](https://github.com/buildkite/buildkite-agent-metrics/pull/461) [#459](https://github.com/buildkite/buildkite-agent-metrics/pull/459) [#460](https://github.com/buildkite/buildkite-agent-metrics/pull/460) (@dependabot)
+
 ## [v5.11.0](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.11.0) (2025-10-07)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.10.0...v5.11.0)
 
-#### Addend
+### Added
 - Add Grafana dashboard (for use with Prometheus backend) [#436](https://github.com/buildkite/buildkite-agent-metrics/pull/436) (@DrJosh9000)
 
 ### Fixed
