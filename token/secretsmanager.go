@@ -95,7 +95,7 @@ func (p secretsManagerProvider) parseResponse(res *secretsmanager.GetSecretValue
 }
 
 func extractStringKeyFromJSON(data []byte, key string) (string, error) {
-	contents := map[string]interface{}{}
+	contents := map[string]any{}
 	err := json.Unmarshal(data, &contents)
 	if err != nil {
 		return "", err

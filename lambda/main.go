@@ -214,8 +214,8 @@ func initTokenProvider(awsRegion string) ([]token.Provider, error) {
 
 	var providers []token.Provider
 	if bkTokenEnvVar := os.Getenv(BKAgentTokenEnvVar); bkTokenEnvVar != "" {
-		bkTokens := strings.Split(bkTokenEnvVar, ",")
-		for _, bkToken := range bkTokens {
+		bkTokens := strings.SplitSeq(bkTokenEnvVar, ",")
+		for bkToken := range bkTokens {
 			provider, err := token.NewInMemory(bkToken)
 			if err != nil {
 				return nil, err
@@ -230,8 +230,8 @@ func initTokenProvider(awsRegion string) ([]token.Provider, error) {
 			return nil, err
 		}
 		client := ssm.New(sess)
-		ssmKeys := strings.Split(ssmKeyEnvVar, ",")
-		for _, ssmKey := range ssmKeys {
+		ssmKeys := strings.SplitSeq(ssmKeyEnvVar, ",")
+		for ssmKey := range ssmKeys {
 			ssmProvider, err := token.NewSSM(client, ssmKey)
 			if err != nil {
 				return nil, err
@@ -248,8 +248,8 @@ func initTokenProvider(awsRegion string) ([]token.Provider, error) {
 		}
 		client := secretsmanager.New(sess)
 		if jsonKey == "" {
-			secretIDs := strings.Split(secretsManagerSecretID, ",")
-			for _, secretID := range secretIDs {
+			secretIDs := strings.SplitSeq(secretsManagerSecretID, ",")
+			for secretID := range secretIDs {
 				secretManager, err := token.NewSecretsManager(client, secretID)
 				if err != nil {
 					return nil, err
