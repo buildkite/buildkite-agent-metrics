@@ -1,6 +1,6 @@
 module github.com/buildkite/buildkite-agent-metrics/v5
 
-go 1.24.0
+go 1.25.0
 
 tool go.uber.org/mock/mockgen
 

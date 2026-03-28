@@ -63,8 +63,8 @@ func main() {
 	}
 
 	if len(tokens) == 0 {
-		envTokens := strings.Split(os.Getenv("BUILDKITE_AGENT_TOKEN"), ",")
-		for _, t := range envTokens {
+		envTokens := strings.SplitSeq(os.Getenv("BUILDKITE_AGENT_TOKEN"), ",")
+		for t := range envTokens {
 			t = strings.TrimSpace(t)
 			if t == "" {
 				continue

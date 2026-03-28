@@ -24,7 +24,7 @@ func ParseCloudWatchDimensions(ds string) ([]CloudWatchDimension, error) {
 		return dimensions, nil
 	}
 
-	for _, dimension := range strings.Split(strings.TrimSpace(ds), ",") {
+	for dimension := range strings.SplitSeq(strings.TrimSpace(ds), ",") {
 		parts := strings.SplitN(strings.TrimSpace(dimension), "=", 2)
 		if len(parts) != 2 {
 			return nil, fmt.Errorf("failed to parse dimension of %q", dimension)
@@ -152,10 +152,7 @@ func (cb *CloudWatchBackend) cloudwatchMetrics(counts map[string]int, dimensions
 func chunkCloudwatchMetrics(size int, data []*cloudwatch.MetricDatum) [][]*cloudwatch.MetricDatum {
 	var chunks = [][]*cloudwatch.MetricDatum{}
 	for i := 0; i < len(data); i += size {
-		end := i + size
-		if end > len(data) {
-			end = len(data)
-		}
+		end := min(i+size, len(data))
 		chunks = append(chunks, data[i:end])
 	}
 	return chunks
