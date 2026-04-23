@@ -1,13 +1,15 @@
 package backend
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"strings"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/cloudwatch"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
+	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 	"github.com/buildkite/buildkite-agent-metrics/v5/collector"
 )
 
@@ -57,18 +59,17 @@ func NewCloudWatchBackend(region string, dimensions []CloudWatchDimension, inter
 }
 
 func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
-	sess, err := session.NewSession(&aws.Config{
-		Region: aws.String(cb.region),
-	})
+	ctx := context.TODO()
+	cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(cb.region))
 	if err != nil {
 		return err
 	}
 
-	svc := cloudwatch.New(sess)
-	metrics := []*cloudwatch.MetricDatum{}
+	svc := cloudwatch.NewFromConfig(cfg)
+	metrics := []types.MetricDatum{}
 
 	// Set the baseline org dimension
-	dimensions := []*cloudwatch.Dimension{
+	dimensions := []types.Dimension{
 		{
 			Name:  aws.String("Org"),
 			Value: aws.String(r.Org),
@@ -77,7 +78,7 @@ func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 
 	// Add cluster dimension if a cluster token was used
 	if r.Cluster != "" {
-		dimensions = append(dimensions, &cloudwatch.Dimension{
+		dimensions = append(dimensions, types.Dimension{
 			Name:  aws.String("Cluster"),
 			Value: aws.String(r.Cluster),
 		})
@@ -87,7 +88,7 @@ func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 	for _, d := range cb.dimensions {
 		log.Printf("Using custom Cloudwatch dimension of [ %s = %s ]", d.Key, d.Value)
 
-		dimensions = append(dimensions, &cloudwatch.Dimension{
+		dimensions = append(dimensions, types.Dimension{
 			Name: aws.String(d.Key), Value: aws.String(d.Value),
 		})
 	}
@@ -96,11 +97,11 @@ func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 	metrics = append(metrics, cb.cloudwatchMetrics(r.Totals, nil)...)
 
 	for name, c := range r.Queues {
-		queueDimensions := dimensions
+		queueDimensions := append([]types.Dimension(nil), dimensions...)
 
 		// Add an queue dimension
 		queueDimensions = append(queueDimensions,
-			&cloudwatch.Dimension{Name: aws.String("Queue"), Value: aws.String(name)},
+			types.Dimension{Name: aws.String("Queue"), Value: aws.String(name)},
 		)
 
 		// Add per-queue metrics
@@ -112,7 +113,7 @@ func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 	// Chunk into batches of 10 metrics
 	for _, chunk := range chunkCloudwatchMetrics(10, metrics) {
 		log.Printf("Submitting chunk of %d metrics to Cloudwatch", len(chunk))
-		_, err := svc.PutMetricData(&cloudwatch.PutMetricDataInput{
+		_, err := svc.PutMetricData(ctx, &cloudwatch.PutMetricDataInput{
 			MetricData: chunk,
 			Namespace:  aws.String("Buildkite"),
 		})
@@ -124,10 +125,10 @@ func (cb *CloudWatchBackend) Collect(r *collector.Result) error {
 	return nil
 }
 
-func (cb *CloudWatchBackend) cloudwatchMetrics(counts map[string]int, dimensions []*cloudwatch.Dimension) []*cloudwatch.MetricDatum {
-	m := []*cloudwatch.MetricDatum{}
+func (cb *CloudWatchBackend) cloudwatchMetrics(counts map[string]int, dimensions []types.Dimension) []types.MetricDatum {
+	m := []types.MetricDatum{}
 
-	var duration int64
+	var duration int32
 	if cb.interval < 60 && cb.enableHighResolution {
 		// PutMetricData supports either normal (60s) or high frequency (1s)
 		// metrics - other values result in an error.
@@ -137,20 +138,20 @@ func (cb *CloudWatchBackend) cloudwatchMetrics(counts map[string]int, dimensions
 	}
 
 	for k, v := range counts {
-		m = append(m, &cloudwatch.MetricDatum{
+		m = append(m, types.MetricDatum{
 			MetricName:        aws.String(k),
 			Dimensions:        dimensions,
 			Value:             aws.Float64(float64(v)),
-			Unit:              aws.String("Count"),
-			StorageResolution: &duration,
+			Unit:              types.StandardUnitCount,
+			StorageResolution: aws.Int32(duration),
 		})
 	}
 
 	return m
 }
 
-func chunkCloudwatchMetrics(size int, data []*cloudwatch.MetricDatum) [][]*cloudwatch.MetricDatum {
-	var chunks = [][]*cloudwatch.MetricDatum{}
+func chunkCloudwatchMetrics(size int, data []types.MetricDatum) [][]types.MetricDatum {
+	var chunks = [][]types.MetricDatum{}
 	for i := 0; i < len(data); i += size {
 		end := i + size
 		if end > len(data) {

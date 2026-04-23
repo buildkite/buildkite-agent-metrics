@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ssm"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ssm"
+	ssmtypes "github.com/aws/aws-sdk-go-v2/service/ssm/types"
 	"github.com/buildkite/buildkite-agent-metrics/v5/token/mock"
 	"go.uber.org/mock/gomock"
 )
@@ -42,7 +43,7 @@ func TestSSMProvider_Get(t *testing.T) {
 	}
 
 	res := ssm.GetParameterOutput{
-		Parameter: &ssm.Parameter{
+		Parameter: &ssmtypes.Parameter{
 			Value: aws.String(ssmTestParameterValue),
 		},
 	}
@@ -51,7 +52,7 @@ func TestSSMProvider_Get(t *testing.T) {
 	defer ctrl.Finish()
 
 	client := mock.NewSSMClient(ctrl)
-	client.EXPECT().GetParameter(gomock.Eq(&req)).Return(&res, nil)
+	client.EXPECT().GetParameter(gomock.Any(), gomock.Eq(&req)).Return(&res, nil)
 
 	provider, err := NewSSM(client, ssmTestParameterName)
 	if err != nil {

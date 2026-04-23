@@ -1,12 +1,13 @@
 package token
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/secretsmanager"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 )
 
 // SecretsManagerOpt represents a configuration option for the AWS SecretsManager Buildkite token provider.
@@ -15,7 +16,7 @@ type SecretsManagerOpt func(opts *secretsManagerProvider) error
 // SecretsManagerClient represents the minimal interactions required to retrieve a Buildkite API token from
 // AWS Secrets Manager.
 type SecretsManagerClient interface {
-	GetSecretValue(*secretsmanager.GetSecretValueInput) (*secretsmanager.GetSecretValueOutput, error)
+	GetSecretValue(ctx context.Context, params *secretsmanager.GetSecretValueInput, optFns ...func(*secretsmanager.Options)) (*secretsmanager.GetSecretValueOutput, error)
 }
 
 type secretsManagerProvider struct {
@@ -54,7 +55,7 @@ func NewSecretsManager(client SecretsManagerClient, secretID string, opts ...Sec
 }
 
 func (p secretsManagerProvider) Get() (string, error) {
-	res, err := p.Client.GetSecretValue(&secretsmanager.GetSecretValueInput{
+	res, err := p.Client.GetSecretValue(context.TODO(), &secretsmanager.GetSecretValueInput{
 		SecretId: aws.String(p.SecretID),
 	})
 

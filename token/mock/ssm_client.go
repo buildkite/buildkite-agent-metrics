@@ -10,9 +10,10 @@
 package mock
 
 import (
+	context "context"
 	reflect "reflect"
 
-	ssm "github.com/aws/aws-sdk-go/service/ssm"
+	ssm "github.com/aws/aws-sdk-go-v2/service/ssm"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -41,16 +42,21 @@ func (m *SSMClient) EXPECT() *SSMClientMockRecorder {
 }
 
 // GetParameter mocks base method.
-func (m *SSMClient) GetParameter(arg0 *ssm.GetParameterInput) (*ssm.GetParameterOutput, error) {
+func (m *SSMClient) GetParameter(ctx context.Context, params *ssm.GetParameterInput, optFns ...func(*ssm.Options)) (*ssm.GetParameterOutput, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetParameter", arg0)
+	varargs := []any{ctx, params}
+	for _, a := range optFns {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetParameter", varargs...)
 	ret0, _ := ret[0].(*ssm.GetParameterOutput)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetParameter indicates an expected call of GetParameter.
-func (mr *SSMClientMockRecorder) GetParameter(arg0 any) *gomock.Call {
+func (mr *SSMClientMockRecorder) GetParameter(ctx, params any, optFns ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParameter", reflect.TypeOf((*SSMClient)(nil).GetParameter), arg0)
+	varargs := append([]any{ctx, params}, optFns...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetParameter", reflect.TypeOf((*SSMClient)(nil).GetParameter), varargs...)
 }
