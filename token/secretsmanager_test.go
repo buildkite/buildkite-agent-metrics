@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/secretsmanager"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 	"github.com/buildkite/buildkite-agent-metrics/v5/token/mock"
 	"go.uber.org/mock/gomock"
 )
@@ -66,7 +66,7 @@ func TestSecretsManagerProvider_Get_WithPlainTextSecret(t *testing.T) {
 	defer ctrl.Finish()
 
 	client := mock.NewSecretsManagerClient(ctrl)
-	client.EXPECT().GetSecretValue(gomock.Eq(&req)).Return(&res, nil)
+	client.EXPECT().GetSecretValue(gomock.Any(), gomock.Eq(&req)).Return(&res, nil)
 
 	provider, err := NewSecretsManager(client, secretsManagerSecretID)
 	if err != nil {
@@ -96,7 +96,7 @@ func TestSecretsManagerProvider_Get_WithBinarySecret(t *testing.T) {
 	defer ctrl.Finish()
 
 	client := mock.NewSecretsManagerClient(ctrl)
-	client.EXPECT().GetSecretValue(gomock.Eq(&req)).Return(&res, nil)
+	client.EXPECT().GetSecretValue(gomock.Any(), gomock.Eq(&req)).Return(&res, nil)
 
 	provider, err := NewSecretsManager(client, secretsManagerSecretID)
 	if err != nil {
@@ -126,7 +126,7 @@ func TestSecretsManagerProvider_Get_WithExistingJSONKey(t *testing.T) {
 	defer ctrl.Finish()
 
 	client := mock.NewSecretsManagerClient(ctrl)
-	client.EXPECT().GetSecretValue(gomock.Eq(&req)).Return(&res, nil)
+	client.EXPECT().GetSecretValue(gomock.Any(), gomock.Eq(&req)).Return(&res, nil)
 
 	provider, err := NewSecretsManager(client, secretsManagerSecretID,
 		WithSecretsManagerJSONSecret(secretsManagerSecretJSONKey))
@@ -158,7 +158,7 @@ func TestSecretsManagerProvider_Get_WithBinaryJSONSecret(t *testing.T) {
 	defer ctrl.Finish()
 
 	client := mock.NewSecretsManagerClient(ctrl)
-	client.EXPECT().GetSecretValue(gomock.Eq(&req)).Return(&res, nil)
+	client.EXPECT().GetSecretValue(gomock.Any(), gomock.Eq(&req)).Return(&res, nil)
 
 	provider, err := NewSecretsManager(client, secretsManagerSecretID,
 		WithSecretsManagerJSONSecret(secretsManagerSecretJSONKey))
@@ -190,7 +190,7 @@ func TestSecretsManagerProvider_Get_WithNonJSONPayload(t *testing.T) {
 	defer ctrl.Finish()
 
 	client := mock.NewSecretsManagerClient(ctrl)
-	client.EXPECT().GetSecretValue(gomock.Eq(&req)).Return(&res, nil)
+	client.EXPECT().GetSecretValue(gomock.Any(), gomock.Eq(&req)).Return(&res, nil)
 
 	provider, err := NewSecretsManager(client, secretsManagerSecretID,
 		WithSecretsManagerJSONSecret(secretsManagerSecretJSONKey))
@@ -218,7 +218,7 @@ func TestSecretsManagerProvider_Get_WithNonStringValue(t *testing.T) {
 	defer ctrl.Finish()
 
 	client := mock.NewSecretsManagerClient(ctrl)
-	client.EXPECT().GetSecretValue(gomock.Eq(&req)).Return(&res, nil)
+	client.EXPECT().GetSecretValue(gomock.Any(), gomock.Eq(&req)).Return(&res, nil)
 
 	provider, err := NewSecretsManager(client, secretsManagerSecretID,
 		WithSecretsManagerJSONSecret("non_string_value"))

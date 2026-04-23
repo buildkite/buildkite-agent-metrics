@@ -10,9 +10,10 @@
 package mock
 
 import (
+	context "context"
 	reflect "reflect"
 
-	secretsmanager "github.com/aws/aws-sdk-go/service/secretsmanager"
+	secretsmanager "github.com/aws/aws-sdk-go-v2/service/secretsmanager"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -41,16 +42,21 @@ func (m *SecretsManagerClient) EXPECT() *SecretsManagerClientMockRecorder {
 }
 
 // GetSecretValue mocks base method.
-func (m *SecretsManagerClient) GetSecretValue(arg0 *secretsmanager.GetSecretValueInput) (*secretsmanager.GetSecretValueOutput, error) {
+func (m *SecretsManagerClient) GetSecretValue(ctx context.Context, params *secretsmanager.GetSecretValueInput, optFns ...func(*secretsmanager.Options)) (*secretsmanager.GetSecretValueOutput, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetSecretValue", arg0)
+	varargs := []any{ctx, params}
+	for _, a := range optFns {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetSecretValue", varargs...)
 	ret0, _ := ret[0].(*secretsmanager.GetSecretValueOutput)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // GetSecretValue indicates an expected call of GetSecretValue.
-func (mr *SecretsManagerClientMockRecorder) GetSecretValue(arg0 any) *gomock.Call {
+func (mr *SecretsManagerClientMockRecorder) GetSecretValue(ctx, params any, optFns ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSecretValue", reflect.TypeOf((*SecretsManagerClient)(nil).GetSecretValue), arg0)
+	varargs := append([]any{ctx, params}, optFns...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetSecretValue", reflect.TypeOf((*SecretsManagerClient)(nil).GetSecretValue), varargs...)
 }

@@ -1,16 +1,17 @@
 package token
 
 import (
+	"context"
 	"fmt"
 
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/service/ssm"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/ssm"
 )
 
 // SSMService represents the minimal subset of interactions required to retrieve a Buildkite API token from
 // AWS Systems Manager parameter store.
 type SSMClient interface {
-	GetParameter(*ssm.GetParameterInput) (*ssm.GetParameterOutput, error)
+	GetParameter(ctx context.Context, params *ssm.GetParameterInput, optFns ...func(*ssm.Options)) (*ssm.GetParameterOutput, error)
 }
 
 type ssmProvider struct {
@@ -39,7 +40,7 @@ func NewSSM(client SSMClient, name string, opts ...SSMProviderOpt) (Provider, er
 }
 
 func (p ssmProvider) Get() (string, error) {
-	output, err := p.Client.GetParameter(&ssm.GetParameterInput{
+	output, err := p.Client.GetParameter(context.TODO(), &ssm.GetParameterInput{
 		Name:           aws.String(p.Name),
 		WithDecryption: aws.Bool(true),
 	})

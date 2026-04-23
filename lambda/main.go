@@ -12,10 +12,9 @@ import (
 	"time"
 
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/aws/aws-sdk-go/aws"
-	"github.com/aws/aws-sdk-go/aws/session"
-	"github.com/aws/aws-sdk-go/service/secretsmanager"
-	"github.com/aws/aws-sdk-go/service/ssm"
+	"github.com/aws/aws-sdk-go-v2/config"
+	"github.com/aws/aws-sdk-go-v2/service/secretsmanager"
+	"github.com/aws/aws-sdk-go-v2/service/ssm"
 
 	"github.com/buildkite/buildkite-agent-metrics/v5/backend"
 	"github.com/buildkite/buildkite-agent-metrics/v5/collector"
@@ -80,7 +79,7 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 		return "", nil
 	}
 
-	providers, err := initTokenProvider(awsRegion)
+	providers, err := initTokenProvider(ctx, awsRegion)
 	if err != nil {
 		return "", err
 	}
@@ -202,7 +201,7 @@ func Handler(ctx context.Context, evt json.RawMessage) (string, error) {
 	return "", nil
 }
 
-func initTokenProvider(awsRegion string) ([]token.Provider, error) {
+func initTokenProvider(ctx context.Context, awsRegion string) ([]token.Provider, error) {
 	err := checkMutuallyExclusiveEnvVars(
 		BKAgentTokenEnvVar,
 		BKAgentTokenSSMKeyEnvVar,
@@ -225,11 +224,11 @@ func initTokenProvider(awsRegion string) ([]token.Provider, error) {
 	}
 
 	if ssmKeyEnvVar := os.Getenv(BKAgentTokenSSMKeyEnvVar); ssmKeyEnvVar != "" {
-		sess, err := session.NewSession(&aws.Config{Region: aws.String(awsRegion)})
+		cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(awsRegion))
 		if err != nil {
 			return nil, err
 		}
-		client := ssm.New(sess)
+		client := ssm.NewFromConfig(cfg)
 		ssmKeys := strings.Split(ssmKeyEnvVar, ",")
 		for _, ssmKey := range ssmKeys {
 			ssmProvider, err := token.NewSSM(client, ssmKey)
@@ -242,11 +241,11 @@ func initTokenProvider(awsRegion string) ([]token.Provider, error) {
 
 	if secretsManagerSecretID := os.Getenv(BKAgentTokenSecretsManagerSecretIDEnvVar); secretsManagerSecretID != "" {
 		jsonKey := os.Getenv(BKAgentTokenSecretsManagerJSONKeyEnvVar)
-		sess, err := session.NewSession(&aws.Config{Region: aws.String(awsRegion)})
+		cfg, err := config.LoadDefaultConfig(ctx, config.WithRegion(awsRegion))
 		if err != nil {
 			return nil, err
 		}
-		client := secretsmanager.New(sess)
+		client := secretsmanager.NewFromConfig(cfg)
 		if jsonKey == "" {
 			secretIDs := strings.Split(secretsManagerSecretID, ",")
 			for _, secretID := range secretIDs {
