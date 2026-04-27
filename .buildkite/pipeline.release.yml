@@ -27,11 +27,7 @@ steps:
           image: "google/cloud-sdk:slim"
           mount-buildkite-agent: true
           propagate-environment: true
-          volumes:
-            - "/tmp:/tmp"
-          environment:
-            - "GOOGLE_APPLICATION_CREDENTIALS"
-            - "CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE"
+          propagate-gcp-auth-tokens: true
 
   - label: ":github: Release"
     command: ".buildkite/steps/release-github.sh"
