@@ -1,6 +1,14 @@
 #!/bin/bash
 set -eu
 
+# Install gcloud CLI if not already available (e.g. on Buildkite hosted agents)
+if ! command -v gcloud &> /dev/null; then
+  echo "~~~ :googlecloud: Installing gcloud CLI"
+  curl -sSL https://sdk.cloud.google.com/google-cloud-cli.tar.gz | tar -xz
+  ./google-cloud-sdk/install.sh --quiet --path-update true
+  export PATH="$PWD/google-cloud-sdk/bin:$PATH"
+fi
+
 export GCP_DEFAULT_REGION="us-central1"
 
 VERSION="$(awk -F\" '/const Version/ {print $2}' version/version.go)"

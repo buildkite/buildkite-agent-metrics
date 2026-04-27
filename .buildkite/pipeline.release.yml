@@ -2,7 +2,7 @@ steps:
   - label: ":s3: Upload"
     command: ".buildkite/steps/release-s3-version.sh"
     agents:
-      queue: "elastic-runners"
+      queue: "hosted"
     concurrency: 1
     concurrency_group: "release_buildkite_metrics_github"
     plugins:
@@ -16,7 +16,7 @@ steps:
   - label: ":gcs: Upload"
     command: ".buildkite/steps/release-gcs-version.sh"
     agents:
-      queue: "gcp"
+      queue: "hosted"
     concurrency: 1
     concurrency_group: "release_buildkite_metrics_gcs"
     plugins:
@@ -27,7 +27,7 @@ steps:
   - label: ":github: Release"
     command: ".buildkite/steps/release-github.sh"
     agents:
-      queue: "elastic-runners"
+      queue: "hosted"
     plugins:
       - aws-assume-role-with-web-identity#v1.4.0:
           role-arn: arn:aws:iam::445615400570:role/pipeline-buildkite-buildkite-agent-metrics-release
@@ -47,7 +47,7 @@ steps:
   - label: ":docker: Push"
     command: ".buildkite/steps/release-docker.sh"
     agents:
-      queue: "elastic-runners"
+      queue: "hosted"
     plugins:
       - aws-assume-role-with-web-identity#v1.4.0:
           role-arn: arn:aws:iam::172840064832:role/pipeline-buildkite-buildkite-agent-metrics-release
