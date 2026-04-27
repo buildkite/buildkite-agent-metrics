@@ -29,6 +29,9 @@ steps:
           propagate-environment: true
           volumes:
             - "/tmp:/tmp"
+          environment:
+            - "GOOGLE_APPLICATION_CREDENTIALS"
+            - "CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE"
 
   - label: ":github: Release"
     command: ".buildkite/steps/release-github.sh"
