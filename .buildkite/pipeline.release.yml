@@ -1,3 +1,5 @@
+env:
+  AWS_DEFAULT_REGION=us-east-1
 steps:
   - label: ":s3: Upload"
     command: ".buildkite/steps/release-s3-version.sh"
