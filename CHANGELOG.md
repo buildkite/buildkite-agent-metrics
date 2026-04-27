@@ -4,10 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [v5.12.1](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.12.1) (2026-04-24)
+## [v5.12.1](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.12.1) (2026-04-27)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.12.0...v5.12.1)
 
 ### Changed
+- Move release pipeline queues to hosted (PLT-5775) [#521](https://github.com/buildkite/buildkite-agent-metrics/pull/521) (@mipearson)
+- Update version + changelog for v5.12.1 [#518](https://github.com/buildkite/buildkite-agent-metrics/pull/518) (@buildkate)
 - chore: migrate to aws-go-sdk v2 [#517](https://github.com/buildkite/buildkite-agent-metrics/pull/517) (@buildkate)
 - build(deps): bump the container-images group across 2 directories with 3 updates [#506](https://github.com/buildkite/buildkite-agent-metrics/pull/506) (@dependabot[bot])
 - build(deps): bump the container-images group across 2 directories with 2 updates [#503](https://github.com/buildkite/buildkite-agent-metrics/pull/503) (@dependabot[bot])
