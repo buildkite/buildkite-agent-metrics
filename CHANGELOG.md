@@ -4,10 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
-## [v5.12.1](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.12.1) (2026-04-27)
+## [v5.12.1](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.12.1) (2026-04-28)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.12.0...v5.12.1)
 
 ### Internal
+- fix: set AWS_DEFAULT_REGION on release pipeline [#526](https://github.com/buildkite/buildkite-agent-metrics/pull/526) (@buildkate)
 - Move release pipeline queues to hosted (PLT-5775) [#521](https://github.com/buildkite/buildkite-agent-metrics/pull/521) (@mipearson)
 - chore: migrate to aws-go-sdk v2 [#517](https://github.com/buildkite/buildkite-agent-metrics/pull/517) (@buildkate)
 - build(deps): bump the container-images group across 2 directories with 3 updates [#506](https://github.com/buildkite/buildkite-agent-metrics/pull/506) (@dependabot[bot])
