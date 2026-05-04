@@ -7,7 +7,7 @@ tool go.uber.org/mock/mockgen
 require (
 	cloud.google.com/go/monitoring v1.24.3
 	github.com/DataDog/datadog-go v4.8.3+incompatible
-	github.com/aws/aws-lambda-go v1.50.0
+	github.com/aws/aws-lambda-go v1.54.0
 	github.com/aws/aws-sdk-go-v2 v1.41.6
 	github.com/aws/aws-sdk-go-v2/config v1.32.16
 	github.com/aws/aws-sdk-go-v2/service/cloudwatch v1.56.2
