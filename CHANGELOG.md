@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.12.2](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.12.2) (2026-05-04)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.12.1...v5.12.2)
+
+### Dependency updates
+- build(deps): bump go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc from 1.38.0 to 1.43.0 [#530](https://github.com/buildkite/buildkite-agent-metrics/pull/530) (@dependabot[bot])
+- build(deps): bump github.com/aws/aws-lambda-go from 1.50.0 to 1.54.0 [#529](https://github.com/buildkite/buildkite-agent-metrics/pull/529) (@dependabot[bot])
+- build(deps): bump the container-images group across 2 directories with 2 updates [#528](https://github.com/buildkite/buildkite-agent-metrics/pull/528) (@dependabot[bot])
+- build(deps): bump go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp from 1.37.0 to 1.43.0 in /cloud_function [#508](https://github.com/buildkite/buildkite-agent-metrics/pull/508) (@dependabot[bot])
+- build(deps): bump go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetrichttp from 1.39.0 to 1.43.0 [#509](https://github.com/buildkite/buildkite-agent-metrics/pull/509) (@dependabot[bot])
+- build(deps): bump go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp from 1.38.0 to 1.43.0 in /cloud_function [#510](https://github.com/buildkite/buildkite-agent-metrics/pull/510) (@dependabot[bot])
+- build(deps): bump go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp from 1.39.0 to 1.43.0 [#511](https://github.com/buildkite/buildkite-agent-metrics/pull/511) (@dependabot[bot])
+- build(deps): bump the container-images group across 2 directories with 2 updates [#524](https://github.com/buildkite/buildkite-agent-metrics/pull/524) (@dependabot[bot])
+- build(deps): bump the container-images group across 1 directory with 2 updates [#525](https://github.com/buildkite/buildkite-agent-metrics/pull/525) (@dependabot[bot])
+- build(deps): bump go.opentelemetry.io/otel/sdk from 1.40.0 to 1.43.0 in /cloud_function [#513](https://github.com/buildkite/buildkite-agent-metrics/pull/513) (@dependabot[bot])
+- build(deps): bump go.opentelemetry.io/otel/sdk from 1.40.0 to 1.43.0 [#512](https://github.com/buildkite/buildkite-agent-metrics/pull/512) (@dependabot[bot])
+- build(deps): bump go.opentelemetry.io/otel from 1.40.0 to 1.41.0 [#519](https://github.com/buildkite/buildkite-agent-metrics/pull/519) (@dependabot[bot])
+
 ## [v5.12.1](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.12.1) (2026-04-28)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.12.0...v5.12.1)
 
