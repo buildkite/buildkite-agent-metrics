@@ -4,25 +4,16 @@ set -Eeufo pipefail
 
 source .buildkite/lib/release_dry_run.sh
 
-if [[ "${RELEASE_DRY_RUN:-false}" != "true" && "${BUILDKITE_BRANCH}" != "${RELEASE_VERSION_TAG:-}" ]]; then
-  echo "Skipping release for a non-tag build on ${BUILDKITE_BRANCH}" >&2
+if [[ "${RELEASE_DRY_RUN:-false}" != "true" && -z "${RELEASE_VERSION_TAG:-}" ]]; then
+  echo "Skipping release: RELEASE_VERSION_TAG not set" >&2
   exit 0
 fi
 
 registry="public.ecr.aws/buildkite/agent-metrics"
 image_tag="${registry}:build-${BUILDKITE_BUILD_NUMBER}"
 
-echo --- Fetching tags
-git fetch --prune --force origin "+refs/tags/*:refs/tags/*"
-
-echo --- Checking tags
-version="$(awk -F\" '/const Version/ {print $2}' version/version.go)"
-tag="v${version#v}"
-
-if [[ "${RELEASE_DRY_RUN:-false}" != true && "${tag}" != "${RELEASE_VERSION_TAG}" ]]; then
-  echo "Error: version.go has not been updated to ${RELEASE_VERSION_TAG#v}"
-  exit 1
-fi
+tag="${RELEASE_VERSION_TAG}"
+version="${tag#v}"
 
 echo --- Downloading binaries
 
@@ -44,7 +35,7 @@ parse_version() {
   [[ "${v%-*}" == "${v}" ]] || echo "${v}"
 }
 
-version_tags=($(parse_version "${version#v}"))
+version_tags=($(parse_version "${version}"))
 
 # Pushing to the docker registry in this way greatly simplifies creating the
 # manifest list on the docker registry so that either architecture can be pulled
