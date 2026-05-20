@@ -77,6 +77,11 @@ steps:
     depends_on:
       - test
     command: ".buildkite/steps/build-cloud-function.sh"
+    plugins:
+      - docker-compose#v5.5.0:
+          config: .buildkite/docker-compose.yaml
+          cli-version: 2
+          run: build
     artifact_paths:
       - ./dist/*
 
