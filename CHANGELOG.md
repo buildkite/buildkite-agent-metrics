@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.html).
 
+## [v5.12.3](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.12.3) (2026-05-21)
+[Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.12.2...v5.12.3)
+
+### Internal
+- fix: zip cloud function [#535](https://github.com/buildkite/buildkite-agent-metrics/pull/535) (@buildkate)
+
 ## [v5.12.2](https://github.com/buildkite/buildkite-agent-metrics/tree/v5.12.2) (2026-05-04)
 [Full Changelog](https://github.com/buildkite/buildkite-agent-metrics/compare/v5.12.1...v5.12.2)
 
