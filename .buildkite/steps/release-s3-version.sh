@@ -3,8 +3,8 @@ set -euo pipefail
 
 source .buildkite/lib/release_dry_run.sh
 
-if [[ "${RELEASE_DRY_RUN:-false}" != "true" && "${BUILDKITE_BRANCH}" != "${RELEASE_VERSION_TAG:-}" ]]; then
-  echo "Skipping release for a non-tag build on ${BUILDKITE_BRANCH}" >&2
+if [[ "${RELEASE_DRY_RUN:-false}" != "true" && -z "${RELEASE_VERSION_TAG:-}" ]]; then
+  echo "Skipping release: RELEASE_VERSION_TAG not set" >&2
   exit 0
 fi
 
