@@ -132,8 +132,8 @@ func NewOpenTelemetryBackend() (*OpenTelemetryBackend, error) {
 	}
 
 	backend, err := newOpenTelemetryBackend(
-		otel.Meter("buildkite-agent-metrics"),
 		otel.Tracer("buildkite-agent-metrics"),
+		otel.Meter("buildkite-agent-metrics"),
 	)
 	if err != nil {
 		otelShutdown()
@@ -145,10 +145,10 @@ func NewOpenTelemetryBackend() (*OpenTelemetryBackend, error) {
 	return backend, nil
 }
 
-// newOpenTelemetryBackend builds a backend around the given meter and tracer and
+// newOpenTelemetryBackend builds a backend around the given tracer and meter and
 // registers its instruments. Split out from NewOpenTelemetryBackend so tests can
 // supply an in-memory meter.
-func newOpenTelemetryBackend(meter metric.Meter, tracer trace.Tracer) (*OpenTelemetryBackend, error) {
+func newOpenTelemetryBackend(tracer trace.Tracer, meter metric.Meter) (*OpenTelemetryBackend, error) {
 	backend := &OpenTelemetryBackend{
 		tracer: tracer,
 		meter:  meter,

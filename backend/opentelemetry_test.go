@@ -19,7 +19,7 @@ func newTestOTelBackend(t *testing.T) (*OpenTelemetryBackend, *sdkmetric.ManualR
 	reader := sdkmetric.NewManualReader()
 	provider := sdkmetric.NewMeterProvider(sdkmetric.WithReader(reader))
 
-	b, err := newOpenTelemetryBackend(provider.Meter("test"), noop.NewTracerProvider().Tracer("test"))
+	b, err := newOpenTelemetryBackend(noop.NewTracerProvider().Tracer("test"), provider.Meter("test"))
 	if err != nil {
 		t.Fatalf("newOpenTelemetryBackend() = %v", err)
 	}
