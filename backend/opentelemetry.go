@@ -29,10 +29,10 @@ type OpenTelemetryBackend struct {
 	meter  metric.Meter
 
 	// Metrics instruments
-	scheduledJobsCounter  metric.Int64Counter
-	runningJobsCounter    metric.Int64Counter
-	unfinishedJobsCounter metric.Int64Counter
-	waitingJobsCounter    metric.Int64Counter
+	scheduledJobsGauge    metric.Int64Gauge
+	runningJobsGauge      metric.Int64Gauge
+	unfinishedJobsGauge   metric.Int64Gauge
+	waitingJobsGauge      metric.Int64Gauge
 	idleAgentsGauge       metric.Int64Gauge
 	busyAgentsGauge       metric.Int64Gauge
 	totalAgentsGauge      metric.Int64Gauge
@@ -131,26 +131,38 @@ func NewOpenTelemetryBackend() (*OpenTelemetryBackend, error) {
 		}
 	}
 
-	backend := &OpenTelemetryBackend{
-		tracer:   otel.Tracer("buildkite-agent-metrics"),
-		meter:    otel.Meter("buildkite-agent-metrics"),
-		shutdown: otelShutdown,
-	}
-
-	// Initialize metrics instruments
-	if err := backend.initializeMetrics(); err != nil {
+	backend, err := newOpenTelemetryBackend(
+		otel.Tracer("buildkite-agent-metrics"),
+		otel.Meter("buildkite-agent-metrics"),
+	)
+	if err != nil {
 		otelShutdown()
-		return nil, fmt.Errorf("error initializing metrics: %w", err)
+		return nil, err
 	}
+	backend.shutdown = otelShutdown
 
 	log.Println("OpenTelemetry backend initialized successfully")
+	return backend, nil
+}
+
+// newOpenTelemetryBackend builds a backend around the given tracer and meter and
+// registers its instruments. Split out from NewOpenTelemetryBackend so tests can
+// supply an in-memory meter.
+func newOpenTelemetryBackend(tracer trace.Tracer, meter metric.Meter) (*OpenTelemetryBackend, error) {
+	backend := &OpenTelemetryBackend{
+		tracer: tracer,
+		meter:  meter,
+	}
+	if err := backend.initializeMetrics(); err != nil {
+		return nil, fmt.Errorf("error initializing metrics: %w", err)
+	}
 	return backend, nil
 }
 
 func (b *OpenTelemetryBackend) initializeMetrics() error {
 	var err error
 
-	b.scheduledJobsCounter, err = b.meter.Int64Counter(
+	b.scheduledJobsGauge, err = b.meter.Int64Gauge(
 		"buildkite.jobs.scheduled",
 		metric.WithDescription("Number of scheduled jobs"),
 	)
@@ -158,7 +170,7 @@ func (b *OpenTelemetryBackend) initializeMetrics() error {
 		return err
 	}
 
-	b.runningJobsCounter, err = b.meter.Int64Counter(
+	b.runningJobsGauge, err = b.meter.Int64Gauge(
 		"buildkite.jobs.running",
 		metric.WithDescription("Number of running jobs"),
 	)
@@ -166,7 +178,7 @@ func (b *OpenTelemetryBackend) initializeMetrics() error {
 		return err
 	}
 
-	b.unfinishedJobsCounter, err = b.meter.Int64Counter(
+	b.unfinishedJobsGauge, err = b.meter.Int64Gauge(
 		"buildkite.jobs.unfinished",
 		metric.WithDescription("Number of unfinished jobs"),
 	)
@@ -174,7 +186,7 @@ func (b *OpenTelemetryBackend) initializeMetrics() error {
 		return err
 	}
 
-	b.waitingJobsCounter, err = b.meter.Int64Counter(
+	b.waitingJobsGauge, err = b.meter.Int64Gauge(
 		"buildkite.jobs.waiting",
 		metric.WithDescription("Number of waiting jobs"),
 	)
@@ -249,16 +261,16 @@ func (b *OpenTelemetryBackend) Collect(r *collector.Result) error {
 
 	// Record total metrics
 	if val, ok := r.Totals["ScheduledJobsCount"]; ok {
-		b.scheduledJobsCounter.Add(ctx, int64(val), metric.WithAttributes(commonAttrs...))
+		b.scheduledJobsGauge.Record(ctx, int64(val), metric.WithAttributes(commonAttrs...))
 	}
 	if val, ok := r.Totals["RunningJobsCount"]; ok {
-		b.runningJobsCounter.Add(ctx, int64(val), metric.WithAttributes(commonAttrs...))
+		b.runningJobsGauge.Record(ctx, int64(val), metric.WithAttributes(commonAttrs...))
 	}
 	if val, ok := r.Totals["UnfinishedJobsCount"]; ok {
-		b.unfinishedJobsCounter.Add(ctx, int64(val), metric.WithAttributes(commonAttrs...))
+		b.unfinishedJobsGauge.Record(ctx, int64(val), metric.WithAttributes(commonAttrs...))
 	}
 	if val, ok := r.Totals["WaitingJobsCount"]; ok {
-		b.waitingJobsCounter.Add(ctx, int64(val), metric.WithAttributes(commonAttrs...))
+		b.waitingJobsGauge.Record(ctx, int64(val), metric.WithAttributes(commonAttrs...))
 	}
 	if val, ok := r.Totals["IdleAgentCount"]; ok {
 		b.idleAgentsGauge.Record(ctx, int64(val), metric.WithAttributes(commonAttrs...))
@@ -291,19 +303,19 @@ func (b *OpenTelemetryBackend) Collect(r *collector.Result) error {
 
 		if val, ok := queueMetrics["ScheduledJobsCount"]; ok {
 			scheduledJobs = int64(val)
-			b.scheduledJobsCounter.Add(ctx, scheduledJobs, metric.WithAttributes(queueAttrs...))
+			b.scheduledJobsGauge.Record(ctx, scheduledJobs, metric.WithAttributes(queueAttrs...))
 		}
 		if val, ok := queueMetrics["RunningJobsCount"]; ok {
 			runningJobs = int64(val)
-			b.runningJobsCounter.Add(ctx, runningJobs, metric.WithAttributes(queueAttrs...))
+			b.runningJobsGauge.Record(ctx, runningJobs, metric.WithAttributes(queueAttrs...))
 		}
 		if val, ok := queueMetrics["UnfinishedJobsCount"]; ok {
 			unfinishedJobs = int64(val)
-			b.unfinishedJobsCounter.Add(ctx, unfinishedJobs, metric.WithAttributes(queueAttrs...))
+			b.unfinishedJobsGauge.Record(ctx, unfinishedJobs, metric.WithAttributes(queueAttrs...))
 		}
 		if val, ok := queueMetrics["WaitingJobsCount"]; ok {
 			waitingJobs = int64(val)
-			b.waitingJobsCounter.Add(ctx, waitingJobs, metric.WithAttributes(queueAttrs...))
+			b.waitingJobsGauge.Record(ctx, waitingJobs, metric.WithAttributes(queueAttrs...))
 		}
 		if val, ok := queueMetrics["IdleAgentCount"]; ok {
 			idleAgents = int64(val)
