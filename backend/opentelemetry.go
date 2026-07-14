@@ -108,6 +108,7 @@ func NewOpenTelemetryBackend() (*OpenTelemetryBackend, error) {
 
 	// Set up metric provider
 	meterProvider := sdkmetric.NewMeterProvider(
+		sdkmetric.WithCardinalityLimit(0),
 		sdkmetric.WithReader(sdkmetric.NewPeriodicReader(metricExporter)),
 		sdkmetric.WithResource(res),
 	)
