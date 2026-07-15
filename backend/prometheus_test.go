@@ -2,6 +2,9 @@ package backend
 
 import (
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"strings"
 	"testing"
 
 	"github.com/buildkite/buildkite-agent-metrics/v5/collector"
@@ -15,6 +18,8 @@ var (
 	fakeDefaultQueue = make(map[string]int)
 	fakeDeployQueue  = make(map[string]int)
 )
+
+var _ func() *Prometheus = NewPrometheusBackend
 
 func init() {
 	for i, metric := range collector.AllMetrics {
@@ -38,24 +43,12 @@ func newTestResult(t *testing.T) *collector.Result {
 	return res
 }
 
-// gatherMetrics runs the Prometheus gatherer, and returns the metric families
-// grouped by name.
-func gatherMetrics(t *testing.T) map[string]*dto.MetricFamily {
+// gatherMetrics runs the backend's Prometheus gatherer, and returns the metric
+// families grouped by name.
+func gatherMetrics(t *testing.T, p *Prometheus) map[string]*dto.MetricFamily {
 	t.Helper()
 
-	oldRegisterer := prometheus.DefaultRegisterer
-	defer func() {
-		prometheus.DefaultRegisterer = oldRegisterer
-	}()
-	r := prometheus.NewRegistry()
-	prometheus.DefaultRegisterer = r
-
-	p := NewPrometheusBackend()
-	if err := p.Collect(newTestResult(t)); err != nil {
-		t.Fatalf("p.Collect() = %v", err)
-	}
-
-	mfs, err := r.Gather()
+	mfs, err := p.gatherer.Gather()
 	if err != nil {
 		t.Fatalf("prometheus.Registry.Gather() = %v", err)
 		return nil
@@ -69,7 +62,11 @@ func gatherMetrics(t *testing.T) map[string]*dto.MetricFamily {
 }
 
 func TestCollect(t *testing.T) {
-	metricFamilies := gatherMetrics(t)
+	p := NewPrometheusBackendWithoutDefaultMetrics()
+	if err := p.Collect(newTestResult(t)); err != nil {
+		t.Fatalf("p.Collect() = %v", err)
+	}
+	metricFamilies := gatherMetrics(t, p)
 
 	if got, want := len(metricFamilies), 16; got != want {
 		t.Errorf("len(metricFamilies) = %d, want %d", got, want)
@@ -191,6 +188,65 @@ func TestCollect(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestPrometheusDefaultMetrics(t *testing.T) {
+	customMetric := prometheus.NewGauge(prometheus.GaugeOpts{
+		Name: "test_custom_metric",
+		Help: "A custom metric registered outside the Prometheus backend.",
+	})
+	prometheus.MustRegister(customMetric)
+	t.Cleanup(func() { prometheus.Unregister(customMetric) })
+
+	p := NewPrometheusBackend()
+	if err := p.Collect(newTestResult(t)); err != nil {
+		t.Fatalf("p.Collect() = %v", err)
+	}
+
+	recorder := httptest.NewRecorder()
+	p.handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/metrics", nil))
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("GET /metrics status = %d, want %d", recorder.Code, http.StatusOK)
+	}
+
+	metricFamilies := gatherMetrics(t, p)
+	for _, prefix := range []string{"buildkite_", "go_", "process_", "promhttp_", "test_custom_metric"} {
+		if !containsMetricWithPrefix(metricFamilies, prefix) {
+			t.Errorf("no metric found with prefix %q", prefix)
+		}
+	}
+}
+
+func TestPrometheusWithoutDefaultMetrics(t *testing.T) {
+	p := NewPrometheusBackendWithoutDefaultMetrics()
+	if err := p.Collect(newTestResult(t)); err != nil {
+		t.Fatalf("p.Collect() = %v", err)
+	}
+
+	recorder := httptest.NewRecorder()
+	p.handler().ServeHTTP(recorder, httptest.NewRequest(http.MethodGet, "/metrics", nil))
+	if recorder.Code != http.StatusOK {
+		t.Fatalf("GET /metrics status = %d, want %d", recorder.Code, http.StatusOK)
+	}
+
+	metricFamilies := gatherMetrics(t, p)
+	if got, want := len(metricFamilies), 16; got != want {
+		t.Errorf("len(metricFamilies) = %d, want %d", got, want)
+	}
+	for name := range metricFamilies {
+		if !strings.HasPrefix(name, "buildkite_") {
+			t.Errorf("unexpected non-Buildkite metric %q", name)
+		}
+	}
+}
+
+func containsMetricWithPrefix(metricFamilies map[string]*dto.MetricFamily, prefix string) bool {
+	for name := range metricFamilies {
+		if strings.HasPrefix(name, prefix) {
+			return true
+		}
+	}
+	return false
 }
 
 func TestCamelToUnderscore(t *testing.T) {

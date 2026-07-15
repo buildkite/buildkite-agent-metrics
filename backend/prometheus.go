@@ -22,9 +22,12 @@ var camelCaseRE = regexp.MustCompile("(^[^A-Z0-9]*|[A-Z0-9]*)([A-Z0-9][^A-Z]+|$)
 // Note: these metrics are not unique to a cluster / queue, as these labels are
 // added to the value when it is set.
 type Prometheus struct {
-	totals    map[string]*prometheus.GaugeVec
-	queues    map[string]*prometheus.GaugeVec
-	oldQueues map[string]map[string]struct{} // cluster -> set of queues in cluster from last collect
+	totals                map[string]*prometheus.GaugeVec
+	queues                map[string]*prometheus.GaugeVec
+	oldQueues             map[string]map[string]struct{} // cluster -> set of queues in cluster from last collect
+	registerer            prometheus.Registerer
+	gatherer              prometheus.Gatherer
+	includeDefaultMetrics bool
 }
 
 var (
@@ -32,20 +35,35 @@ var (
 	promSingleton     *Prometheus
 )
 
-// NewPrometheusBackend creates an instance of Prometheus and creates and
-// registers all the metrics gauges. Because Prometheus metrics must be unique,
-// it manages a singleton instance rather than creating a new backend for each
-// call.
+// NewPrometheusBackend creates an instance of Prometheus and registers all the
+// metrics gauges in the default Prometheus registry. Because metrics in the
+// default registry must be unique, it returns a singleton instance.
 func NewPrometheusBackend() *Prometheus {
-	promSingletonOnce.Do(createPromSingleton)
+	promSingletonOnce.Do(func() {
+		promSingleton = newPrometheusBackend(
+			prometheus.DefaultRegisterer,
+			prometheus.DefaultGatherer,
+			true,
+		)
+	})
 	return promSingleton
 }
 
-func createPromSingleton() {
-	promSingleton = &Prometheus{
-		totals:    make(map[string]*prometheus.GaugeVec),
-		queues:    make(map[string]*prometheus.GaugeVec),
-		oldQueues: make(map[string]map[string]struct{}),
+// NewPrometheusBackendWithoutDefaultMetrics creates a Prometheus backend that
+// excludes Go runtime, process, and HTTP handler metrics.
+func NewPrometheusBackendWithoutDefaultMetrics() *Prometheus {
+	registry := prometheus.NewRegistry()
+	return newPrometheusBackend(registry, registry, false)
+}
+
+func newPrometheusBackend(registerer prometheus.Registerer, gatherer prometheus.Gatherer, includeDefaultMetrics bool) *Prometheus {
+	p := &Prometheus{
+		totals:                make(map[string]*prometheus.GaugeVec),
+		queues:                make(map[string]*prometheus.GaugeVec),
+		oldQueues:             make(map[string]map[string]struct{}),
+		registerer:            registerer,
+		gatherer:              gatherer,
+		includeDefaultMetrics: includeDefaultMetrics,
 	}
 
 	for _, name := range collector.AllMetrics {
@@ -53,23 +71,33 @@ func createPromSingleton() {
 			Name: "buildkite_total_" + camelToUnderscore(name),
 			Help: "Buildkite Total: " + name,
 		}, []string{"cluster"})
-		prometheus.MustRegister(gauge)
-		promSingleton.totals[name] = gauge
+		p.registerer.MustRegister(gauge)
+		p.totals[name] = gauge
 
 		gauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 			Name: "buildkite_queues_" + camelToUnderscore(name),
 			Help: "Buildkite Queues: " + name,
 		}, []string{"queue", "cluster"})
-		prometheus.MustRegister(gauge)
-		promSingleton.queues[name] = gauge
+		p.registerer.MustRegister(gauge)
+		p.queues[name] = gauge
 	}
+
+	return p
 }
 
 // Serve runs a Prometheus metrics HTTP server.
 func (p *Prometheus) Serve(path, addr string) {
 	m := http.NewServeMux()
-	m.Handle(path, promhttp.Handler())
+	m.Handle(path, p.handler())
 	log.Fatal(http.ListenAndServe(addr, m))
+}
+
+func (p *Prometheus) handler() http.Handler {
+	handler := promhttp.HandlerFor(p.gatherer, promhttp.HandlerOpts{})
+	if p.includeDefaultMetrics {
+		handler = promhttp.InstrumentMetricHandler(p.registerer, handler)
+	}
+	return handler
 }
 
 // Collect receives a set of metrics from the agent and updates the gauges.
