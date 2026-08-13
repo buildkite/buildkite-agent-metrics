@@ -226,6 +226,8 @@ Usage of buildkite-agent-metrics:
         New Relic license key for publishing events
   -prometheus-addr string
         Prometheus metrics transport bind address (default ":8080")
+  -prometheus-include-default-metrics
+        Include Go runtime, process, and HTTP handler metrics in the Prometheus endpoint (default true)
   -prometheus-path string
         Prometheus metrics transport path (default "/metrics")
   -queue value
@@ -271,6 +273,9 @@ The StatsD backend supports the following arguments:
 The Prometheus backend supports the following arguments:
 
 - `-prometheus-addr`: The local address to listen on (defaults to `:8080`).
+- `-prometheus-include-default-metrics`: Whether to include Go runtime, process,
+  and HTTP handler metrics (defaults to `true`). Use
+  `-prometheus-include-default-metrics=false` to expose only Buildkite metrics.
 - `-prometheus-path`: The path under `prometheus-addr` to expose metrics on
    (defaults to `/metrics`).
 
