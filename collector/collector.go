@@ -431,10 +431,10 @@ func NewHTTPClient(timeout, maxIdleConns int) *http.Client {
 			IdleConnTimeout:       connectionTimeout,
 			ResponseHeaderTimeout: connectionTimeout,
 			DisableKeepAlives:     false,
-			Dial: (&net.Dialer{
+			DialContext: (&net.Dialer{
 				Timeout:   connectionTimeout,
 				KeepAlive: connectionTimeout,
-			}).Dial,
+			}).DialContext,
 			TLSHandshakeTimeout: connectionTimeout,
 		},
 		CheckRedirect: func(req *http.Request, via []*http.Request) error {
